@@ -1,0 +1,19 @@
+# Dependencies
+/vendor
+/node_modules
+
+# Tests and Dev Tooling
+/tests
+/Tools
+
+# Local Environment
+.env
+.env.*
+! .env.example
+
+# Git metadata
+.git
+.github
+
+# Local SQLite databases
+*.sqlite-journal

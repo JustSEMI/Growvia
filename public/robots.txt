@@ -1,0 +1,10 @@
+User-agent: *
+Disallow: /api/
+Disallow: /pengaturan/
+Disallow: /pengguna/
+Disallow: /aktivitas/
+Disallow: /dashboard
+Disallow: /petani/
+Disallow: /lupa-sandi
+Disallow: /reset-sandi/
+Allow: /
