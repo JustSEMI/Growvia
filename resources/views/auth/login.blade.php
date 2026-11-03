@@ -5,7 +5,12 @@
 <span class="icon-tile"><x-icon name="leaf" /></span>
 <h1>Selamat datang lagi.</h1>
 <p>Masuk yuk buat buka ruang kerja kebunmu.</p>
-<x-alerts />
+@if($errors->has('email') || $errors->has('password'))
+<div class="alert alert--error auth-login-error" role="alert" tabindex="-1" data-error-summary>
+    <x-icon name="info" />
+    <p>Email atau kata sandi salah. Coba periksa lagi.</p>
+</div>
+@endif
 <form action="{{ route('login') }}" method="POST" class="form-stack" novalidate>
     @csrf
     <x-field name="email" label="Alamat email" type="email" :value="old('email')" :required="true" autocomplete="username" maxlength="255" placeholder="nama@growvia.id" autofocus />
