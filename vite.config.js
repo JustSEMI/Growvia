@@ -20,7 +20,6 @@ export default defineConfig({
                 local('Horizon', {
                     variants: [
                         { src: 'resources/fonts/Horizon.otf', weight: 400, style: 'normal' },
-                        { src: 'resources/fonts/Horizon-Italic.otf', weight: 400, style: 'italic' },
                     ],
                     optimizedFallbacks: false,
                 }),

@@ -8,7 +8,7 @@ UI/UX Pro Max search matched Minimalism & Swiss Style and anonymous Blade compon
 
 ## Typography
 - UI/body: locally hosted Montserrat, system sans fallback. Regular 400, medium 500, semibold 600.
-- Editorial heading accent: locally hosted Horizon, Georgia fallback; only welcome/auth/empty-state display headings.
+- Editorial heading accent: locally hosted Horizon, Georgia fallback; only welcome/auth/empty-state display headings. Horizon = Alberto Fontese (Fontense) 2019, free for personal/academic use; file `resources/fonts/Horizon.otf` (Bold face).
 - Metadata: system monospace; do not make the whole interface monospace.
 - Body/input 16px; secondary UI 14px; labels/metadata no smaller than 12px.
 
