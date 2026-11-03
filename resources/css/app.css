@@ -412,9 +412,12 @@
     .auth-footer { text-align: center; color: var(--secondary); font-size: 12px; }
     /* --- Overhaul login: hero story + fokus form (Laws of UX) --- */
     .auth-story { background: var(--story-surface); }
+    .auth-story-content { max-width: 520px; }
+    .auth-story-title { font-size: clamp(44px, 5.2vw, 76px); letter-spacing: -.04em; line-height: 1; }
     .auth-story-title em { color: var(--green); font-style: normal; }
+    .auth-story .garden-art { display: block; margin: 44px auto 0; max-height: 220px; width: 100%; }
     .auth-form-wrap { position: relative; }
-    .auth-form-wrap h1 { font-size: 30px; }
+    .auth-form-wrap h1 { font-size: 30px; letter-spacing: -.03em; }
     .auth-form-wrap .eyebrow { margin-bottom: -2px; }
     .auth-form-wrap .button--wide { font-size: 14px; font-weight: 600; letter-spacing: .01em; position: relative; overflow: hidden; }
     .auth-form-wrap .button--wide .icon { transition: transform .18s var(--ease); }
@@ -424,19 +427,20 @@
     .auth-access strong, .auth-top .language-select, .auth-top .theme-select { font-weight: 500; }
     /* --- Pembaruan form: datar, tenang, tanpa glow/gradasi --- */
     .auth-main { background: var(--surface); }
-    .auth-form-wrap { align-self: center; width: 100%; max-width: 400px; margin: 40px auto; padding: 32px 36px 28px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 1px 2px rgb(20 28 22 / 4%); }
+    .auth-form-wrap { align-self: center; width: 100%; max-width: 412px; margin: 40px auto; padding: 36px 40px 30px; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; box-shadow: 0 1px 2px rgb(20 28 22 / 4%); }
     .auth-form-wrap .field { gap: 6px; }
-    .auth-form-wrap .field-label { font-size: 13px; font-weight: 600; letter-spacing: .01em; }
-    .auth-form-wrap .field-input { min-height: 48px; border-radius: 8px; border-color: var(--control-line); background: var(--surface); padding: 0 14px; font-size: 15px; transition: border-color .18s; }
+    .auth-form-wrap .field-label { font-size: 12px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; }
+    .auth-form-wrap .field-input { min-height: 50px; border-radius: 10px; border-color: var(--control-line); background: var(--surface); padding: 0 15px; font-size: 15px; transition: border-color .18s; }
     .auth-form-wrap .field-input:focus { border-color: var(--green); outline: none; }
     .auth-form-wrap .password-field { position: relative; }
-    .auth-form-wrap .password-toggle { border-radius: 6px; }
-    .auth-form-wrap .button--wide { min-height: 48px; border-radius: 8px; background: var(--action); font-size: 14px; }
+    .auth-form-wrap .password-toggle { border-radius: 8px; }
+    .auth-form-wrap .button--wide { min-height: 50px; border-radius: 10px; background: var(--action); font-size: 14px; }
     .auth-form-wrap .button--wide:hover { background: var(--action-hover); }
     .auth-form-wrap .check-inline { min-height: 44px; font-size: 13px; }
     .auth-form-wrap .text-link { font-size: 13px; }
     .auth-form-wrap .auth-divider { margin: 24px 0 16px; }
     .auth-form-wrap .auth-note { font-size: 12px; }
+    .auth-story-footer { font-size: 11px; letter-spacing: .02em; }
     /* --- Fix pesan error di kartu login: gaya modern & konsisten --- */
     .auth-form-wrap .alert { border-radius: 12px; padding: 14px 16px; margin-bottom: 20px; gap: 12px; font-size: 13px; border-left: 4px solid var(--red); }
     .auth-form-wrap .alert--error { background: color-mix(in oklab, var(--pale-red) 65%, var(--surface)); color: var(--ink); }
