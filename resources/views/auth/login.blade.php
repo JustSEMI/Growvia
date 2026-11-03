@@ -3,8 +3,8 @@
 
 @section('content')
 <span class="icon-tile"><x-icon name="leaf" /></span>
-<h1>Selamat datang kembali.</h1>
-<p>Masuk untuk membuka ruang kerja kebun Anda.</p>
+<h1>Selamat datang lagi.</h1>
+<p>Masuk yuk buat buka ruang kerja kebunmu.</p>
 <x-alerts />
 <form action="{{ route('login') }}" method="POST" class="form-stack" novalidate>
     @csrf
@@ -14,5 +14,5 @@
     <button type="submit" class="button button--wide">Masuk ke ruang kerja <x-icon name="arrow" /></button>
 </form>
 <div class="auth-divider">Belum punya akses?</div>
-<p class="auth-note">Hubungi admin kebun untuk mendapatkan akses.</p>
+<p class="auth-note">Minta akses ke admin kebun ya.</p>
 @endsection

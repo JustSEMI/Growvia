@@ -3,9 +3,9 @@
 <nav class="nav-stack" aria-label="Navigasi utama">
     <p class="nav-label">Ruang kerja</p>
     @if($panel === 'admin')
-        <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" icon="grid">Ringkasan</x-nav-link>
-        <x-nav-link :href="route('dashboard').'#node1'" icon="sun">Iklim rumah kaca</x-nav-link>
-        <x-nav-link :href="route('dashboard').'#node2'" icon="drop">Tanah &amp; air</x-nav-link>
+        <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" icon="grid" data-nav-section="top">Ringkasan</x-nav-link>
+        <x-nav-link :href="route('dashboard').'#node1'" icon="sun" data-nav-section="node1">Iklim rumah kaca</x-nav-link>
+        <x-nav-link :href="route('dashboard').'#node2'" icon="drop" data-nav-section="node2">Tanah &amp; air</x-nav-link>
         <p class="nav-label nav-label--spaced">Kelola</p>
         <x-nav-link :href="route('activity.index')" :active="request()->routeIs('activity.*')" icon="clock">Aktivitas</x-nav-link>
         <x-nav-link :href="route('users.index')" :active="request()->routeIs('users.*')" icon="users">Pengguna</x-nav-link>

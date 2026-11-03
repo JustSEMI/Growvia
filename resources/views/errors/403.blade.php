@@ -1,5 +1,5 @@
 @extends('errors.layout')
 
 @section('code', '403')
-@section('title', 'Akses ditolak')
-@section('message', 'Akun Anda tidak memiliki izin untuk membuka halaman ini. Hubungi admin jika ini tidak sesuai.')
+@section('title', 'Nggak boleh masuk')
+@section('message', 'Akunmu nggak punya izin buat buka halaman ini. Tanya admin ya kalau harusnya bisa.')

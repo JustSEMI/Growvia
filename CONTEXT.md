@@ -1,6 +1,8 @@
 # Growvia — Context untuk AI dan Developer
 
 > Snapshot kode web dan integrasi mobile: **17 September 2026**. Versi, jumlah file, dan angka tes di dokumen ini diambil langsung dari `composer.lock`, `package-lock.json`, `route:list`, dan hasil runner pada tanggal tersebut. Dokumen ini menjelaskan implementasi yang benar-benar ada, bukan fitur yang direncanakan. Kalau berbeda dengan kode, kode dan hasil tes terbaru yang menang.
+>
+> **Audit ulang (18 September 2026).** Seluruh angka di dokumen ini dijalankan ulang. Hasil: tes PHP (**284 tes / 2.887 assertion**) dan JavaScript (**44 tes**) tetap akurat. Yang dikoreksi: `route:list` kini **50 entri** (27 web termasuk route tooling Boost, 20 API, 3 framework), migrasi **9** (bukan 8), middleware **7** (bukan 6) di `app/Http/Middleware/`, dan klien mobile kini **31 file Dart lib / 21 file tes** dengan **212 tes lulus**. Repo juga **punya metadata `.git`** dengan remote GitHub.
 
 ## 1. Pahami aplikasi dalam 30 detik
 
@@ -83,7 +85,7 @@ Versi di bawah dibaca dari `composer.lock` dan `package-lock.json`, bukan dari r
 | Node lokal | **v26.8.1** | Vite minta `^20.19.0 \|\| >=22.12.0` |
 | concurrently | 10.0.5 | Dev dependency |
 | Frontend JS | Vanilla ES module | Tanpa framework, tanpa polling/MQTT |
-| Font | Instrument Sans + Instrument Serif | Diambil Bunny saat build, disajikan lokal |
+| Font | Montserrat + Horizon | Lokal di `resources/fonts/`, disajikan lewat build Vite |
 
 Minimum PHP untuk lock saat ini **8.4.1** (dependency Symfony), meski root menyatakan `^8.3`. Verifikasi lewat `vendor/composer/platform_check.php`.
 
@@ -97,9 +99,10 @@ Growvia/
     Http/Controllers/            4 controller konkret + base Controller
       Auth/                      2: AuthenticatedSessionController, PasswordResetController
       Api/V1/                    5: Auth, Account, Recovery, Users, Workspace
-    Http/Middleware/             6: EnsureAccountSession, EnsureApiTransport,
+    Http/Middleware/             7: EnsureAccountSession, EnsureApiTransport,
                                     EnsureMobileApiAccess, EnsureRole,
-                                    SetInterfaceLocale, ThrottleMobileApiRequests
+                                    SecurityHeaders, SetInterfaceLocale,
+                                    ThrottleMobileApiRequests
     Http/Resources/              3: MobileActivityResource, MobileDeviceResource,
                                     MobileUserResource
     Models/                      3: ActivityLog, Setting, User
@@ -110,10 +113,10 @@ Growvia/
   bootstrap/app.php              routing, middleware, exception JSON
   config/                        konfigurasi framework + sanctum.php + cors.php
   database/
-    migrations/                  8 migrasi
+    migrations/                  9 migrasi
     factories/                   UserFactory, ActivityLogFactory
     seeders/DatabaseSeeder.php   KOSONG — tidak membuat akun
-  routes/web.php                 26 route aplikasi web
+  routes/web.php                 27 route aplikasi web (+1 route tooling Boost)
   routes/api.php                 20 route API v1
   routes/console.php             command contoh
   resources/
@@ -190,9 +193,11 @@ Flutter
 
 ## 6. Peta route dan akses
 
-`php artisan route:list` melaporkan **49 entri**: 26 route aplikasi web + 20 route API v1 + 3 route framework.
+`php artisan route:list` melaporkan **50 entri**: 27 route aplikasi web (26 route dalam `routes/web.php` + 1 route tooling Boost otomatis) + 20 route API v1 + 3 route framework.
 
-### Route web (26)
+> Route ke-27 adalah `POST /_boost/browser-logs` (`boost.browser-logs`) yang didaftarkan otomatis oleh paket Laravel Boost (dev tooling). Route ini **bukan endpoint produk** dan tidak memakai middleware `web`.
+
+### Route web (26 di `routes/web.php`; 27 pada `route:list`)
 
 | Metode | Path | Nama | Akses tambahan |
 |---|---|---|---|
@@ -268,7 +273,7 @@ Catatan navigasi:
 
 ## 7. Data model dan migrasi
 
-**8 migrasi**: users, cache, jobs, `add_role_to_users_table`, `create_settings_table`, `create_activity_logs_table`, `add_account_state_to_users_table`, `create_personal_access_tokens_table`.
+**9 migrasi**: users, cache, jobs, `add_role_to_users_table`, `create_settings_table`, `create_activity_logs_table`, `add_account_state_to_users_table`, `create_personal_access_tokens_table`, `add_request_context_to_activity_logs_table`.
 
 ### User
 
@@ -281,7 +286,8 @@ Catatan navigasi:
 
 ### ActivityLog
 
-- Tabel `activity_logs`: `action` (64, indexed), `actor_id`/`subject_id` (FK nullable, null-on-delete), `actor_name`/`subject_name` (255), `fields` JSON, `created_at` (indexed). Tidak ada `updated_at`.
+- Tabel `activity_logs`: `action` (64, indexed), `actor_id`/`subject_id` (FK nullable, null-on-delete), `actor_name`/`subject_name` (255), `ip_hash` (64, nullable), `user_agent` (255, nullable), `fields` JSON, `created_at` (indexed). Tidak ada `updated_at`.
+- `ip_hash`/`user_agent` hanya terisi untuk `auth.failed` (migrasi `add_request_context_to_activity_logs_table`); `ip_hash` adalah SHA-256 yang diasinkan `APP_KEY`, bukan alamat IP asli. Lihat §12.
 - `record()` mengizinkan aksi dan nama field yang dikenal; nilai isian, credential, session ID, token, dan payload request tidak disimpan.
 - Riwayat admin berpaginasi 15, filter nama/aksi/tanggal; dashboard menampilkan lima terbaru. Timestamp ditulis eksplisit dengan zona aplikasi (UTC).
 - Aksi: `user.created/updated/deleted/activated/deactivated`, `account.profile_updated/email_changed/password_changed/password_reset/sessions_revoked`, `auth.login/failed/logout`, `settings.updated`.
@@ -379,7 +385,7 @@ Tidak ada `mqtt_password`, konfigurasi TLS/certificate, subscriber/publisher, sc
 - `components/document-head.blade.php`: metadata, favicon, `@fonts`, `@vite`.
 - `errors/layout.blade.php`: shell error. View 400/401/403/404/419/429/500/503.
 
-Arah visual di `MASTER.md`: netral hangat pada light, hijau-charcoal desaturasi pada dark; Instrument Sans untuk UI, Instrument Serif untuk aksen; token semantik `light-dark()` dengan `color-scheme`. Breakpoint aktual `max-width: 1279px`, `1023px`, `767px`, `479px`; sidebar hilang pada 1023px ke bawah.
+Arah visual di `MASTER.md`: netral hangat pada light, hijau-charcoal desaturasi pada dark; Montserrat untuk UI, Horizon untuk aksen; token semantik `light-dark()` dengan `color-scheme`. Breakpoint aktual `max-width: 1279px`, `1023px`, `767px`, `479px`; sidebar hilang pada 1023px ke bawah.
 
 ### Kontrak komponen (20 komponen anonim)
 
@@ -499,7 +505,7 @@ npm run build
 
 - Entry: `resources/css/app.css` dan `resources/js/app.js`.
 - Hasil build: `public/build/manifest.json`, `public/build/fonts-manifest.json`, CSS/JS/font.
-- Font Bunny di-resolve saat build/dev; build pertama bisa butuh jaringan. Cache font di `node_modules/.cache/laravel-vite-plugin/fonts`.
+- Font lokal (Montserrat, Horizon) di `resources/fonts/`; build pertama tidak butuh jaringan. Cache font lama di `node_modules/.cache/laravel-vite-plugin/fonts` tidak lagi dipakai (provider `local`).
 - `public/hot` membuat Laravel memakai URL dev Vite **meski manifest production ada**. Kalau tampilan tanpa CSS/JS, cek file ini dan keterjangkauan dev server lebih dulu.
 - Jangan mengedit file hashed di `public/build/assets/`; perbaiki source lalu build.
 
@@ -508,7 +514,7 @@ npm run build
 - PHP lokal dari Laragon; sesuaikan PATH per mesin.
 - Git Bash: path dengan spasi harus dikutip.
 - Jika wrapper Composer gagal menerjemahkan path, panggil PHAR lewat PHP dengan lokasi benar.
-- Direktori ini tidak punya metadata `.git`; jangan mengarang commit/branch/remote.
+- Direktori ini **memiliki metadata `.git`** dengan remote `origin` di GitHub (`JustSEMI/Growvia`). Jangan mengarang commit/branch/remote — periksa `git log`, `git remote -v`, dan `git status` bila perlu, lalu laporkan apa adanya. Snapshot audit menemukan satu perubahan belum di-commit (`resources/views/components/icon.blade.php`).
 
 ### Konfigurasi lokal yang memengaruhi perilaku
 
@@ -574,11 +580,12 @@ node --test --test-concurrency=1 tests/Frontend/*.test.mjs
 
 ### Hasil yang dijalankan pada 17 September 2026
 
-- **PHP: 284 tes / 2.887 assertion lulus** (`php vendor/bin/phpunit` dari folder aplikasi, atau runner terisolasi di `Tools/`).
-- **JavaScript: 44 tes lulus** (`node --test --test-concurrency=1 tests/Frontend/*.test.mjs`); `test:theme` sendiri 7 tes.
-- **Flutter: 180 tes lulus, analyzer bersih** (proyek `../Growvia Mobile`).
-- `route:list`: 49 entri (26 web + 20 API + 3 framework).
-- File: 47 Blade (20 komponen), 8 migrasi, 5 modul JS, 3 file `lang/id`.
+- **PHP: 284 tes / 2.887 assertion lulus** — **diverifikasi ulang** pada audit 18 September 2026 dengan `php vendor/bin/phpunit` dari folder aplikasi, storage/view cache diarahkan ke `Tools/` agar tidak menyentuh runtime kerja.
+- **JavaScript: 44 tes lulus** — **diverifikasi ulang** (`node --test --test-concurrency=1 tests/Frontend/*.test.mjs`); `test:theme` sendiri 7 tes.
+- **Flutter: 212 tes lulus, analyzer bersih** — diperbarui dari 180 pada audit 18 September 2026 (`flutter test` + `flutter analyze` di proyek `../Growvia Mobile`).
+- `route:list`: **50 entri** (27 web — 26 aplikasi + 1 tooling Boost — + 20 API + 3 framework).
+- File: 47 Blade (20 komponen), **9 migrasi**, 5 modul JS, 3 file `lang/id`.
+- Klien mobile: **31 file Dart** di `lib/`, **21 file tes** di `test/`.
 - Database kerja: `database/database.sqlite`, integrity ok, 8 migrasi Ran.
 
 ### Batas pengujian
@@ -633,7 +640,7 @@ Kontrol yang harus dipertahankan: parameterisasi Eloquent, whitelist input, role
 
 Klien Flutter terpisah; lihat README proyek mobile untuk detail setup. Ringkas:
 
-- **26 file Dart** di `lib/`, **19 file tes** di `test/`. Lapisan: `core/` (controller, theme, preferences), `data/` (api_client, api_endpoint, model), `features/` (15 halaman), `ui/` (komponen + chart).
+- **31 file Dart** di `lib/`, **21 file tes** di `test/` (**212 tes lulus**, analyzer bersih). Lapisan: `core/` (controller, theme, preferences, tokens), `data/` (api_client, api_endpoint, model, history, reading, workspace_models), `features/` (16 halaman), `ui/` (komponen + chart). Angka ini diperbarui pada audit 18 September 2026; snapshot lama mencatat 26/19.
 - `AppController` memakai counter `generation` + tiket `_Access` supaya respons async dari akun lama tidak pernah ditulis ke state akun baru. Semua operasi secure storage diserialkan lewat `_store()`.
 - Halaman khusus admin: pengguna, log aktivitas, pengaturan sistem. Semua role: profil, sesi, dashboard, riwayat, panduan, detail node.
 - `ApiEndpoint` adalah satu sumber kebijakan transport untuk preferensi, validasi, dan parsing tautan recovery.
@@ -642,6 +649,10 @@ Klien Flutter terpisah; lihat README proyek mobile untuk detail setup. Ringkas:
 - **Dropdown wajib memakai `ManagementSelector`**, bukan `DropdownButtonFormField` bawaan Material. Selector custom memakai bottom sheet, punya target sentuh lebih besar, dan konsisten dengan halaman pengelolaan lain. Bawaan Material hanya boleh dipakai bila ada alasan kuat; saat ini tidak ada.
 - **Label metric wajib lengkap.** `Reading.label` harus menerjemahkan seluruh metric yang dirender UI: `temperature`, `humidity`, `light`, `co2`, `soil_moisture`, `soil_temperature`, `water_level`, `pump`. Metric tak dikenal jatuh ke identifier apa adanya (bukan tebakan). Dikunci oleh `test/reading_label_test.dart`.
 - **Ikon Android memakai adaptive icon.** Foreground adalah vektor `drawable/ic_launcher_foreground.xml` yang diturunkan dari `Growvia/public/favicon.svg` oleh `Tools/growvia-mobile/adaptive_icon_path.py`. Path disimpan dalam ruang koordinat sumber 32 unit, dan transformasinya (scale 2.25, translate 18) diterapkan lewat `<group>` supaya geometrinya tetap bisa dilacak ke SVG asal. Script memverifikasi konversi relatif→absolut dan kecocokan safe zone; jalankan ulang dan periksa `relative_to_absolute_delta` serta `fits_safe_zone` bila favicon berubah.
+- **Decode/legacy icon harus lengkap per density.** Manifest memakai `android:roundIcon="@mipmap/ic_launcher_round"`, dan folder `mipmap-anydpi-v26` hanya dibaca API 26+. Karena `minSdk` = 24, setiap folder density (`mdpi`–`xxxhdpi`) **wajib** punya `ic_launcher.png` **dan** `ic_launcher_round.png`. `Tools/growvia-mobile/branding_icons.py` adalah generator kanonik untuk keduanya; jangan menambah PNG secara manual agar tidak ter-drift.
+- **ID aplikasi final dan seragam: `com.growvia.mobile`** (audit 18 September 2026). Sebelumnya berbeda antar platform (Android `com.growvia.growvia_mobile`, iOS `com.growvia.growviaMobile`). Mengubah nilai ini setelah rilis store tidak dimungkinkan. Nama paket Dart tetap `growvia_mobile` (`package:growvia_mobile/...`) — itu identitas pubspec, bukan ID aplikasi, dan tidak ikut berubah.
+- **Rilis Android memakai `android/key.properties`** (git-ignored; template di `android/key.properties.example`). Bila berkas itu tidak ada, build rilis jatuh ke debug signing agar tetap bisa dijalankan lokal — hasil semacam itu **tidak boleh diunggah**. Verifikasi dengan `apksigner verify --print-certs` (harus bukan `CN=Android Debug`). Prosedur lengkap ada di README proyek mobile.
+- **Folder `../Growvia Mobile` belum punya repo Git** (web Growvia sudah, dengan remote GitHub). Kode mobile karenanya tanpa version control; jangan mengarang riwayat commit/remote untuk folder ini bila tidak diminta.
 
 ## 14. Melanjutkan pengembangan
 
@@ -667,26 +678,6 @@ Klien Flutter terpisah; lihat README proyek mobile untuk detail setup. Ringkas:
 4. Sepakati kontrak data, lalu buat satu alur sensor nyata dengan heartbeat dan status fresh/stale/offline.
 5. Isi grafik/tabel dari data yang sama, lalu filter waktu dan CSV di web. Ekspor CSV baru masuk akal setelah `/readings` benar-benar mengembalikan data; klien mobile sudah punya `readingsToCsv()` sebagai rujukan format.
 6. Command pompa memerlukan acknowledgement, timeout, hak akses, audit perintah, dan pengaman firmware.
-
-### Sudah diselesaikan (17 September 2026)
-
-- `README.md` sudah tidak lagi mencantumkan akun demo; diganti instruksi membuat admin pertama lewat `tinker`.
-- `.env.example` memakai `APP_NAME=Growvia`, bukan `Laravel`.
-- Label metric mobile lengkap untuk 8 metric yang dirender UI.
-- Dropdown mobile diseragamkan ke `ManagementSelector`.
-- Filter tanggal aktivitas memakai `betweenDates()` sehingga index `created_at` terpakai.
-- `public/robots.txt` dan header keamanan `public/.htaccess` sudah diisi.
-- Adaptive icon Android (termasuk `roundIcon` dan `monochrome`) sudah dibuat dari favicon.
-
-### Sebelum membuat integrasi MQTT/telemetri/firmware, sepakati dulu
-
-- Daftar sensor/aktuator dan firmware yang dipakai; jangan menebak dari label UI.
-- Identitas node, ownership/tenant bila perlu, topik publish/subscribe, versi payload.
-- Satuan, kalibrasi, rentang masuk akal, timestamp UTC, interval aktual, penanganan duplikat/out-of-order, dan retensi.
-- Auth broker/TLS/ACL serta lokasi penyimpanan credential; jangan mengekspos credential broker ke browser.
-- Mekanisme status perangkat dan acknowledgement command. "Perintah terkirim" harus berbeda dari "pompa terkonfirmasi menyala".
-- Perilaku saat internet/sensor gagal, tandon kosong, durasi maksimum terlampaui, konflik manual/otomatis. Fail-safe perangkat tidak boleh hanya mengandalkan dashboard.
-- Mekanisme update UI (polling/SSE/WebSocket) belum dipilih. Jangan menambah library hanya karena template grafik kosong.
 
 ## 15. Checklist untuk AI/developer berikutnya
 
@@ -714,3 +705,31 @@ Jangan menganggap placeholder sebagai data nyata atau setting sebagai state pera
 Verifikasi kondisi codebase terbaru, jelaskan scope perubahan, dan minta persetujuan
 sebelum mengedit source aplikasi. Jangan menyentuh database kerja untuk pengujian.
 ```
+
+## 16. Catatan audit terakhir
+
+### Sudah diselesaikan (17 September 2026)
+
+- `README.md` sudah tidak lagi mencantumkan akun demo; diganti instruksi membuat admin pertama lewat `tinker`.
+- `.env.example` memakai `APP_NAME=Growvia`, bukan `Laravel`.
+- Label metric mobile lengkap untuk 8 metric yang dirender UI.
+- Dropdown mobile diseragamkan ke `ManagementSelector`.
+- Filter tanggal aktivitas memakai `betweenDates()` sehingga index `created_at` terpakai.
+- `public/robots.txt` dan header keamanan `public/.htaccess` sudah diisi.
+- Adaptive icon Android (termasuk `roundIcon` dan `monochrome`) sudah dibuat dari favicon.
+
+### Diverifikasi ulang pada audit 18 September 2026
+
+- **284 tes PHP / 2.887 assertion** dan **44 tes JavaScript** dijalankan ulang di environment terisolasi (`Tools/growvia-audit-deepseek/`, storage & view cache di luar repo) — keduanya lulus, tidak menyentuh database kerja.
+- **212 tes Flutter lulus** (`flutter test`) dan `flutter analyze` bersih di `../Growvia Mobile`; angka pada snapshot lama (180) sudah kedaluwarsa.
+- `route:list` = 50 entri; migrasi = 9; middleware = 7; git metadata & remote GitHub terkonfirmasi.
+
+### Sebelum membuat integrasi MQTT/telemetri/firmware, sepakati dulu
+
+- Daftar sensor/aktuator dan firmware yang dipakai; jangan menebak dari label UI.
+- Identitas node, ownership/tenant bila perlu, topik publish/subscribe, versi payload.
+- Satuan, kalibrasi, rentang masuk akal, timestamp UTC, interval aktual, penanganan duplikat/out-of-order, dan retensi.
+- Auth broker/TLS/ACL serta lokasi penyimpanan credential; jangan mengekspos credential broker ke browser.
+- Mekanisme status perangkat dan acknowledgement command. "Perintah terkirim" harus berbeda dari "pompa terkonfirmasi menyala".
+- Perilaku saat internet/sensor gagal, tandon kosong, durasi maksimum terlampaui, konflik manual/otomatis. Fail-safe perangkat tidak boleh hanya mengandalkan dashboard.
+- Mekanisme update UI (polling/SSE/WebSocket) belum dipilih. Jangan menambah library hanya karena template grafik kosong.

@@ -3,7 +3,7 @@
 @section('page', 'Sesi perangkat')
 
 @section('content')
-<x-page-header title="Perangkat yang terhubung." description="Periksa sesi masuk akun Anda. Informasi perangkat berasal dari browser dan bukan identitas perangkat yang terverifikasi.">
+<x-page-header title="Perangkat yang nyambung." description="Cek sesi masuk akunmu. Info perangkat asalnya dari browser, bukan identitas perangkat yang udah diverifikasi.">
     <x-slot:eyebrow>Akun / Keamanan</x-slot:eyebrow>
     <x-slot:actions><a class="button button--secondary" href="{{ $back }}#security">Kembali ke pengaturan</a></x-slot:actions>
 </x-page-header>
@@ -16,16 +16,16 @@
                 @forelse($sessions as $session)
                     <div class="device-row"><span class="icon-tile"><x-icon name="display" /></span><div class="device-copy"><strong>{{ $session['browser'] }} · {{ $session['device'] }}</strong><small>IP {{ $session['ip'] }}</small><small>Terakhir digunakan {{ $session['last_active'] }}</small></div>@if($session['current'])<x-badge tone="green">Perangkat ini</x-badge>@endif</div>
                 @empty
-                    <p class="panel-subtitle">Sesi Anda sedang dicatat. Muat ulang halaman untuk melihatnya.</p>
+                    <p class="panel-subtitle">Sesimu lagi dicatat. Muat ulang halamannya biar kelihatan.</p>
                 @endforelse
             </div>
             {{ $sessions->links('vendor.pagination.growvia', ['noun' => 'sesi']) }}
         @else
-            <div class="panel-body"><p class="panel-subtitle">Daftar perangkat memerlukan penyimpanan sesi database. Hubungi administrator untuk mengaktifkannya.</p></div>
+            <div class="panel-body"><p class="panel-subtitle">Daftar perangkat butuh penyimpanan sesi database. Kabarin administrator buat ngaktifinnya.</p></div>
         @endif
     </section>
     <section class="panel form-section" aria-labelledby="revoke-title">
-        <div class="panel-header"><div><h2 class="panel-title" id="revoke-title">Keluar dari perangkat lain</h2><p class="panel-subtitle">Sesi dan akses “Ingat saya” pada perangkat lain akan diakhiri. Sesi ini tetap aktif; “Ingat saya” perlu diaktifkan lagi saat masuk berikutnya.</p></div><x-icon name="shield" /></div>
+        <div class="panel-header"><div><h2 class="panel-title" id="revoke-title">Keluar dari perangkat lain</h2><p class="panel-subtitle">Sesi sama akses “Ingat saya” di perangkat lain bakal diakhirin. Sesi ini tetap jalan; “Ingat saya” perlu dinyalain lagi pas masuk berikutnya.</p></div><x-icon name="shield" /></div>
         <form method="POST" action="{{ route('sessions.destroy') }}">@csrf @method('DELETE')
             <div class="panel-body"><x-field name="sessions_password" type="password" label="Kata sandi sekarang" :required="true" autocomplete="current-password" /></div>
             <div class="form-actions"><button class="button button--danger" type="submit">Keluar dari perangkat lain</button></div>

@@ -49,8 +49,6 @@ Route::middleware('auth')->group(function () {
 
         Route::prefix('pengguna')->name('users.')->controller(UsersController::class)->group(function () {
             Route::get('/', 'index')->name('index');
-            // Aksi destruktif dan perubahan hak akses berbagi kuota reautentikasi
-            // yang sama dengan users.update untuk mencegah brute force atau aksi massal.
             Route::post('/', 'store')->middleware('throttle:reauthentication')->name('store');
             Route::patch('/{user}/status', 'updateStatus')->middleware('throttle:reauthentication')->name('status');
             Route::patch('/{user}', 'update')->middleware('throttle:reauthentication')->name('update');

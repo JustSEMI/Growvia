@@ -1,5 +1,5 @@
 @extends('errors.layout')
 
 @section('code', '419')
-@section('title', 'Sesi kedaluwarsa')
-@section('message', 'Sesi Anda telah berakhir, biasanya karena halaman terbuka terlalu lama. Muat ulang halaman dan coba lagi.')
+@section('title', 'Sesinya keburu habis')
+@section('message', 'Sesimu udah berakhir, biasanya karena halamannya kelamaan kebuka. Muat ulang terus coba lagi ya.')

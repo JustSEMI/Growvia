@@ -7,7 +7,6 @@ namespace App\Support;
 use App\Http\Controllers\SettingsController;
 use App\Models\Setting;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Validation\Rule;
 
 final class MobileSettings
 {
@@ -38,25 +37,8 @@ final class MobileSettings
     {
         $keys = self::SECTIONS[$section];
         MobileInput::only($values, $keys);
-        $rules = [
-            'update_interval' => ['required', 'integer', 'min:5', 'max:300'],
-            'th_suhu_min' => ['required', 'numeric', 'lt:th_suhu_max'],
-            'th_suhu_max' => ['required', 'numeric'],
-            'th_hum_min' => ['required', 'numeric', 'min:0', 'max:100', 'lt:th_hum_max'],
-            'th_hum_max' => ['required', 'numeric', 'min:0', 'max:100'],
-            'th_light_min' => ['required', 'numeric', 'min:0'],
-            'th_co2_min' => ['required', 'numeric', 'min:0', 'lt:th_co2_max'],
-            'th_co2_max' => ['required', 'numeric', 'min:0'],
-            'soil_on' => ['required', 'numeric', 'min:0', 'max:100', 'lt:soil_off'],
-            'soil_off' => ['required', 'numeric', 'min:0', 'max:100'],
-            'tank_min' => ['required', 'numeric', 'min:0', 'max:100'],
-            'pump_max_run' => ['required', 'integer', 'min:1', 'max:120'],
-            'pump_mode' => ['required', Rule::in(['auto', 'manual'])],
-        ];
-        foreach (self::SECTIONS['notifications'] as $key) {
-            $rules[$key] = ['required', 'boolean'];
-        }
-        $validated = Validator::make(array_replace($stored, $values), array_intersect_key($rules, array_flip($keys)))->validate();
+        $rules = array_intersect_key(SettingRules::rules(), array_flip($keys));
+        $validated = Validator::make(array_replace($stored, $values), $rules)->validate();
         foreach ($validated as $key => $value) {
             $validated[$key] = is_bool($value) ? ($value ? '1' : '0') : (string) $value;
         }

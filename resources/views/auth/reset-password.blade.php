@@ -2,7 +2,7 @@
 @section('title', 'Atur ulang kata sandi — Growvia')
 
 @section('content')
-<span class="icon-tile"><x-icon name="shield" /></span><h1>Kata sandi yang baru.</h1><p>Buat kata sandi unik untuk menjaga akses ke ruang kerja Anda.</p>
+<span class="icon-tile"><x-icon name="shield" /></span><h1>Bikin kata sandi baru.</h1><p>Bikin kata sandi yang unik biar ruang kerjamu aman.</p>
 <x-alerts />
 <form method="POST" action="{{ route('password.update') }}" class="form-stack" novalidate>
     @csrf<input type="hidden" name="token" id="token" value="{{ $token }}">

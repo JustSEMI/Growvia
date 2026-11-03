@@ -53,11 +53,33 @@ class InterfaceTest extends TestCase
         Setting::create(['key' => 'soil_on', 'value' => '42']);
 
         $this->actingAs($admin)->get(route('dashboard'))->assertOk()
-            ->assertSee('Integrasi sensor belum aktif')
-            ->assertSee('Konfigurasi tersimpan')
+            ->assertSee('Sensornya belum nyambung')
+            ->assertSee('Pengaturan yang kesimpen')
             ->assertSee('Manual')
             ->assertSee('42%')
             ->assertDontSee('Pompa · mode Auto');
+    }
+
+    public function test_dashboard_sidebar_marks_node_sections_for_scroll_highlight(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $response = $this->actingAs($admin)->get(route('dashboard'))->assertOk();
+        $document = new \DOMDocument;
+        @$document->loadHTML('<?xml encoding="utf-8" ?>'.$response->getContent());
+        $xpath = new \DOMXPath($document);
+        $links = $xpath->query('//aside[contains(@class, "sidebar")]//nav[@aria-label="Navigasi utama"]//a[@data-nav-section]');
+        $sections = [];
+        foreach ($links as $link) {
+            $sections[] = $link->getAttribute('data-nav-section');
+        }
+        $this->assertSame(['top', 'node1', 'node2'], $sections);
+        $this->assertSame(1, $xpath->query('//aside[contains(@class, "sidebar")]//nav//a[@data-nav-section="top" and contains(@class, "is-active")]')->length);
+        $this->assertSame(1, $xpath->query('//*[@id="node1"]')->length);
+        $this->assertSame(1, $xpath->query('//*[@id="node2"]')->length);
+        $toggle = $xpath->query('//header[contains(@class, "topbar")]//button[@data-sidebar-toggle and @hidden and @aria-expanded="true"]');
+        $this->assertSame(1, $toggle->length);
+        $this->assertStringContainsString('Ciutkan navigasi', $toggle->item(0)->getAttribute('aria-label'));
+        $this->assertSame(1, $xpath->query('//header[contains(@class, "topbar")]//span[contains(@class, "topbar-divider")]')->length);
     }
 
     public function test_system_validation_errors_are_visible_and_linked_to_the_field(): void
@@ -181,6 +203,19 @@ class InterfaceTest extends TestCase
             $html = $response->getContent();
             $this->assertTrue(strpos($html, 'data-theme-bootstrap') < strpos($html, '<link'));
             $response->assertSee('Terang')->assertSee('Gelap')->assertSee('Sistem');
+            $this->assertSame(1, $xpath->query('//div[@data-language-control and @hidden]/select[@data-language-select and @data-custom-select and @aria-label="Bahasa tampilan"]')->length);
+            $this->assertSame(1, $xpath->query('//select[@data-language-select]/option[@value="id" and @selected]')->length);
+            $this->assertSame(1, $xpath->query('//select[@data-language-select]/option[@value="en" and @disabled]')->length);
+            $response->assertSee('Indonesia')->assertSee('segera hadir');
         }
+    }
+
+    public function test_language_choice_is_rendered_on_the_error_shell(): void
+    {
+        $response = $this->get('/language-test-missing-page')->assertNotFound();
+        $document = new \DOMDocument;
+        @$document->loadHTML('<?xml encoding="utf-8" ?>'.$response->getContent());
+        $xpath = new \DOMXPath($document);
+        $this->assertSame(1, $xpath->query('//div[@data-language-control and @hidden]/select[@data-language-select]')->length);
     }
 }

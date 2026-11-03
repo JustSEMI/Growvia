@@ -1,6 +1,6 @@
 import { defineConfig } from 'vite';
 import laravel from 'laravel-vite-plugin';
-import { bunny } from 'laravel-vite-plugin/fonts';
+import { local } from 'laravel-vite-plugin/fonts';
 import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
@@ -9,12 +9,19 @@ export default defineConfig({
             input: ['resources/css/app.css', 'resources/js/app.js'],
             refresh: true,
             fonts: [
-                bunny('Instrument Sans', {
-                    weights: [400, 500, 600],
+                local('Montserrat', {
+                    variants: [
+                        { src: 'resources/fonts/Montserrat.ttf', weight: 400 },
+                        { src: 'resources/fonts/Montserrat.ttf', weight: 500 },
+                        { src: 'resources/fonts/Montserrat.ttf', weight: 600 },
+                    ],
                     optimizedFallbacks: false,
                 }),
-                bunny('Instrument Serif', {
-                    weights: [400],
+                local('Horizon', {
+                    variants: [
+                        { src: 'resources/fonts/Horizon.otf', weight: 400, style: 'normal' },
+                        { src: 'resources/fonts/Horizon-Italic.otf', weight: 400, style: 'italic' },
+                    ],
                     optimizedFallbacks: false,
                 }),
             ],

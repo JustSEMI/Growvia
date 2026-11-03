@@ -29,7 +29,7 @@
 
 <section class="panel mt-6" aria-labelledby="activity-title" data-reveal>
     <div class="table-toolbar">
-        <div><h2 class="panel-title" id="activity-title">Aktivitas tercatat</h2><p class="panel-subtitle">{{ $activities->total() }} aktivitas · Zona waktu {{ $timezone }}</p></div>
+        <div><h2 class="panel-title" id="activity-title">Aktivitas kecatat</h2><p class="panel-subtitle">{{ $activities->total() }} aktivitas · Zona waktu {{ $timezone }}</p></div>
     </div>
     <div class="table-wrap" tabindex="0" role="region" aria-label="Riwayat aktivitas, geser untuk melihat semua kolom">
         <table class="data-table">
@@ -46,11 +46,11 @@
             @empty
                 <tr><td colspan="5" class="table-empty">
                     @if($filtered)
-                        <strong>Tidak ada aktivitas yang sesuai filter.</strong><p>Coba nama, jenis aktivitas, atau rentang tanggal lain.</p>
+                        <strong>Tidak ada aktivitas yang sesuai filter.</strong><p>Coba nama, jenis aktivitas, atau rentang tanggal lain ya.</p>
                     @elseif($activities->total() > 0)
-                        <strong>Tidak ada aktivitas di halaman ini.</strong><a class="text-link" href="{{ route('activity.index') }}">Kembali ke halaman pertama</a>
+                        <strong>Nggak ada aktivitas di halaman ini.</strong><a class="text-link" href="{{ route('activity.index') }}">Balik ke halaman pertama</a>
                     @else
-                        <strong>Belum ada aktivitas aplikasi.</strong><p>Catatan akan muncul setelah ada perubahan akun, sesi, atau pengaturan.</p>
+                        <strong>Belum ada aktivitas aplikasi.</strong><p>Catatannya muncul setelah ada yang ganti akun, sesi, atau pengaturan.</p>
                     @endif
                 </td></tr>
             @endforelse
@@ -73,6 +73,6 @@
             @endif
         </nav>
     @endif
-    <p class="panel-footer">Hanya nama bagian yang berubah yang dicatat, bukan nilai isian atau kata sandi.</p>
+    <p class="panel-footer">Yang dicatat cuma nama bagiannya aja, bukan nilai isian atau kata sandi.</p>
 </section>
 @endsection

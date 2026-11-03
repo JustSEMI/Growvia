@@ -51,6 +51,13 @@ test('multiple client errors focus a linked summary rather than hiding the overa
     assert.equal(await page.evaluate(`document.activeElement.id`), 'name');
 });
 
+test('server error summary links fall back to a field name when the anchor target is missing', async () => {
+    await page.load(`<div class="alert alert--error" role="alert" tabindex="-1" data-error-summary><ul><li><a href="#items.0">Jumlah wajib diisi.</a></li></ul></div><form><div class="field"><label for="items">Jumlah</label><input id="items" name="items" required></div></form>`, ['app.js']);
+    await page.click('[data-error-summary] a');
+    assert.equal(await page.evaluate(`document.activeElement.id`), 'items');
+    assert.equal(await page.evaluate(`window.location.hash`), '');
+});
+
 const field = `<form novalidate id="profile"><div class="field"><label for="email">Alamat email</label><input id="email" name="email" type="email" required></div><button id="save" type="submit">Simpan</button></form>`;
 
 test('invalid form data stays on the page with custom inline errors instead of browser popups', async () => {

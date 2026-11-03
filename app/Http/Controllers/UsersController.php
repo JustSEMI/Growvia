@@ -74,7 +74,7 @@ class UsersController extends Controller
             ActivityLog::record('user.created', $actor, $user, ['name', 'email', 'role']);
         });
 
-        return redirect()->route('users.index')->with('status', 'Akun dibuat.');
+        return redirect()->route('users.index')->with('status', 'Akun kebuat.');
     }
 
     public function update(Request $request, User $user): RedirectResponse
@@ -114,7 +114,7 @@ class UsersController extends Controller
             }
         }
 
-        return redirect()->route('users.index')->with('status', 'Akun diperbarui.');
+        return redirect()->route('users.index')->with('status', 'Akun keupdate.');
     }
 
     public function updateStatus(Request $request, User $user): RedirectResponse
@@ -134,7 +134,7 @@ class UsersController extends Controller
             return $target;
         }, $user);
 
-        return back()->with('status', $updated->is_active ? 'Akun diaktifkan.' : 'Akun dinonaktifkan.');
+        return back()->with('status', $updated->is_active ? 'Akun diaktifin.' : 'Akun dinonaktifin.');
     }
 
     public function destroy(Request $request, User $user): RedirectResponse
@@ -148,6 +148,6 @@ class UsersController extends Controller
             $target->delete();
         }, $user);
 
-        return redirect()->route('users.index')->with('status', 'Akun dihapus.');
+        return redirect()->route('users.index')->with('status', 'Akun kehapus.');
     }
 }

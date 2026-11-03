@@ -1,9 +1,32 @@
 import './theme.js';
+import './language.js';
 import './custom-select.js';
 import './validation.js';
 import './notifications.js';
 
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+for (const button of document.querySelectorAll('[data-sidebar-toggle]')) {
+    button.hidden = false;
+    const apply = (collapsed) => {
+        document.documentElement.dataset.sidebar = collapsed ? 'collapsed' : 'expanded';
+        button.setAttribute('aria-expanded', String(!collapsed));
+        button.setAttribute('aria-label', collapsed ? 'Bentangkan navigasi' : 'Ciutkan navigasi');
+        button.setAttribute('title', collapsed ? 'Bentangkan navigasi' : 'Ciutkan navigasi');
+    };
+    let collapsed = false;
+    try {
+        collapsed = localStorage.getItem('growvia.sidebar') === 'collapsed';
+    } catch {}
+    apply(collapsed);
+    button.addEventListener('click', () => {
+        collapsed = document.documentElement.dataset.sidebar !== 'collapsed';
+        try {
+            localStorage.setItem('growvia.sidebar', collapsed ? 'collapsed' : 'expanded');
+        } catch {}
+        apply(collapsed);
+    });
+}
 
 for (const button of document.querySelectorAll('[data-password-toggle]')) {
     const input = document.getElementById(button.getAttribute('aria-controls'));
@@ -107,7 +130,21 @@ for (const button of document.querySelectorAll('[data-confirm-trigger]')) {
 }
 document.querySelectorAll('[data-confirm-required]').forEach((notice) => { notice.hidden = Boolean(confirmationReady); });
 
-document.querySelector('[data-error-summary]')?.focus();
+const errorSummary = document.querySelector('[data-error-summary]');
+if (errorSummary) {
+    errorSummary.addEventListener('click', (event) => {
+        const link = event.target.closest('a[href^="#"]');
+        if (!link) return;
+        const field = decodeURIComponent(link.getAttribute('href').slice(1));
+        if (document.getElementById(field)) return;
+        const control = document.querySelector(`[name="${CSS.escape(field.split('.')[0])}"]`);
+        if (!control) return;
+        event.preventDefault();
+        const target = control.hidden ? control.parentElement?.querySelector('[data-select-trigger]') : control;
+        target?.focus();
+    });
+}
+errorSummary?.focus();
 
 if (!reduceMotion.matches && 'IntersectionObserver' in window) {
     const observer = new IntersectionObserver((entries) => {
@@ -120,5 +157,50 @@ if (!reduceMotion.matches && 'IntersectionObserver' in window) {
     document.querySelectorAll('[data-reveal]').forEach((element, index) => {
         element.style.animationDelay = `${Math.min(index % 4, 3) * 45}ms`;
         observer.observe(element);
+    });
+}
+
+const navSectionLinks = [...document.querySelectorAll('a[data-nav-section]')];
+const navSectionTargets = new Map();
+for (const link of navSectionLinks) {
+    const section = link.dataset.navSection;
+    if (section === 'top' || navSectionTargets.has(section)) continue;
+    const target = document.getElementById(section);
+    if (target) navSectionTargets.set(section, target);
+}
+
+if (navSectionLinks.length > 0 && navSectionTargets.size > 0 && 'IntersectionObserver' in window) {
+    let activeNavSection = 'top';
+    const visibleNavSections = new Set();
+    const activateNavSection = (section) => {
+        if (section === activeNavSection) return;
+        activeNavSection = section;
+        for (const link of navSectionLinks) {
+            const on = link.dataset.navSection === section;
+            link.classList.toggle('is-active', on);
+            if (on) link.setAttribute('aria-current', 'page');
+            else link.removeAttribute('aria-current');
+        }
+    };
+    const firstNavOffset = () => {
+        const first = navSectionTargets.values().next().value;
+        return first.getBoundingClientRect().top + window.scrollY;
+    };
+    const sectionObserver = new IntersectionObserver((entries) => {
+        for (const entry of entries) {
+            if (entry.isIntersecting) visibleNavSections.add(entry.target.id);
+            else visibleNavSections.delete(entry.target.id);
+        }
+        let next = null;
+        navSectionTargets.forEach((target, id) => {
+            if (visibleNavSections.has(id)) next = id;
+        });
+        if (next) activateNavSection(next);
+        else if (window.scrollY + 140 < firstNavOffset()) activateNavSection('top');
+    }, { rootMargin: '-35% 0px -60% 0px' });
+    navSectionTargets.forEach((target) => sectionObserver.observe(target));
+    window.addEventListener('hashchange', () => {
+        const id = window.location.hash.slice(1);
+        if (navSectionTargets.has(id)) activateNavSection(id);
     });
 }

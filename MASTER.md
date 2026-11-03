@@ -7,8 +7,8 @@ Operational dashboard with paired light/dark themes. Light uses warm monochrome 
 UI/UX Pro Max search matched Minimalism & Swiss Style and anonymous Blade components. Use the verified accessibility/form guidance. Discard landing-page CTA patterns and the initial saturated dark-operations palette. Preserve the existing minimal light layout and its paired desaturated dark palette. The user-selected minimalist-ui constraints govern palette, icons, typography, and effects.
 
 ## Typography
-- UI/body: locally hosted Instrument Sans, system sans fallback. Regular 400, medium 500, semibold 600.
-- Editorial heading accent: locally hosted Instrument Serif, Georgia fallback; only welcome/auth/empty-state display headings.
+- UI/body: locally hosted Montserrat, system sans fallback. Regular 400, medium 500, semibold 600.
+- Editorial heading accent: locally hosted Horizon, Georgia fallback; only welcome/auth/empty-state display headings.
 - Metadata: system monospace; do not make the whole interface monospace.
 - Body/input 16px; secondary UI 14px; labels/metadata no smaller than 12px.
 

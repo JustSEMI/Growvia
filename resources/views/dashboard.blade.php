@@ -3,7 +3,7 @@
 @section('page', 'Ringkasan')
 
 @section('content')
-<x-page-header title="Gambaran kebun hari ini." description="Pantau lingkungan tumbuh, perangkat, dan rencana perawatan kebun.">
+<x-page-header title="Gimana kabar kebun hari ini?" description="Intip kondisi tempat tumbuh, perangkat, dan rencana rawat kebun yuk.">
     <x-slot:eyebrow>Ruang kerja / Ringkasan</x-slot:eyebrow>
     <x-slot:actions><x-badge :dot="true">Menunggu data</x-badge><a href="{{ route('dashboard') }}" class="button button--secondary"><x-icon name="refresh" />Segarkan</a></x-slot:actions>
 </x-page-header>
@@ -20,7 +20,7 @@
     <div class="stack">
         <x-empty-chart :href="route('settings.index').'#mqtt'" data-reveal />
         <section class="panel" aria-labelledby="activity-title" data-reveal>
-            <div class="panel-header"><div><h2 class="panel-title" id="activity-title">Aktivitas terbaru</h2><p class="panel-subtitle">Catatan akun, sesi, dan pengaturan aplikasi.</p></div><a class="text-link" href="{{ route('activity.index') }}">Lihat semua <x-icon name="arrow" /></a></div>
+            <div class="panel-header"><div><h2 id="activity-title" class="panel-title">Aktivitas terbaru</h2><p class="panel-subtitle">Catatan soal akun, sesi, dan pengaturan aplikasi.</p></div><a class="text-link" href="{{ route('activity.index') }}">Lihat semua <x-icon name="arrow" /></a></div>
             <x-activity-list :activities="$recentActivities" />
         </section>
     </div>
@@ -29,9 +29,9 @@
         <section class="panel" aria-labelledby="pump-title" data-reveal>
             <div class="panel-header"><div><h2 id="pump-title" class="panel-title">Kontrol pompa</h2><p class="panel-subtitle">Irigasi / Node2</p></div><x-badge>Belum aktif</x-badge></div>
             <div class="panel-body">
-                <div class="pump-visual"><span class="pump-ring"><x-icon name="power" /></span></div><p class="pump-status">Menunggu integrasi</p>
-                <button type="button" disabled class="button button--wide" aria-describedby="pump-disabled-note"><x-icon name="power" />Nyalakan manual</button>
-                <p class="field-hint mt-3" id="pump-disabled-note">Kontrol perangkat belum tersedia. Menyimpan konfigurasi tidak menyalakan pompa.</p>
+                <div class="pump-visual"><span class="pump-ring"><x-icon name="power" /></span></div><p class="pump-status">Lagi nunggu integrasi</p>
+                <button type="button" disabled class="button button--wide" aria-describedby="pump-disabled-note"><x-icon name="power" />Nyalain manual</button>
+                <p class="field-hint mt-3" id="pump-disabled-note">Kontrol perangkatnya belum ada. Nyimpen pengaturan nggak bakal nyalain pompa kok.</p>
             </div>
         </section>
     </div>
@@ -55,7 +55,7 @@
     <div class="section-heading"><div><p class="eyebrow">Node2 / Perawatan kebun</p><h2 id="soil-title" class="mt-1">Tanah &amp; air</h2></div><a class="text-link" href="{{ route('settings.index') }}#soil">Atur ambang <x-icon name="arrow" /></a></div>
     <div class="two-columns">
         <section class="panel" aria-labelledby="configuration-title">
-            <div class="panel-header"><div><h3 class="panel-title" id="configuration-title">Konfigurasi tersimpan</h3><p class="panel-subtitle">Belum dikirim atau diterapkan ke perangkat.</p></div><x-icon name="settings" class="text-muted" /></div>
+            <div class="panel-header"><div><h3 class="panel-title" id="configuration-title">Pengaturan yang kesimpen</h3><p class="panel-subtitle">Udah kesimpen, tapi belum dikirim ke perangkat.</p></div><x-icon name="settings" class="text-muted" /></div>
             <div class="panel-body"><dl class="definition-list">
                 <div><dt>Mode pompa</dt><dd>{{ $monitorSettings['pump_mode'] === 'manual' ? 'Manual' : 'Otomatis' }}</dd></div>
                 <div><dt>Ambang mulai menyiram</dt><dd>&lt; {{ $monitorSettings['soil_on'] }}%</dd></div>
@@ -64,7 +64,7 @@
                 <div><dt>Batas durasi pompa</dt><dd>{{ $monitorSettings['pump_max_run'] }} menit</dd></div>
             </dl></div>
         </section>
-        <section class="panel" aria-labelledby="pump-history-title"><div class="panel-header"><div><h3 class="panel-title" id="pump-history-title">Riwayat pompa</h3><p class="panel-subtitle">Aksi dan durasi dari perangkat.</p></div><x-icon name="clock" class="text-muted" /></div><div class="empty-state mx-auto"><span class="empty-icon"><x-icon name="power" /></span><h3>Belum ada aktivitas pompa.</h3><p>Status nyala dan mati belum dilaporkan oleh perangkat.</p></div></section>
+        <section class="panel" aria-labelledby="pump-history-title"><div class="panel-header"><div><h3 class="panel-title" id="pump-history-title">Riwayat pompa</h3><p class="panel-subtitle">Catatan nyala-mati dari perangkatnya langsung.</p></div><x-icon name="clock" class="text-muted" /></div><div class="empty-state mx-auto"><span class="empty-icon"><x-icon name="power" /></span><h3>Belum ada aktivitas pompa.</h3><p>Perangkatnya belum ngasih kabar nyala atau mati.</p></div></section>
     </div>
 </section>
 @endsection

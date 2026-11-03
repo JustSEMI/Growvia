@@ -89,6 +89,12 @@
         @case('check')
             <path d="m20.3 5.3 1.4 1.4L9 19.4l-6.7-6.7 1.4-1.4L9 16.6 20.3 5.3Z" />
             @break
+        @case('mail')
+            <path d="M4 6h16a2 2 0 0 1 2 2v.4l-10 6-10-6V6a2 2 0 0 1 2-2Zm16 12H4a2 2 0 0 1-2-2V9.4l9.4 5.6a2 2 0 0 0 2.2 0L22 9.4V16a2 2 0 0 1-2 2Z" />
+            @break
+        @case('lock')
+            <path d="M7 10V7a5 5 0 0 1 10 0v3h1a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h1Zm2 0h6V7a3 3 0 0 0-6 0v3Z" />
+            @break
         @default
             <circle cx="12" cy="12" r="8" />
     @endswitch

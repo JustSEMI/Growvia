@@ -28,7 +28,7 @@ class SessionController extends Controller
         });
         AccountSessions::keepCurrent($request, $user);
 
-        return redirect()->route('sessions.index')->with('status', 'Sesi perangkat lain diakhiri. Perangkat ini tetap masuk.');
+        return redirect()->route('sessions.index')->with('status', 'Sesi di perangkat lain diakhiri. Perangkat ini tetap masuk.');
     }
 
     public function index(Request $request): View

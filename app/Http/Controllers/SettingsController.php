@@ -9,6 +9,7 @@ use App\Models\Setting;
 use App\Models\User;
 use App\Support\AccountMutation;
 use App\Support\AccountSessions;
+use App\Support\SettingRules;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -75,7 +76,7 @@ class SettingsController extends Controller
             Auth::guard('web')->setUser($user);
         }
 
-        return back()->with('status', 'Profil tersimpan.');
+        return back()->with('status', 'Profil kesimpen.');
     }
 
     public function updatePassword(Request $request): RedirectResponse
@@ -92,14 +93,14 @@ class SettingsController extends Controller
         });
         AccountSessions::keepCurrent($request, $user);
 
-        return back()->with('status', 'Kata sandi diganti.');
+        return back()->with('status', 'Kata sandi keganti.');
     }
 
     public function updateSystem(Request $request): RedirectResponse
     {
         AccountMutation::run($request, function (User $actor) use ($request): void {
             abort_unless($actor->isAdmin(), 403);
-            $notificationKeys = ['notif_pompa', 'notif_cahaya', 'notif_tandon', 'notif_offline'];
+            $notificationKeys = SettingRules::NOTIFICATION_KEYS;
             $request->validate(array_fill_keys($notificationKeys, ['sometimes', 'boolean']));
             $stored = array_merge(self::DEFAULTS, Setting::query()->lockForUpdate()->pluck('value', 'key')->all());
             $input = array_merge($stored, $request->only(array_keys(self::DEFAULTS)));
@@ -110,27 +111,8 @@ class SettingsController extends Controller
                 }
             }
 
-            $validated = Validator::make($input, [
-                'mqtt_host' => ['nullable', 'string', 'max:255'],
-                'mqtt_port' => ['nullable', 'integer', 'min:1', 'max:65535'],
-                'mqtt_user' => ['nullable', 'string', 'max:255'],
-                'mqtt_topic' => ['nullable', 'string', 'max:255'],
-                'update_interval' => ['required', 'integer', 'min:5', 'max:300'],
-                'th_suhu_min' => ['required', 'numeric', 'lt:th_suhu_max'],
-                'th_suhu_max' => ['required', 'numeric'],
-                'th_hum_min' => ['required', 'numeric', 'min:0', 'max:100', 'lt:th_hum_max'],
-                'th_hum_max' => ['required', 'numeric', 'min:0', 'max:100'],
-                'th_light_min' => ['required', 'numeric', 'min:0'],
-                'th_co2_min' => ['required', 'numeric', 'min:0', 'lt:th_co2_max'],
-                'th_co2_max' => ['required', 'numeric', 'min:0'],
-                'soil_on' => ['required', 'numeric', 'min:0', 'max:100', 'lt:soil_off'],
-                'soil_off' => ['required', 'numeric', 'min:0', 'max:100'],
-                'tank_min' => ['required', 'numeric', 'min:0', 'max:100'],
-                'pump_max_run' => ['required', 'integer', 'min:1', 'max:120'],
-                'pump_mode' => ['required', Rule::in(['auto', 'manual'])],
-            ])->validate();
-
-            $values = array_merge($validated, array_intersect_key($input, array_flip($notificationKeys)));
+            $validated = Validator::make($input, SettingRules::rules())->validate();
+            $values = $validated;
             $changed = [];
             foreach ($values as $key => $value) {
                 if ($value !== $stored[$key] && (string) $value !== (string) $stored[$key]) {
@@ -143,6 +125,6 @@ class SettingsController extends Controller
             }
         });
 
-        return back()->with('status', 'Pengaturan sistem tersimpan.');
+        return back()->with('status', 'Pengaturan sistem kesimpen.');
     }
 }

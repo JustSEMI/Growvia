@@ -4,5 +4,5 @@
         <div class="device-row"><span class="icon-tile icon-tile--amber"><x-icon name="sun" /></span><div class="device-copy"><strong>Node1</strong><small>Iklim rumah kaca</small></div><x-badge>Belum aktif</x-badge></div>
         <div class="device-row"><span class="icon-tile icon-tile--blue"><x-icon name="drop" /></span><div class="device-copy"><strong>Node2</strong><small>Tanah &amp; air</small></div><x-badge>Belum aktif</x-badge></div>
     </div>
-    <div class="panel-footer"><span>Status koneksi belum dapat diperiksa.</span></div>
+    <div class="panel-footer"><span>Koneksinya belum bisa dicek.</span></div>
 </section>
