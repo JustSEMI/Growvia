@@ -391,7 +391,7 @@
     .auth-story-content > p:not(.eyebrow):not(.auth-story-title) { color: var(--secondary); font-size: 14px; max-width: 42ch; }
     .auth-story .garden-art { display: block; margin: 38px auto 0; max-height: 240px; width: 100%; }
     .auth-story-footer { display: flex; justify-content: space-between; color: var(--secondary); font-size: 12px; gap: 20px; }
-    .auth-main { display: grid; grid-template-rows: auto 1fr auto; background: var(--surface); padding: 32px 48px; }
+    .auth-main { display: grid; grid-template-rows: auto 1fr auto; background: var(--surface); padding: 36px 56px; }
     .auth-top { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; font-size: 12px; color: var(--secondary); }
     .auth-access { display: inline-flex; align-items: center; gap: 8px; }
     .auth-access .icon { width: 15px; height: 15px; color: var(--green); }
@@ -411,8 +411,9 @@
     .auth-footer { text-align: center; color: var(--secondary); font-size: 12px; }
     /* --- Overhaul login: hero story + fokus form (Laws of UX) --- */
     .auth-story { background:
-        radial-gradient(120% 90% at 12% 0%, var(--pale-green) 0%, transparent 55%),
-        radial-gradient(90% 70% at 100% 100%, color-mix(in oklab, var(--pale-green) 55%, transparent) 0%, transparent 60%),
+        radial-gradient(140% 110% at 8% -10%, color-mix(in oklab, var(--pale-green) 90%, white) 0%, transparent 50%),
+        radial-gradient(90% 80% at 100% 8%, color-mix(in oklab, var(--green) 14%, transparent) 0%, transparent 55%),
+        radial-gradient(120% 90% at 60% 120%, color-mix(in oklab, var(--pale-blue) 55%, transparent) 0%, transparent 60%),
         var(--story-surface); }
     .auth-story::after { content: ''; position: absolute; right: -90px; bottom: -90px; width: 260px; height: 260px; border-radius: 50%; background: color-mix(in oklab, var(--green) 12%, transparent); filter: blur(2px); }
     .auth-story-title em { color: var(--green); font-style: normal; }
@@ -426,6 +427,21 @@
     .auth-form-wrap .button--wide:active .icon { transform: translateX(5px); }
     .auth-form-wrap .auth-divider { font-weight: 500; letter-spacing: .02em; }
     .auth-access strong, .auth-top .language-select, .auth-top .theme-select { font-weight: 500; }
+    /* --- Modern: kartu form elevated + input membulat + CTA gradient --- */
+    .auth-main { background: color-mix(in oklab, var(--surface) 50%, var(--soft)); }
+    .auth-form-wrap { align-self: center; width: 100%; max-width: 400px; margin: 40px auto; padding: 36px 40px 32px; background: var(--surface); border: 1px solid var(--line); border-radius: 20px; box-shadow: 0 24px 60px -24px rgb(20 28 22 / 14%), 0 1px 2px rgb(20 28 22 / 4%); }
+    .auth-form-wrap .field { gap: 8px; }
+    .auth-form-wrap .field-label { font-size: 13px; font-weight: 600; letter-spacing: .01em; }
+    .auth-form-wrap .field-input { min-height: 52px; border-radius: 12px; border-color: var(--control-line); background: var(--surface); padding: 0 16px; font-size: 15px; transition: border-color .18s, box-shadow .18s; }
+    .auth-form-wrap .field-input:focus { border-color: var(--green); box-shadow: 0 0 0 4px color-mix(in oklab, var(--green) 16%, transparent); outline: none; }
+    .auth-form-wrap .password-field { position: relative; }
+    .auth-form-wrap .password-toggle { border-radius: 10px; }
+    .auth-form-wrap .button--wide { min-height: 52px; border-radius: 12px; background: linear-gradient(135deg, var(--green), color-mix(in oklab, var(--green) 70%, black)); box-shadow: 0 12px 24px -10px color-mix(in oklab, var(--green) 55%, transparent); font-size: 15px; }
+    .auth-form-wrap .button--wide:hover { background: linear-gradient(135deg, color-mix(in oklab, var(--green) 90%, white), color-mix(in oklab, var(--green) 65%, black)); }
+    .auth-form-wrap .check-inline { min-height: 44px; font-size: 13px; }
+    .auth-form-wrap .text-link { font-size: 13px; }
+    .auth-form-wrap .auth-divider { margin: 24px 0 16px; }
+    .auth-form-wrap .auth-note { font-size: 12px; }
     .auth-mobile-brand { display: none; }
     .error-tools { position: absolute; top: max(24px, env(safe-area-inset-top)); right: max(24px, env(safe-area-inset-right)); display: flex; gap: 8px; }
     .error-shell { position: relative; min-height: 100dvh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 100px 24px 40px; text-align: center; }
