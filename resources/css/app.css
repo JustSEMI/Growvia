@@ -333,7 +333,8 @@
     .flash-receipt { padding: 0; border: 0; border-radius: 0; background: transparent; font-size: 13px; align-items: center; }
     .flash-receipt > .icon { width: 16px; height: 16px; }
     .client-summary { display: block; margin: 20px; scroll-margin-top: 110px; }
-    .client-summary:focus { outline: 2px solid var(--red); outline-offset: 3px; }
+    .client-summary:focus { outline: 2px solid color-mix(in oklab, var(--red) 45%, transparent); outline-offset: 3px; }
+    .auth-form-wrap .client-summary:focus { outline: none; box-shadow: 0 0 0 4px color-mix(in oklab, var(--red) 18%, transparent); border-color: var(--red); }
     .form-stack > .client-summary { margin: 0; }
     .field-input, .select-trigger { scroll-margin-block: 110px 24px; }
     .check-row { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 18px 0; border-bottom: 1px solid var(--line); cursor: pointer; }
