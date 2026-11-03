@@ -409,6 +409,23 @@
     .auth-divider::before, .auth-divider::after { content: ''; height: 1px; background: var(--line); flex: 1; }
     .auth-note { text-align: center; color: var(--secondary); font-size: 12px; text-wrap: pretty; }
     .auth-footer { text-align: center; color: var(--secondary); font-size: 12px; }
+    /* --- Overhaul login: hero story + fokus form (Laws of UX) --- */
+    .auth-story { background:
+        radial-gradient(120% 90% at 12% 0%, var(--pale-green) 0%, transparent 55%),
+        radial-gradient(90% 70% at 100% 100%, color-mix(in oklab, var(--pale-green) 55%, transparent) 0%, transparent 60%),
+        var(--story-surface); }
+    .auth-story::after { content: ''; position: absolute; right: -90px; bottom: -90px; width: 260px; height: 260px; border-radius: 50%; background: color-mix(in oklab, var(--green) 12%, transparent); filter: blur(2px); }
+    .auth-story-title em { color: var(--green); font-style: normal; }
+    .auth-story .garden-art { filter: drop-shadow(0 16px 24px color-mix(in oklab, var(--ink) 10%, transparent)); }
+    .auth-form-wrap { position: relative; }
+    .auth-form-wrap h1 { font-size: 32px; }
+    .auth-form-wrap .eyebrow { margin-bottom: -2px; }
+    .auth-form-wrap .button--wide { font-size: 15px; font-weight: 600; letter-spacing: .01em; position: relative; overflow: hidden; }
+    .auth-form-wrap .button--wide .icon { transition: transform .18s var(--ease); }
+    .auth-form-wrap .button--wide:hover .icon { transform: translateX(3px); }
+    .auth-form-wrap .button--wide:active .icon { transform: translateX(5px); }
+    .auth-form-wrap .auth-divider { font-weight: 500; letter-spacing: .02em; }
+    .auth-access strong, .auth-top .language-select, .auth-top .theme-select { font-weight: 500; }
     .auth-mobile-brand { display: none; }
     .error-tools { position: absolute; top: max(24px, env(safe-area-inset-top)); right: max(24px, env(safe-area-inset-right)); display: flex; gap: 8px; }
     .error-shell { position: relative; min-height: 100dvh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 100px 24px 40px; text-align: center; }
