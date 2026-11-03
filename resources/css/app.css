@@ -384,8 +384,8 @@
     .education-body p + p { margin-top: 12px; }
     .education-body ul { padding-left: 20px; }
     .education-body strong { color: var(--ink); font-weight: 500; }
-    .auth-shell { display: grid; min-height: 100dvh; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
-    .auth-story { position: relative; display: flex; flex-direction: column; padding: 40px 56px; background: var(--story-surface); border-right: 1px solid var(--line); overflow: hidden; }
+    .auth-shell { display: grid; min-height: 100dvh; grid-template-columns: minmax(320px, 38fr) minmax(420px, 62fr); }
+    .auth-story { position: relative; display: flex; flex-direction: column; padding: 44px 52px; background: var(--story-surface); border-right: 1px solid var(--line); overflow: hidden; }
     .auth-story-content { position: relative; margin: auto 0; padding: 64px 0; max-width: 510px; }
     .auth-story .auth-story-title { font-family: var(--font-serif); font-size: clamp(40px, 4.8vw, 68px); letter-spacing: -.035em; line-height: 1.02; margin: 18px 0; font-weight: 400; }
     .auth-story-content > p:not(.eyebrow):not(.auth-story-title) { color: var(--secondary); font-size: 14px; max-width: 42ch; }
