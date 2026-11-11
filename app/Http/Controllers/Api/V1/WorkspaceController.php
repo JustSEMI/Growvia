@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\MobileActivityResource;
 use App\Models\ActivityLog;
+use App\Models\Reading;
 use App\Models\Setting;
 use App\Models\User;
 use App\Support\MobileInput;
@@ -32,7 +33,7 @@ class WorkspaceController extends Controller
                 'admins' => User::query()->where('role', 'admin')->count(),
             ] : null,
             'recent_activities' => $admin ? MobileActivityResource::collection(ActivityLog::query()->latest('created_at')->latest('id')->limit(5)->get())->resolve($request) : [],
-            'telemetry_available' => false,
+            'telemetry_available' => Reading::query()->exists(),
         ])->header('Cache-Control', 'no-store');
     }
 

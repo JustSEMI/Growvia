@@ -1,0 +1,26 @@
+# Sembunyikan yang tidak dibutuhkan image agar build cepat dan aman.
+.git
+.github
+.idea
+.vscode
+node_modules
+vendor
+build
+public/build
+public/hot
+public/storage
+
+# Rahasia tidak boleh ikut ke dalam image (.env.example tetap dibutuhkan).
+.env
+.env.*
+!.env.example
+
+# Artefak dan berkas lokal yang tidak dipakai runtime.
+/tests
+.phpunit.result.cache
+.phpunit.cache
+composer.phar
+*.md
+.editorconfig
+.gitattributes
+.gitignore

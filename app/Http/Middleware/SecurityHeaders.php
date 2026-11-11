@@ -43,7 +43,7 @@ class SecurityHeaders
         // Dev server Vite melayani aset dari origin tersendiri, sehingga
         // hot reload membutuhkan izin origin dev saat aktif.
         $hot = Vite::isRunningHot();
-        $scriptSources = $styleSources = $connectSources = ["'self'"];
+        $scriptSources = $styleSources = $connectSources = $fontSources = ["'self'"];
         if ($hot) {
             $origin = rtrim((string) config('app.url'), '/');
             foreach ([$origin] as $allowed) {
@@ -62,6 +62,9 @@ class SecurityHeaders
             $styleSources[] = 'http://localhost:*';
             $connectSources[] = 'http://127.0.0.1:*';
             $connectSources[] = 'http://localhost:*';
+            // Plugin Vite menyajikan berkas font dari origin dev, bukan origin aplikasi.
+            $fontSources[] = 'http://127.0.0.1:*';
+            $fontSources[] = 'http://localhost:*';
         }
 
         $scriptSources[] = "'nonce-{$nonce}'";
@@ -71,18 +74,27 @@ class SecurityHeaders
         // Atribut style inline masih digunakan komponen, tetap butuh 'unsafe-inline'.
         $styleSources[] = "'unsafe-inline'";
 
-        return implode('; ', array_filter([
+        // Direktif upgrade-insecure-requests memaksa browser menaikkan semua
+        // subresource dan navigasi bawa halaman ke HTTPS. Jika halaman masih
+        // disajikan lewat HTTP (contoh: dev tanpa TLS), redirect setelah login
+        // ikut terangkat ke https:// yang tidak tersedia sehingga Turbo Drive
+        // gagal menukar halaman. Aktif hanya saat koneksi memang sudah aman.
+        $directives = [
             "default-src 'self'",
             'script-src '.implode(' ', $scriptSources),
             'style-src '.implode(' ', $styleSources),
             'connect-src '.implode(' ', $connectSources),
             "img-src 'self' data:",
-            "font-src 'self'",
+            'font-src '.implode(' ', $fontSources),
             "object-src 'none'",
             "base-uri 'self'",
             "form-action 'self'",
             "frame-ancestors 'self'",
-            'upgrade-insecure-requests',
-        ]));
+        ];
+        if ($request->secure()) {
+            $directives[] = 'upgrade-insecure-requests';
+        }
+
+        return implode('; ', array_filter($directives));
     }
 }

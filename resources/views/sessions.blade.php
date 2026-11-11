@@ -3,14 +3,15 @@
 @section('page', 'Sesi perangkat')
 
 @section('content')
+<div class="ledger-page">
 <x-page-header title="Perangkat yang nyambung." description="Cek sesi masuk akunmu. Info perangkat asalnya dari browser, bukan identitas perangkat yang udah diverifikasi.">
     <x-slot:eyebrow>Akun / Keamanan</x-slot:eyebrow>
     <x-slot:actions><a class="button button--secondary" href="{{ $back }}#security">Kembali ke pengaturan</a></x-slot:actions>
 </x-page-header>
 <x-alerts />
 <div class="stack">
-    <section class="panel" aria-labelledby="sessions-title">
-        <div class="panel-header"><div><h2 class="panel-title" id="sessions-title">Sesi aktif</h2><p class="panel-subtitle">Waktu ditampilkan dalam {{ config('app.timezone') }}. Sesi kedaluwarsa tidak ditampilkan.</p></div><x-icon name="display" /></div>
+    <section class="panel form-section form-section--blue" aria-labelledby="sessions-title">
+        <div class="panel-header"><div><h2 class="panel-title" id="sessions-title">Sesi aktif</h2><p class="panel-subtitle">Waktu ditampilkan dalam {{ config('app.timezone') }}. Sesi kedaluwarsa tidak ditampilkan.</p></div><span class="icon-tile"><x-icon name="display" /></span></div>
         @if($supported)
             <div class="panel-body">
                 @forelse($sessions as $session)
@@ -24,12 +25,13 @@
             <div class="panel-body"><p class="panel-subtitle">Daftar perangkat butuh penyimpanan sesi database. Kabarin administrator buat ngaktifinnya.</p></div>
         @endif
     </section>
-    <section class="panel form-section" aria-labelledby="revoke-title">
-        <div class="panel-header"><div><h2 class="panel-title" id="revoke-title">Keluar dari perangkat lain</h2><p class="panel-subtitle">Sesi sama akses “Ingat saya” di perangkat lain bakal diakhirin. Sesi ini tetap jalan; “Ingat saya” perlu dinyalain lagi pas masuk berikutnya.</p></div><x-icon name="shield" /></div>
+    <section class="panel form-section form-section--neutral" aria-labelledby="revoke-title">
+        <div class="panel-header"><div><h2 class="panel-title" id="revoke-title">Keluar dari perangkat lain</h2><p class="panel-subtitle">Sesi sama akses “Ingat saya” di perangkat lain bakal diakhirin. Sesi ini tetap jalan; “Ingat saya” perlu dinyalain lagi pas masuk berikutnya.</p></div><span class="icon-tile"><x-icon name="shield" /></span></div>
         <form method="POST" action="{{ route('sessions.destroy') }}">@csrf @method('DELETE')
             <div class="panel-body"><x-field name="sessions_password" type="password" label="Kata sandi sekarang" :required="true" autocomplete="current-password" /></div>
             <div class="form-actions"><button class="button button--danger" type="submit">Keluar dari perangkat lain</button></div>
         </form>
     </section>
+</div>
 </div>
 @endsection

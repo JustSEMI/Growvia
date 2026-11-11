@@ -17,5 +17,8 @@
     },
     "optionalDependencies": {
         "@laravel/multiplex": "^0.4.1"
+    },
+    "dependencies": {
+        "@hotwired/turbo": "^8.0.23"
     }
 }

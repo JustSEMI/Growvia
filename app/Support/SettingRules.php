@@ -39,8 +39,6 @@ final class SettingRules
             'th_hum_min' => ['required', 'numeric', 'min:0', 'max:100', 'lt:th_hum_max'],
             'th_hum_max' => ['required', 'numeric', 'min:0', 'max:100'],
             'th_light_min' => ['required', 'numeric', 'min:0'],
-            'th_co2_min' => ['required', 'numeric', 'min:0', 'lt:th_co2_max'],
-            'th_co2_max' => ['required', 'numeric', 'min:0'],
             'soil_on' => ['required', 'numeric', 'min:0', 'max:100', 'lt:soil_off'],
             'soil_off' => ['required', 'numeric', 'min:0', 'max:100'],
             'tank_min' => ['required', 'numeric', 'min:0', 'max:100'],

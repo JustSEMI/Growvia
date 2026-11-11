@@ -7,11 +7,43 @@ namespace Tests\Feature;
 use App\Models\Setting;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Vite;
+use Mockery;
 use Tests\TestCase;
 
 class InterfaceTest extends TestCase
 {
     use RefreshDatabase;
+
+    public function test_csp_keeps_font_sources_tight_outside_the_vite_dev_server(): void
+    {
+        $this->swapViteHotState(false);
+
+        $csp = (string) $this->get(route('login'))->headers->get('Content-Security-Policy');
+
+        $this->assertStringContainsString("font-src 'self';", $csp);
+        $this->assertStringNotContainsString('127.0.0.1', $csp);
+    }
+
+    public function test_csp_allows_vite_dev_server_fonts_while_hot(): void
+    {
+        $this->swapViteHotState(true);
+
+        $csp = (string) $this->get(route('login'))->headers->get('Content-Security-Policy');
+
+        $this->assertStringContainsString("font-src 'self' http://127.0.0.1:* http://localhost:*", $csp);
+    }
+
+    /**
+     * Menyantakan keadaan file `public/hot` dari keputusan CSP agar test
+     * tidak berubah hasil ketika `npm run dev` kebetulan sedang berjalan.
+     */
+    private function swapViteHotState(bool $hot): void
+    {
+        $vite = Mockery::mock(Vite::class)->makePartial();
+        $vite->shouldReceive('isRunningHot')->andReturn($hot);
+        $this->app->instance(Vite::class, $vite);
+    }
 
     public function test_admin_workspace_has_accessible_navigation_and_a_main_target(): void
     {
@@ -46,21 +78,18 @@ class InterfaceTest extends TestCase
         $response->assertSee('Konfirmasi hapus akun');
     }
 
-    public function test_dashboard_distinguishes_saved_configuration_from_sensor_state(): void
+    public function test_dashboard_shows_backend_status_simple(): void
     {
         $admin = User::factory()->admin()->create();
-        Setting::create(['key' => 'pump_mode', 'value' => 'manual']);
-        Setting::create(['key' => 'soil_on', 'value' => '42']);
 
         $this->actingAs($admin)->get(route('dashboard'))->assertOk()
-            ->assertSee('Sensornya belum nyambung')
-            ->assertSee('Pengaturan yang kesimpen')
-            ->assertSee('Manual')
-            ->assertSee('42%')
-            ->assertDontSee('Pompa · mode Auto');
+            ->assertSee('Backend Growvia')
+            ->assertSee('Status data')
+            ->assertSee('Belum ada pembacaan')
+            ->assertDontSee('Pengaturan yang kesimpen');
     }
 
-    public function test_dashboard_sidebar_marks_node_sections_for_scroll_highlight(): void
+    public function test_dashboard_sidebar_no_node_sections(): void
     {
         $admin = User::factory()->admin()->create();
         $response = $this->actingAs($admin)->get(route('dashboard'))->assertOk();
@@ -68,18 +97,12 @@ class InterfaceTest extends TestCase
         @$document->loadHTML('<?xml encoding="utf-8" ?>'.$response->getContent());
         $xpath = new \DOMXPath($document);
         $links = $xpath->query('//aside[contains(@class, "sidebar")]//nav[@aria-label="Navigasi utama"]//a[@data-nav-section]');
-        $sections = [];
-        foreach ($links as $link) {
-            $sections[] = $link->getAttribute('data-nav-section');
-        }
-        $this->assertSame(['top', 'node1', 'node2'], $sections);
-        $this->assertSame(1, $xpath->query('//aside[contains(@class, "sidebar")]//nav//a[@data-nav-section="top" and contains(@class, "is-active")]')->length);
-        $this->assertSame(1, $xpath->query('//*[@id="node1"]')->length);
-        $this->assertSame(1, $xpath->query('//*[@id="node2"]')->length);
+        $this->assertSame(0, $links->length);
         $toggle = $xpath->query('//header[contains(@class, "topbar")]//button[@data-sidebar-toggle and @hidden and @aria-expanded="true"]');
         $this->assertSame(1, $toggle->length);
         $this->assertStringContainsString('Ciutkan navigasi', $toggle->item(0)->getAttribute('aria-label'));
-        $this->assertSame(1, $xpath->query('//header[contains(@class, "topbar")]//span[contains(@class, "topbar-divider")]')->length);
+        $mobileToggle = $xpath->query('//header[contains(@class, "topbar")]//summary[contains(@class, "mobile-menu-toggle") and @aria-label="Buka navigasi"]');
+        $this->assertSame(1, $mobileToggle->length);
     }
 
     public function test_system_validation_errors_are_visible_and_linked_to_the_field(): void
@@ -206,7 +229,8 @@ class InterfaceTest extends TestCase
             $this->assertSame(1, $xpath->query('//div[@data-language-control and @hidden]/select[@data-language-select and @data-custom-select and @aria-label="Bahasa tampilan"]')->length);
             $this->assertSame(1, $xpath->query('//select[@data-language-select]/option[@value="id" and @selected]')->length);
             $this->assertSame(1, $xpath->query('//select[@data-language-select]/option[@value="en" and @disabled]')->length);
-            $response->assertSee('Indonesia')->assertSee('segera hadir');
+            $this->assertSame('ID', trim($xpath->query('//select[@data-language-select]/option[@value="id"]')->item(0)->textContent));
+            $this->assertSame('EN', trim($xpath->query('//select[@data-language-select]/option[@value="en"]')->item(0)->textContent));
         }
     }
 

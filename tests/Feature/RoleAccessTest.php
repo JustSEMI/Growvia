@@ -35,8 +35,8 @@ class RoleAccessTest extends TestCase
 
         $this->actingAs($admin)->get(route('dashboard'))
             ->assertOk()
-            ->assertSee('Iklim rumah kaca', false)
-            ->assertSee('Tanah &amp; air', false)
+            ->assertSee('Node 1 (iklim)', false)
+            ->assertSee('Node 2 (tanah &amp; air)', false)
             ->assertSee('Menunggu data', false)
             ->assertDontSee('Mock');
         $this->actingAs($admin)->get(route('petani.dashboard'))->assertOk();

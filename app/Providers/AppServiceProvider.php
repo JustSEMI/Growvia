@@ -22,9 +22,7 @@ class AppServiceProvider extends ServiceProvider
     /**
      * Register any application services.
      */
-    public function register(): void
-    {
-    }
+    public function register(): void {}
 
     /**
      * Bootstrap any application services.
@@ -82,7 +80,7 @@ class AppServiceProvider extends ServiceProvider
         });
         Paginator::defaultView('vendor.pagination.growvia');
 
-        View::composer('dashboard', fn (\Illuminate\View\View $view) => $view->with('recentActivities', ActivityLog::query()->latest('created_at')->latest('id')->limit(5)->get()));
+        View::composer('dashboard', fn (\Illuminate\View\View $view) => $view->with('recentActivities', ActivityLog::query()->latest('created_at')->latest('id')->limit(3)->get()));
 
         View::composer(['dashboard', 'petani.node1', 'petani.node2'], function (\Illuminate\View\View $view): void {
             $view->with('monitorSettings', array_merge(

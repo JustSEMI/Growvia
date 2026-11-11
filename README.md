@@ -1,6 +1,6 @@
 # Growvia — Greenhouse Monitor (PBL)
 
-Panel monitoring greenhouse Node1 (iklim) & Node2 (tanah & air). Dua peran: **admin** (dashboard, pengaturan, pengguna) dan **petani/user** (panel kebun + edukasi).
+Panel monitoring greenhouse Device 1 (iklim) & Device 2 (tanah & air). Dua peran: **admin** (dashboard, pengaturan, pengguna) dan **petani/user** (panel kebun + edukasi).
 
 ## Jalan cepat
 

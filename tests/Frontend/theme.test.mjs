@@ -66,7 +66,7 @@ test('stored dark preference is applied before the body or app bundle exists', (
     assert.equal(page.root.dataset.theme, 'dark');
     assert.equal(page.root.dataset.themePreference, 'dark');
     assert.equal(page.root.style.colorScheme, 'dark');
-    assert.equal(page.meta.content, '#171b18');
+    assert.equal(page.meta.content, '#0f1310');
     assert.equal(page.values.get('growvia.theme'), 'dark');
 });
 
@@ -82,7 +82,7 @@ test('selecting a theme persists it and synchronizes controls without submitting
     assert.equal(page.root.dataset.themePreference, 'dark');
     assert.equal(page.values.get('growvia.theme'), 'dark');
     assert.equal(second.value, 'dark');
-    assert.equal(page.meta.content, '#171b18');
+    assert.equal(page.meta.content, '#0f1310');
 });
 
 test('system preference follows OS changes while explicit choices take priority', () => {

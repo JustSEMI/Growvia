@@ -1,8 +1,11 @@
-@props(['name', 'label', 'type' => 'text', 'value' => null, 'hint' => null, 'id' => null, 'required' => false, 'autocomplete' => null])
+@props(['name', 'label', 'type' => 'text', 'value' => null, 'hint' => null, 'id' => null, 'required' => false, 'autocomplete' => null, 'icon' => null])
 
 <div class="field">
     <label class="field-label" for="{{ $id ?? $name }}">{{ $label }}@if($required)<span class="field-required" aria-hidden="true">*</span>@endif</label>
-    <div @class(['password-field' => $type === 'password'])>
+    <div @class(['password-field' => $type === 'password', 'field-with-icon' => ! is_null($icon)])>
+        @if(! is_null($icon))
+        <span class="field-icon" aria-hidden="true"><x-icon name="{{ $icon }}" /></span>
+        @endif
         <input {{ $attributes->class(['field-input']) }} id="{{ $id ?? $name }}" name="{{ $name }}" type="{{ $type }}" @required($required)
             @if($type !== 'password') value="{{ is_scalar($value) ? $value : '' }}" @endif
             @if($autocomplete) autocomplete="{{ $autocomplete }}" @endif

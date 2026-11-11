@@ -2,6 +2,6 @@
 
 <div {{ $attributes->class(['connection-banner']) }}>
     <x-icon name="info" />
-    <div><strong>Sensornya belum nyambung.</strong> Angka, grafik, dan status perangkat belum ada. Nggak ada data bohongan di sini.</div>
+    <div><strong>Sensor belum tersambung.</strong> Angka, grafik, dan status perangkat belum bisa ditampilkan dulu. Tenang, kita nggak mengarang data apa pun.</div>
     @if($href)<a class="text-link" href="{{ $href }}">Pengaturan <x-icon name="arrow" /></a>@endif
 </div>

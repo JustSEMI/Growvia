@@ -3,6 +3,7 @@
 use App\Http\Controllers\ActivityController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\PasswordResetController;
+use App\Http\Controllers\ReadingsWebController;
 use App\Http\Controllers\SessionController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\UsersController;
@@ -36,11 +37,10 @@ Route::middleware('auth')->group(function () {
 
     Route::middleware('role:admin')->group(function () {
         Route::get('/aktivitas', [ActivityController::class, 'index'])->name('activity.index');
-        Route::get('/dashboard', function () {
-            return view('dashboard', [
-                'headerTitle' => 'Halo, '.auth()->user()->name,
-            ]);
-        })->name('dashboard');
+        Route::get('/dashboard', [ReadingsWebController::class, 'dashboard'])->name('dashboard');
+        Route::get('/dashboard/riwayat', [ReadingsWebController::class, 'history'])->name('dashboard.riwayat');
+        Route::get('/dashboard/api-docs', [ReadingsWebController::class, 'apiDocs'])->name('dashboard.api-docs');
+        Route::get('/dashboard/mqtt', [ReadingsWebController::class, 'mqtt'])->name('dashboard.mqtt');
 
         Route::prefix('pengaturan')->name('settings.')->controller(SettingsController::class)->group(function () {
             Route::get('/', 'index')->name('index');

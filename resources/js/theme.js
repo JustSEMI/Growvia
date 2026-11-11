@@ -10,7 +10,7 @@ const applyTheme = (preference) => {
     themeRoot.dataset.themePreference = themePreference;
     themeRoot.dataset.theme = theme;
     themeRoot.style.colorScheme = theme;
-    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme === 'dark' ? '#171b18' : '#f7f6f3');
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme === 'dark' ? '#0f1310' : '#f7f6f3');
     themeControls.forEach((control) => {
         control.value = themePreference;
         control.dispatchEvent(new Event('growvia:select-sync'));

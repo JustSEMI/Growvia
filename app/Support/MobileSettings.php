@@ -12,7 +12,7 @@ final class MobileSettings
 {
     public const SECTIONS = [
         'general' => ['update_interval'],
-        'climate' => ['th_suhu_min', 'th_suhu_max', 'th_hum_min', 'th_hum_max', 'th_light_min', 'th_co2_min', 'th_co2_max'],
+        'climate' => ['th_suhu_min', 'th_suhu_max', 'th_hum_min', 'th_hum_max', 'th_light_min'],
         'soil' => ['soil_on', 'soil_off', 'tank_min', 'pump_max_run', 'pump_mode'],
         'notifications' => ['notif_pompa', 'notif_cahaya', 'notif_tandon', 'notif_offline'],
     ];

@@ -8,7 +8,8 @@
 </x-page-header>
 <x-alerts />
 
-<form class="panel form-section section-space" method="GET" action="{{ route('activity.index') }}" aria-label="Filter riwayat aktivitas">
+<div class="ledger-page">
+<form class="panel form-section form-section--neutral section-space" method="GET" action="{{ route('activity.index') }}" aria-label="Filter riwayat aktivitas">
     <div class="panel-body form-grid">
         <x-field name="q" label="Cari nama" :value="$search" maxlength="100" placeholder="Nama pelaku atau akun terkait" />
         <div class="field">
@@ -40,8 +41,8 @@
                     <td><time datetime="{{ $activity->created_at->toIso8601String() }}">{{ $activity->created_at->copy()->timezone($timezone)->locale('id')->translatedFormat('d F Y, H.i.s') }} {{ $timezone }}</time></td>
                     <td>{{ $activity->actor_name }}</td>
                     <td>{{ $actionLabels[$activity->action] ?? 'Aktivitas aplikasi' }}</td>
-                    <td>{{ $activity->subject_name ?? '—' }}</td>
-                    <td>{{ collect($activity->fields ?? [])->filter(fn (mixed $field, mixed $key): bool => is_int($key) && is_string($field))->map(fn (string $field): ?string => $fieldLabels[$field] ?? null)->filter()->unique()->implode(', ') ?: '—' }}</td>
+                    <td>{{ $activity->subject_name ?? 'NULL' }}</td>
+                    <td>{{ collect($activity->fields ?? [])->filter(fn (mixed $field, mixed $key): bool => is_int($key) && is_string($field))->map(fn (string $field): ?string => $fieldLabels[$field] ?? null)->filter()->unique()->implode(', ') ?: 'NULL' }}</td>
                 </tr>
             @empty
                 <tr><td colspan="5" class="table-empty">
@@ -75,4 +76,5 @@
     @endif
     <p class="panel-footer">Yang dicatat cuma nama bagiannya aja, bukan nilai isian atau kata sandi.</p>
 </section>
+</div>
 @endsection

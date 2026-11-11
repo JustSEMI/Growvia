@@ -17,7 +17,7 @@ UI/UX Pro Max search matched Minimalism & Swiss Style and anonymous Blade compon
 - Text #202723; secondary #626A64; muted #737773.
 - Border #EAEAEA, exactly 1px for cards; form control border may be stronger for accessibility.
 - Action #111111 with white text; hover #333333.
-- Pale green #EDF3EC / #346538, yellow #FBF3DB / #785411, red #FDEBEC / #9F2F2D, blue #E1F3FE / #1F6C9F.
+- Pale green #E6EEE5 / #1E4D2F, yellow #FBF3DB / #785411, red #FDEBEC / #9F2F2D, blue #E1F3FE / #1F6C9F.
 - Cards 12px radius, controls/buttons 6px; pills only for status badges.
 - Spacing: 4/8/12/16/24/32/40/48px. Dashboard density uses 24px card padding, 24px gaps, and 32px between groups rather than marketing-scale vertical gaps.
 
@@ -25,8 +25,8 @@ UI/UX Pro Max search matched Minimalism & Swiss Style and anonymous Blade compon
 - Offer a labeled custom select-only combobox/listbox: Sistem / Terang / Gelap. Default to OS preference; explicit selection persists in localStorage under `growvia.theme` for the current browser origin, not the user account or database.
 - Apply the initial choice in a synchronous, static head script before asset links/body. No user-controlled values are interpolated into this script. Keep startup and module palette metadata consistent. If CSP is introduced, authorize this exact bootstrap with an appropriate nonce/hash rather than enabling arbitrary inline scripts.
 - Use semantic CSS variables paired with `light-dark()` and root `color-scheme`. Tailwind custom color utilities reference those same tokens through `@theme inline`; no inversion filters or unthemed white card overrides. This requires modern browser support for CSS `light-dark()`.
-- Dark canvas #171B18, surface #202622, soft #252C27; text #EDF1E9, secondary #B5BEB4, muted #A3AEA1; structural border #3A443C. Main actions use #E0E8D8 with #1B241D text.
-- Dark semantic pairs: green #ACD0A0 / #2A392E, blue #A7CDE5 / #253744, amber #E2C78F / #3D3524, red #EFB5B8 / #432D31.
+- Dark canvas #0F1310, surface #171C18, soft #1C221D; text #E8ECE4, secondary #B5BEB4, muted #A3AEA1; structural border #3A443C. Main actions use #E0E8D8 with #1B241D text. Dark hides shadows/glow for a flatter, calmer feel; transitions are fade-only (no slide/scale) for smoothness.
+- Dark semantic pairs: green #9ECF94 / #2A392E, blue #A7CDE5 / #253744, amber #E2C78F / #3D3524, red #EFB5B8 / #432D31.
 - Controls live in the workspace topbar, auth header, and error-page header area. Full keyboard behavior (arrows, Home/End, typeahead, Enter/Space/Tab, Escape), visible focus, 44px minimum height; font size 16px on mobile. Theme icons reflect the selected preference.
 - Listen for OS changes only while following Sistem; synchronize localStorage changes between tabs and restore the latest choice on pageshow. Catch storage access failures so current-page switching still works.
 - Without JavaScript, CSS follows the OS and the inactive selector stays hidden. A blocked main bundle does not prevent the head bootstrap from applying a saved choice. Stored preferences cannot be read when all JavaScript is disabled.

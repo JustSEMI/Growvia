@@ -4,13 +4,12 @@ declare(strict_types=1);
 
 use App\Http\Controllers\Api\V1\AccountController;
 use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Controllers\Api\V1\ReadingsController;
 use App\Http\Controllers\Api\V1\RecoveryController;
 use App\Http\Controllers\Api\V1\UsersController;
 use App\Http\Controllers\Api\V1\WorkspaceController;
 use App\Http\Middleware\EnsureMobileApiAccess;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Validation\Rule;
 
 Route::prefix('v1')->name('api.v1.')->middleware('throttle:mobile-api')->group(function (): void {
     Route::post('/auth/forgot-password', [RecoveryController::class, 'forgot'])->middleware('throttle:recovery')->name('auth.forgot-password');
@@ -40,17 +39,6 @@ Route::prefix('v1')->name('api.v1.')->middleware('throttle:mobile-api')->group(f
         });
         Route::get('/auth/me', [AuthController::class, 'show'])->name('auth.me');
         Route::post('/auth/logout', [AuthController::class, 'destroy'])->name('auth.logout');
-        Route::get('/readings', function (Request $request) {
-            $request->validate(['node' => ['nullable', 'string', Rule::in(['node1', 'node2'])]]);
-
-            return response()->json([
-                'data' => [],
-                'meta' => [
-                    'available' => false,
-                    'reason' => 'Integrasi sensor belum aktif. Belum ada riwayat pembacaan.',
-                    'source' => 'rest_api',
-                ],
-            ])->header('Cache-Control', 'no-store');
-        })->name('readings.index');
+        Route::get('/readings', [ReadingsController::class, 'index'])->name('readings.index');
     });
 });

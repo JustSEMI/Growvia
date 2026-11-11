@@ -1,8 +1,14 @@
+// Komponen custom-select: satu set pendengar document/window global (di bawah)
+// mendelegasikan ke instance yang terdaftar, sehingga aman dipanggil ulang
+// setiap Turbo Drive menukar isi halaman.
 let closeOpenSelect = null;
 let selectId = 0;
+const instances = [];
 
-for (const select of document.querySelectorAll('select[data-custom-select]')) {
-    if (select.multiple || select.size > 1 || select.options.length === 0) continue;
+const enhance = (select) => {
+    if (select.dataset.customSelectReady) return;
+    select.dataset.customSelectReady = 'true';
+    if (select.multiple || select.size > 1 || select.options.length === 0) return;
 
     const id = select.id || `growvia-select-${++selectId}`;
     const wrapper = document.createElement('div');
@@ -176,33 +182,68 @@ for (const select of document.querySelectorAll('select[data-custom-select]')) {
     list.addEventListener('pointerdown', (event) => {
         if (event.pointerType === 'mouse') event.preventDefault();
     });
-    document.addEventListener('pointerdown', (event) => {
-        if (!list.hidden && !wrapper.contains(event.target) && !list.contains(event.target)) close();
-    });
-    document.addEventListener('focusin', (event) => {
-        if (!list.hidden && !wrapper.contains(event.target) && !list.contains(event.target)) { commit(); close(); }
-    });
-    document.addEventListener('scroll', (event) => {
-        if (!list.hidden && !list.contains(event.target)) close();
-    }, true);
-    window.addEventListener('resize', close);
-    window.visualViewport?.addEventListener('resize', close);
-    document.addEventListener('click', (event) => {
-        const link = event.target.closest('a[href]');
-        if (select.id && link?.getAttribute('href') === `#${select.id}`) {
-            event.preventDefault();
-            trigger.focus();
-        }
-    });
     const observer = new MutationObserver(() => { sync(); if (trigger.disabled) close(); });
     observer.observe(select, { attributes: true, subtree: true, attributeFilter: ['disabled', 'required', 'aria-invalid', 'aria-describedby', 'selected', 'hidden'] });
     select.addEventListener('change', sync);
     select.addEventListener('growvia:select-sync', sync);
     select.form?.addEventListener('reset', () => setTimeout(() => { close(); sync(); }, 0));
-    window.addEventListener('pageshow', () => { close(); sync(); });
     select.before(wrapper);
     wrapper.append(select, trigger);
     document.body.append(list);
     sync();
     select.hidden = true;
+
+    instances.push({
+        select,
+        close,
+        onDocumentPointerdown: (event) => {
+            if (!list.hidden && !wrapper.contains(event.target) && !list.contains(event.target)) close();
+        },
+        onDocumentFocusin: (event) => {
+            if (!list.hidden && !wrapper.contains(event.target) && !list.contains(event.target)) { commit(); close(); }
+        },
+        onDocumentScroll: (event) => {
+            if (!list.hidden && !list.contains(event.target)) close();
+        },
+        onDocumentClick: (event) => {
+            const link = event.target.closest('a[href]');
+            if (select.id && link?.getAttribute('href') === `#${select.id}`) {
+                event.preventDefault();
+                trigger.focus();
+            }
+        },
+        onPageShow: () => { close(); sync(); },
+    });
+};
+
+// Buang instance milik halaman yang sudah diturunkan Turbo, lalu pasang yang baru.
+export const initCustomSelects = () => {
+    for (let i = instances.length - 1; i >= 0; i--) {
+        if (!instances[i].select.isConnected) instances.splice(i, 1);
+    }
+    document.querySelectorAll('select[data-custom-select]').forEach(enhance);
+};
+
+document.addEventListener('pointerdown', (event) => {
+    for (const instance of instances) instance.onDocumentPointerdown(event);
+});
+document.addEventListener('focusin', (event) => {
+    for (const instance of instances) instance.onDocumentFocusin(event);
+});
+document.addEventListener('scroll', (event) => {
+    for (const instance of instances) instance.onDocumentScroll(event);
+}, true);
+window.addEventListener('resize', () => instances.forEach(instance => instance.close()));
+window.visualViewport?.addEventListener('resize', () => instances.forEach(instance => instance.close()));
+document.addEventListener('click', (event) => {
+    for (const instance of instances) instance.onDocumentClick(event);
+});
+window.addEventListener('pageshow', () => instances.forEach(instance => instance.onPageShow()));
+
+// Pemuatan pertama: app.js memanggil initCustomSelects() lewat turbo:load, tapi
+// modul ini juga bisa dimuat sendiri (harness tes UI), jadi bootstrap sendiri.
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initCustomSelects, { once: true });
+} else {
+    initCustomSelects();
 }

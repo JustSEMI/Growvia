@@ -9,6 +9,7 @@
 </x-page-header>
 <x-alerts :prefix="$editing ? 'edit_' : ''" />
 
+<div class="ledger-page">
 <div class="form-layout">
     <section class="panel" aria-labelledby="users-title" data-reveal>
         <div class="table-toolbar"><div><h2 class="panel-title" id="users-title">Anggota ruang kerja</h2><p class="panel-subtitle">{{ $users->total() }} akun ketemu</p></div><x-badge tone="green">Akses terkelola</x-badge></div>
@@ -47,8 +48,8 @@
 
     <div class="stack">
         @if($editing)
-        <section id="edit-account" class="panel form-section" aria-labelledby="edit-title" data-reveal>
-            <div class="panel-header"><div><p class="eyebrow">Ubah akses</p><h2 class="panel-title mt-2" id="edit-title">{{ $editing->name }}</h2><p class="panel-subtitle">Benerin detail akun yang dipilih.</p></div><x-icon name="edit" class="text-forest" /></div>
+        <section id="edit-account" class="panel form-section form-section--green" aria-labelledby="edit-title" data-reveal>
+            <div class="panel-header"><div><p class="eyebrow">Ubah akses</p><h2 class="panel-title mt-2" id="edit-title">{{ $editing->name }}</h2><p class="panel-subtitle">Benerin detail akun yang dipilih.</p></div><span class="icon-tile"><x-icon name="edit" /></span></div>
             <form method="POST" action="{{ route('users.update', $editing) }}">@csrf @method('PATCH')
                 <div class="panel-body form-stack">
                     <x-field name="name" id="edit_name" label="Nama lengkap" :value="old('name', $editing->name)" :required="true" maxlength="255" autocomplete="name" />
@@ -62,7 +63,7 @@
         </section>
         @else
 
-        <section id="create-account" class="panel form-section" aria-labelledby="create-title" data-reveal>
+        <section id="create-account" class="panel form-section form-section--green" aria-labelledby="create-title" data-reveal>
             <div class="panel-header"><div><p class="eyebrow">Anggota baru</p><h2 class="panel-title mt-2" id="create-title">Buat akun</h2><p class="panel-subtitle">Kasih akses ke ruang kerja Growvia.</p></div><span class="icon-tile"><x-icon name="users" /></span></div>
             <form method="POST" action="{{ route('users.store') }}">@csrf
                 <div class="panel-body form-stack">
@@ -76,6 +77,7 @@
         </section>
         @endif
     </div>
+</div>
 </div>
 <x-confirm-dialog />
 @endsection

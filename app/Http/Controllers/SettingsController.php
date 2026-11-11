@@ -31,8 +31,6 @@ class SettingsController extends Controller
         'th_hum_min' => '60',
         'th_hum_max' => '80',
         'th_light_min' => '20',
-        'th_co2_min' => '800',
-        'th_co2_max' => '1200',
         'soil_on' => '30',
         'soil_off' => '60',
         'tank_min' => '20',

@@ -78,8 +78,6 @@ return [
         'th_hum_min' => 'kelembapan udara minimum',
         'th_hum_max' => 'kelembapan udara maksimum',
         'th_light_min' => 'intensitas cahaya minimum',
-        'th_co2_min' => 'kadar CO2 minimum',
-        'th_co2_max' => 'kadar CO2 maksimum',
         'soil_on' => 'ambang mulai penyiraman',
         'soil_off' => 'ambang berhenti penyiraman',
         'tank_min' => 'batas minimum air tandon',

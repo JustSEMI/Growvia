@@ -17,7 +17,7 @@ Kalimat singkat untuk presentasi:
 ### Hal yang jangan salah dipahami
 
 - Role database hanya `admin` dan `user`. **Petani adalah label UI untuk role `user`**, bukan role bernama `petani`.
-- **Node1** adalah area/domain iklim rumah kaca; **Node2** adalah tanah dan air. Ini bukan nama server cloud atau proses Node.js.
+- **Device 1** adalah area/domain iklim rumah kaca; **Device 2** adalah tanah dan air.
 - Setting yang berhasil disimpan **tidak berarti broker tersambung, aturan diterapkan, atau pompa menyala**.
 - Label "Kebun saya" belum berarti ada kepemilikan kebun per pengguna. Konfigurasi masih global; belum ada model greenhouse, tenant, atau pembagian perangkat per akun.
 - Laravel Boost/MCP adalah tooling pengembangan, **bukan fitur AI untuk pengguna Growvia**.
@@ -168,7 +168,7 @@ Flutter
 - `SanctumServiceProvider` didaftarkan eksplisit di `bootstrap/providers.php` (bersama `AppServiceProvider`) agar cache discovery lama tidak menghalangi guard.
 - `EnsureRole` memakai perbandingan string strict. Menyembunyikan tombol bukan pengganti middleware.
 - Dashboard dan halaman petani banyak memakai closure `view(...)` di route, bukan controller.
-- `AppServiceProvider` memasang rate limiter, view composer (`dashboard`, `petani.node1`, `petani.node2`), composer aktivitas terbaru, listener snapshot sesi, canonical URL recovery, dan `Paginator::defaultView('vendor.pagination.growvia')`.
+- `AppServiceProvider` memasang rate limiter, view composer (`dashboard`, `petani.Device 1`, `petani.Device 2`), composer aktivitas terbaru, listener snapshot sesi, canonical URL recovery, dan `Paginator::defaultView('vendor.pagination.growvia')`.
 - `resources/js/app.js` **tidak** melakukan fetch/polling, subscribe MQTT, atau membuka WebSocket/SSE.
 - Bootstrap membungkus respons error API: detail exception dibersihkan (termasuk saat debug), hanya `message`/`errors` yang diteruskan, header protokol dipertahankan, dan `Cache-Control: no-store, private` + `X-Content-Type-Options: nosniff` dipasang.
 
@@ -223,8 +223,8 @@ Flutter
 | PATCH | `/pengaturan/profil` | `settings.profile` | auth, user/admin, `throttle:reauthentication` |
 | PATCH | `/pengaturan/kata-sandi` | `settings.password` | auth, user/admin, `throttle:reauthentication` |
 | GET | `/petani` | `petani.dashboard` | auth, user/admin |
-| GET | `/petani/iklim` | `petani.node1` | auth, user/admin |
-| GET | `/petani/tanah` | `petani.node2` | auth, user/admin |
+| GET | `/petani/iklim` | `petani.Device 1` | auth, user/admin |
+| GET | `/petani/tanah` | `petani.Device 2` | auth, user/admin |
 | GET | `/petani/pengaturan` | `petani.settings` | auth, user/admin |
 | GET | `/petani/edukasi` | `petani.edukasi` | auth, user/admin |
 
@@ -265,7 +265,7 @@ Grup `throttle:mobile-api` (120/menit per IP) berlaku untuk semuanya.
 
 Catatan navigasi:
 
-- Menu iklim/tanah admin menuju `/dashboard#node1` dan `/dashboard#node2`, bukan halaman admin terpisah.
+- Menu iklim/tanah admin menuju `/dashboard#Device 1` dan `/dashboard#Device 2`, bukan halaman admin terpisah.
 - Halaman pengaturan petani adalah `/petani/pengaturan`, tetapi submit profil/password menuju `/pengaturan/...` yang mengizinkan kedua role.
 - Fragment pengaturan admin: `#profile`, `#security`, `#mqtt`, `#climate`, `#soil`, `#notifications`.
 - Redirect guest middleware sesuai role: petani yang sudah masuk lalu membuka `/login` kembali ke panel petani.
@@ -326,7 +326,7 @@ Belum ada tabel pembacaan sensor, registry node, heartbeat, command/ack pompa, a
 
 ## 8. Kontrak konfigurasi
 
-Sumber tunggal daftar default: `SettingsController::DEFAULTS`. **Seluruh 21 nilai default berbentuk string.** 17 di antaranya non-MQTT; 4 kunci MQTT (`mqtt_host`, `mqtt_port`, `mqtt_user`, `mqtt_topic`) sengaja **tidak diekspos ke API mobile**.
+Sumber tunggal daftar default: `SettingsController::DEFAULTS`. **Seluruh 19 nilai default berbentuk string.** 15 di antaranya non-MQTT; 4 kunci MQTT (`mqtt_host`, `mqtt_port`, `mqtt_user`, `mqtt_topic`) sengaja **tidak diekspos ke API mobile**.
 
 | Key | Default | Makna/unit | Validasi |
 |---|---|---|---|
@@ -338,7 +338,6 @@ Sumber tunggal daftar default: `SettingsController::DEFAULTS`. **Seluruh 21 nila
 | `th_suhu_min` / `th_suhu_max` | `'25'` / `'30'` | °C | Required numeric; min < max |
 | `th_hum_min` / `th_hum_max` | `'60'` / `'80'` | % | Required numeric 0–100; min < max |
 | `th_light_min` | `'20'` | klux | Required numeric ≥ 0 |
-| `th_co2_min` / `th_co2_max` | `'800'` / `'1200'` | ppm | Required numeric ≥ 0; min < max |
 | `soil_on` / `soil_off` | `'30'` / `'60'` | % | Required numeric 0–100; on < off |
 | `tank_min` | `'20'` | % | Required numeric 0–100 |
 | `pump_max_run` | `'15'` | menit | Required integer 1–120 |
@@ -358,7 +357,7 @@ Ini penting dan mudah salah:
 | **API mobile** (`MobileSettings::SECTIONS`) | `general`, `climate`, `soil`, `notifications` |
 
 - `general` → `update_interval`
-- `climate` → `th_suhu_min/max`, `th_hum_min/max`, `th_light_min`, `th_co2_min/max`
+- `climate` → `th_suhu_min/max`, `th_hum_min/max`, `th_light_min`
 - `soil` → `soil_on`, `soil_off`, `tank_min`, `pump_max_run`, `pump_mode`
 - `notifications` → empat kunci `notif_*`
 

@@ -14,7 +14,7 @@ return new class extends Migration
      * exactly as it does today.
      *
      * The IP is stored as a salted hash rather than in the clear. That keeps
-     * the useful property — grouping repeated attempts from one source — while
+     * the useful property (grouping repeated attempts from one source) while
      * the stored value is no longer personal data by itself. The salt lives in
      * APP_KEY, so the hashes cannot be reversed by comparing them against a
      * list of candidate addresses.

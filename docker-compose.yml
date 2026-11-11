@@ -1,0 +1,71 @@
+# Node 1: backend Growvia (nginx + PHP-FPM + pekerja MQTT).
+# Node 2 = MySQL, Node 3 = MQTT broker (host lain, diisi via .env).
+
+x-growvia-env: &growvia-env
+  APP_ENV: production
+  APP_DEBUG: "false"
+  APP_URL: ${APP_URL:-http://localhost}
+  APP_KEY: "${APP_KEY:?Isi APP_KEY di .env - hasil dari php artisan key:generate --show}"
+  DB_CONNECTION: mysql
+  DB_HOST: ${DB_HOST:?Isi alamat Node 2 (database) di .env}
+  DB_PORT: ${DB_PORT:-3306}
+  DB_DATABASE: ${DB_DATABASE:-growvia}
+  DB_USERNAME: ${DB_USERNAME:?Isi username database di .env}
+  DB_PASSWORD: ${DB_PASSWORD:?Isi password database di .env}
+  SESSION_DRIVER: database
+  CACHE_STORE: database
+  QUEUE_CONNECTION: database
+  MQTT_HOST: ${MQTT_HOST:?Isi alamat Node 3 (broker MQTT) di .env}
+  MQTT_PORT: ${MQTT_PORT:-1883}
+  MQTT_CLIENT_ID: growvia-backend-node1
+  # Broker pakai autentikasi? Hapus komentar:
+  # MQTT_USERNAME: ${MQTT_USERNAME}
+  # MQTT_PASSWORD: ${MQTT_PASSWORD}
+
+services:
+  # PHP-FPM: eksekusi Laravel (web + REST API).
+  app:
+    build:
+      context: .
+      target: runtime
+    image: growvia-backend
+    restart: unless-stopped
+    environment: *growvia-env
+    volumes:
+      - growvia-storage:/var/www/html/storage
+    # Migrasi + cache config/view, lalu hidupkan FPM.
+    # route:cache dilewati: ada rute closure di web.php.
+    command: >-
+      sh -c "php artisan migrate --force
+      && php artisan config:cache && php artisan view:cache
+      && exec php-fpm"
+
+  # nginx: aset statis + teruskan *.php ke app:9000.
+  web:
+    build:
+      context: .
+      target: web
+    image: growvia-backend-web
+    restart: unless-stopped
+    depends_on:
+      - app
+    ports:
+      - "${APP_PORT:-80}:80"
+
+  # Ingest sensor: subscribe growvia/node*/data, tulis ke tabel readings.
+  mqtt-consumer:
+    image: growvia-backend
+    restart: unless-stopped
+    depends_on:
+      - app
+    environment: *growvia-env
+    volumes:
+      - growvia-storage:/var/www/html/storage
+    # Retry 5 detik selama broker/database belum siap.
+    command: >-
+      sh -c "until php artisan mqtt:consume; do
+      echo 'Broker MQTT belum siap, mencoba lagi dalam 5 detik...' >&2;
+      sleep 5; done"
+
+volumes:
+  growvia-storage:

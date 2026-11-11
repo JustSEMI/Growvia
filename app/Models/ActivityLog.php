@@ -143,8 +143,6 @@ class ActivityLog extends Model
             'th_hum_min' => 'Kelembapan udara minimum',
             'th_hum_max' => 'Kelembapan udara maksimum',
             'th_light_min' => 'Cahaya minimum',
-            'th_co2_min' => 'CO2 minimum',
-            'th_co2_max' => 'CO2 maksimum',
             'soil_on' => 'Ambang mulai menyiram',
             'soil_off' => 'Ambang berhenti menyiram',
             'tank_min' => 'Air tandon minimum',
