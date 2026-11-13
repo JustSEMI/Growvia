@@ -40,6 +40,8 @@ class SettingsController extends Controller
         'notif_cahaya' => '1',
         'notif_tandon' => '1',
         'notif_offline' => '1',
+        'backup_schedule' => '',
+        'backup_keep_days' => '7',
     ];
 
     public function index(): View

@@ -31,7 +31,6 @@
                     <x-field name="th_suhu_max" label="Suhu maksimum (°C)" type="number" step="0.1" :value="old('th_suhu_max', data_get($settings, 'th_suhu_max'))" :required="true" />
                     <x-field name="th_hum_min" label="Kelembapan minimum (%)" type="number" step="1" min="0" max="100" :value="old('th_hum_min', data_get($settings, 'th_hum_min'))" :required="true" />
                     <x-field name="th_hum_max" label="Kelembapan maksimum (%)" type="number" step="1" min="0" max="100" :value="old('th_hum_max', data_get($settings, 'th_hum_max'))" :required="true" />
-                    <div class="span-full"><x-field name="th_light_min" label="Cahaya minimum (klux)" type="number" step="0.1" min="0" :value="old('th_light_min', data_get($settings, 'th_light_min'))" :required="true" hint="Nilai minimum harus lebih kecil dari maksimum pada setiap pasangan ambang." /></div>
                 </div><div class="form-actions"><button class="button" type="submit">Simpan ambang iklim</button></div>
             </form>
         </section>
@@ -54,7 +53,6 @@
             <form method="POST" action="{{ route('settings.system') }}">@csrf @method('PATCH')<input type="hidden" name="section" value="notif">
                 <div class="panel-body">
                     <label class="check-row" for="notif_pompa"><span><strong>Perubahan status pompa</strong><small>Pemberitahuan saat pompa menyala atau berhenti.</small></span><input id="notif_pompa" name="notif_pompa" type="checkbox" value="1" @checked(old('notif_pompa', data_get($settings, 'notif_pompa')) === '1')></label>
-                    <label class="check-row" for="notif_cahaya"><span><strong>Cahaya di bawah ambang</strong><small>Pemberitahuan saat intensitas cahaya rendah.</small></span><input id="notif_cahaya" name="notif_cahaya" type="checkbox" value="1" @checked(old('notif_cahaya', data_get($settings, 'notif_cahaya')) === '1')></label>
                     <label class="check-row" for="notif_tandon"><span><strong>Persediaan air rendah</strong><small>Pemberitahuan saat level tandon melewati batas minimum.</small></span><input id="notif_tandon" name="notif_tandon" type="checkbox" value="1" @checked(old('notif_tandon', data_get($settings, 'notif_tandon')) === '1')></label>
                     <label class="check-row" for="notif_offline"><span><strong>Node tidak terhubung</strong><small>Preferensi peringatan ketika node tidak mengirim data.</small></span><input id="notif_offline" name="notif_offline" type="checkbox" value="1" @checked(old('notif_offline', data_get($settings, 'notif_offline')) === '1')></label>
                 </div><div class="form-actions"><button class="button" type="submit">Simpan notifikasi</button></div>

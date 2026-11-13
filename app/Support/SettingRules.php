@@ -45,6 +45,8 @@ final class SettingRules
             'pump_max_run' => ['required', 'integer', 'min:1', 'max:120'],
             'pump_mode' => ['required', Rule::in(['auto', 'manual'])],
             ...array_fill_keys(self::NOTIFICATION_KEYS, ['required', 'boolean']),
+            'backup_schedule' => ['nullable', 'string', 'max:20', 'regex:/^(|daily@[0-2][0-9]:[0-5][0-9]|every:[1-9][0-9]{2,6})$/'],
+            'backup_keep_days' => ['required', 'integer', 'min:1', 'max:90'],
         ];
     }
 }

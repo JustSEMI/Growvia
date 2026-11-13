@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Http\Controllers\Api\V1\AccountController;
 use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Controllers\Api\V1\BackupController;
 use App\Http\Controllers\Api\V1\ReadingsController;
 use App\Http\Controllers\Api\V1\RecoveryController;
 use App\Http\Controllers\Api\V1\UsersController;
@@ -36,6 +37,10 @@ Route::prefix('v1')->name('api.v1.')->middleware('throttle:mobile-api')->group(f
             Route::get('/settings', [WorkspaceController::class, 'settings'])->name('settings');
             Route::patch('/settings', [WorkspaceController::class, 'updateSettings'])->name('settings.update');
             Route::get('/activities', [WorkspaceController::class, 'activities'])->name('activities');
+            Route::get('/backups', [BackupController::class, 'index'])->name('backups.index');
+            Route::post('/backups', [BackupController::class, 'run'])->middleware('throttle:reauthentication')->name('backups.run');
+            Route::get('/backups/{name}/download', [BackupController::class, 'download'])->name('backups.download');
+            Route::delete('/backups/{name}', [BackupController::class, 'destroy'])->middleware('throttle:reauthentication')->name('backups.destroy');
         });
         Route::get('/auth/me', [AuthController::class, 'show'])->name('auth.me');
         Route::post('/auth/logout', [AuthController::class, 'destroy'])->name('auth.logout');

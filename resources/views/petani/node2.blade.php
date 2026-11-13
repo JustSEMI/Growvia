@@ -7,7 +7,8 @@
 <x-connection-notice />
 <div class="metrics-grid">
     <x-metric-tile label="Tanah" unit="%" icon="leaf" />
-    <x-metric-tile label="Suhu tanah" unit="°C" icon="thermometer" tone="amber" />
+    <x-metric-tile label="Tanah 2" unit="%" icon="leaf" />
+    <x-metric-tile label="Tanah 3" unit="%" icon="leaf" />
     <x-metric-tile label="Tandon" unit="%" icon="tank" tone="blue" />
     <x-metric-tile label="Pompa" icon="power" tone="neutral" note="Status perangkat" />
 </div>

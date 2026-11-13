@@ -322,10 +322,11 @@ class ActivityLogTest extends TestCase
             'user.created', 'user.updated', 'user.deleted', 'user.activated', 'user.deactivated',
             'account.profile_updated', 'account.email_changed', 'account.password_changed',
             'account.password_reset', 'account.sessions_revoked', 'auth.login', 'auth.failed', 'auth.logout', 'settings.updated',
+            'backup.created', 'backup.deleted',
         ];
         $this->assertSame($actions, array_keys(ActivityLog::actionLabels()));
         $this->assertEqualsCanonicalizing(
-            ['name', 'email', 'role', 'is_active', ...array_keys(SettingsController::DEFAULTS)],
+            ['name', 'email', 'role', 'is_active', 'backup_file', ...array_keys(SettingsController::DEFAULTS)],
             array_keys(ActivityLog::fieldLabels()),
         );
 

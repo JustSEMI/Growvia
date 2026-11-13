@@ -12,6 +12,16 @@ use Illuminate\View\View;
 class ReadingsWebController extends Controller
 {
     /**
+     * Kolom riwayat: hanya sensor yang benar-benar terpasang.
+     * Device 1: 2 SHT + 2 kipas. Device 2: 3 soil + ultrasonic + pompa.
+     */
+    private const COLUMNS = [
+        'temperature', 'humidity', 'temperature2', 'humidity2',
+        'soil_moisture', 'soil_moisture2', 'soil_moisture3',
+        'water_level', 'pump', 'fan1', 'fan2',
+    ];
+
+    /**
      * Halaman admin: dashboard ringkas = status data backend.
      * Detail lengkap ada di aplikasi mobile via API.
      */
@@ -119,7 +129,7 @@ class ReadingsWebController extends Controller
      */
     private function pivot(Collection $readings): Collection
     {
-        $columns = array_keys(Reading::METRICS);
+        $columns = self::COLUMNS;
 
         return $readings->groupBy(fn (Reading $r) => $r->recorded_at->format('Y-m-d H:i:s'))
             ->map(function (Collection $group, string $time) use ($columns) {

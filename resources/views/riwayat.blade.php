@@ -27,12 +27,9 @@
                     <div><dt>Lembap</dt><dd>{{ $row['humidity'] ?? '—' }}%</dd></div>
                     <div><dt>Suhu 2</dt><dd>{{ $row['temperature2'] ?? '—' }} °C</dd></div>
                     <div><dt>Lembap 2</dt><dd>{{ $row['humidity2'] ?? '—' }}%</dd></div>
-                    <div><dt>Cahaya</dt><dd>{{ $row['light'] ?? '—' }} klux</dd></div>
-                    <div><dt>CO₂</dt><dd>{{ $row['co2'] ?? '—' }} ppm</dd></div>
                     <div><dt>Tanah</dt><dd>{{ $row['soil_moisture'] ?? '—' }}%</dd></div>
                     <div><dt>Tanah 2</dt><dd>{{ $row['soil_moisture2'] ?? '—' }}%</dd></div>
                     <div><dt>Tanah 3</dt><dd>{{ $row['soil_moisture3'] ?? '—' }}%</dd></div>
-                    <div><dt>Suhu tanah</dt><dd>{{ $row['soil_temperature'] ?? '—' }} °C</dd></div>
                     <div><dt>Tandon</dt><dd>{{ $row['water_level'] ?? '—' }}%</dd></div>
                     <div><dt>Pompa</dt><dd>{{ $row['pump'] ?? '—' }}</dd></div>
                     <div><dt>Kipas 1</dt><dd>{{ $row['fan1'] ?? '—' }}</dd></div>
@@ -46,13 +43,13 @@
     <div class="table-wrap history-table-wrap" tabindex="0" role="region" aria-label="Tabel riwayat pembacaan">
         <table class="data-table data-table--scroll">
             <thead><tr>
-                <th scope="col">Waktu</th><th scope="col">Suhu</th><th scope="col">Lembap</th><th scope="col">Suhu 2</th><th scope="col">Lembap 2</th><th scope="col">Cahaya</th><th scope="col">CO₂</th><th scope="col">Tanah</th><th scope="col">Tanah 2</th><th scope="col">Tanah 3</th><th scope="col">Suhu tanah</th><th scope="col">Tandon</th><th scope="col">Pompa</th><th scope="col">Kipas 1</th><th scope="col">Kipas 2</th>
+                <th scope="col">Waktu</th><th scope="col">Suhu</th><th scope="col">Lembap</th><th scope="col">Suhu 2</th><th scope="col">Lembap 2</th><th scope="col">Tanah</th><th scope="col">Tanah 2</th><th scope="col">Tanah 3</th><th scope="col">Tandon</th><th scope="col">Pompa</th><th scope="col">Kipas 1</th><th scope="col">Kipas 2</th>
             </tr></thead>
             <tbody>
                 @forelse($rows as $row)
-                    <tr><td>{{ $row['time'] }}</td><td>{{ $row['temperature'] ?? '—' }}</td><td>{{ $row['humidity'] ?? '—' }}</td><td>{{ $row['temperature2'] ?? '—' }}</td><td>{{ $row['humidity2'] ?? '—' }}</td><td>{{ $row['light'] ?? '—' }}</td><td>{{ $row['co2'] ?? '—' }}</td><td>{{ $row['soil_moisture'] ?? '—' }}</td><td>{{ $row['soil_moisture2'] ?? '—' }}</td><td>{{ $row['soil_moisture3'] ?? '—' }}</td><td>{{ $row['soil_temperature'] ?? '—' }}</td><td>{{ $row['water_level'] ?? '—' }}</td><td>{{ $row['pump'] ?? '—' }}</td><td>{{ $row['fan1'] ?? '—' }}</td><td>{{ $row['fan2'] ?? '—' }}</td></tr>
+                    <tr><td>{{ $row['time'] }}</td><td>{{ $row['temperature'] ?? '—' }}</td><td>{{ $row['humidity'] ?? '—' }}</td><td>{{ $row['temperature2'] ?? '—' }}</td><td>{{ $row['humidity2'] ?? '—' }}</td><td>{{ $row['soil_moisture'] ?? '—' }}</td><td>{{ $row['soil_moisture2'] ?? '—' }}</td><td>{{ $row['soil_moisture3'] ?? '—' }}</td><td>{{ $row['water_level'] ?? '—' }}</td><td>{{ $row['pump'] ?? '—' }}</td><td>{{ $row['fan1'] ?? '—' }}</td><td>{{ $row['fan2'] ?? '—' }}</td></tr>
                 @empty
-                    <tr><td colspan="15" class="table-empty">Belum ada pembacaan.</td></tr>
+                    <tr><td colspan="12" class="table-empty">Belum ada pembacaan.</td></tr>
                 @endforelse
             </tbody>
         </table>

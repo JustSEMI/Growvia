@@ -7,6 +7,7 @@
         <x-nav-link :href="route('dashboard.riwayat')" :active="request()->routeIs('dashboard.riwayat')" icon="clock">Riwayat</x-nav-link>
         <x-nav-link :href="route('dashboard.api-docs')" :active="request()->routeIs('dashboard.api-docs')" icon="shield">API Mobile</x-nav-link>
         <x-nav-link :href="route('dashboard.mqtt')" :active="request()->routeIs('dashboard.mqtt')" icon="connection">MQTT</x-nav-link>
+        <x-nav-link :href="route('dashboard.backup.index')" :active="request()->routeIs('dashboard.backup.*')" icon="tank">Backup</x-nav-link>
         <p class="nav-label nav-label--spaced">Kelola</p>
         <x-nav-link :href="route('activity.index')" :active="request()->routeIs('activity.*')" icon="clock">Aktivitas</x-nav-link>
         <x-nav-link :href="route('users.index')" :active="request()->routeIs('users.*')" icon="users">Pengguna</x-nav-link>

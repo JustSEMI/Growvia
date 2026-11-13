@@ -35,6 +35,18 @@ const resetSubmissions = () => document.querySelectorAll('form[aria-busy="true"]
 document.addEventListener('submit', (event) => {
     const form = event.target;
     if (!(form instanceof HTMLFormElement) || event.defaultPrevented) return;
+    if (form.hasAttribute('data-confirm-message') && !approved.has(form)) {
+        event.preventDefault();
+        if (confirmationReady) {
+            pending = { form, submitter: event.submitter };
+            confirmation.querySelector('[data-confirm-text]').textContent = form.dataset.confirmMessage;
+            const heading = confirmation.querySelector('[data-confirm-title]');
+            if (heading) heading.textContent = form.dataset.confirmTitle || 'Konfirmasi';
+            confirmation.querySelector('[data-confirm-accept]').textContent = form.dataset.confirmAccept || 'Lanjutkan';
+            confirmation.showModal();
+        }
+        return;
+    }
     if (form.hasAttribute('data-confirm-name') && !approved.has(form)) {
         const kind = form.dataset.confirmKind;
         const title = kind === 'deactivate' ? 'Nonaktifkan akun' : kind === 'activate' ? 'Aktifkan akun' : 'Hapus akun';

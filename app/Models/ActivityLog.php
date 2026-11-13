@@ -120,6 +120,8 @@ class ActivityLog extends Model
             'auth.failed' => 'Percobaan masuk gagal',
             'auth.logout' => 'Keluar dari aplikasi',
             'settings.updated' => 'Pengaturan sistem diperbarui',
+            'backup.created' => 'Backup database dibuat',
+            'backup.deleted' => 'Backup database dihapus',
         ];
     }
 
@@ -152,6 +154,9 @@ class ActivityLog extends Model
             'notif_cahaya' => 'Notifikasi cahaya',
             'notif_tandon' => 'Notifikasi tandon',
             'notif_offline' => 'Notifikasi perangkat terputus',
+            'backup_schedule' => 'Jadwal backup',
+            'backup_keep_days' => 'Retensi backup',
+            'backup_file' => 'Berkas backup',
         ];
     }
 

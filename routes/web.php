@@ -3,6 +3,7 @@
 use App\Http\Controllers\ActivityController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\PasswordResetController;
+use App\Http\Controllers\BackupWebController;
 use App\Http\Controllers\ReadingsWebController;
 use App\Http\Controllers\SessionController;
 use App\Http\Controllers\SettingsController;
@@ -41,6 +42,14 @@ Route::middleware('auth')->group(function () {
         Route::get('/dashboard/riwayat', [ReadingsWebController::class, 'history'])->name('dashboard.riwayat');
         Route::get('/dashboard/api-docs', [ReadingsWebController::class, 'apiDocs'])->name('dashboard.api-docs');
         Route::get('/dashboard/mqtt', [ReadingsWebController::class, 'mqtt'])->name('dashboard.mqtt');
+
+        Route::prefix('dashboard/backup')->name('dashboard.backup.')->controller(BackupWebController::class)->group(function (): void {
+            Route::get('/', 'index')->name('index');
+            Route::post('/', 'run')->middleware('throttle:reauthentication')->name('run');
+            Route::post('/jadwal', 'updateSchedule')->middleware('throttle:reauthentication')->name('schedule');
+            Route::get('/{name}/download', 'download')->name('download');
+            Route::delete('/{name}', 'destroy')->middleware('throttle:reauthentication')->name('destroy');
+        });
 
         Route::prefix('pengaturan')->name('settings.')->controller(SettingsController::class)->group(function () {
             Route::get('/', 'index')->name('index');

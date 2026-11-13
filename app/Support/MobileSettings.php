@@ -15,6 +15,7 @@ final class MobileSettings
         'climate' => ['th_suhu_min', 'th_suhu_max', 'th_hum_min', 'th_hum_max', 'th_light_min'],
         'soil' => ['soil_on', 'soil_off', 'tank_min', 'pump_max_run', 'pump_mode'],
         'notifications' => ['notif_pompa', 'notif_cahaya', 'notif_tandon', 'notif_offline'],
+        'backup' => ['backup_schedule', 'backup_keep_days'],
     ];
 
     /** @return array<string, string> */
