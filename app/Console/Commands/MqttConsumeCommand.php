@@ -9,7 +9,7 @@ use App\Models\Reading;
 use App\Models\Setting;
 use App\Support\ReadingIngester;
 use Illuminate\Console\Command;
-use PhpMqtt\Client\Facades\Mqtt;
+use PhpMqtt\Client\Facades\MQTT;
 use Throwable;
 
 class MqttConsumeCommand extends Command
@@ -26,7 +26,7 @@ class MqttConsumeCommand extends Command
             ?: SettingsController::DEFAULTS['mqtt_topic']), '/');
 
         try {
-            Mqtt::connect();
+            MQTT::connect();
         } catch (Throwable $exception) {
             $this->error('Gagal terhubung ke broker MQTT: '.$exception->getMessage());
 
@@ -35,7 +35,7 @@ class MqttConsumeCommand extends Command
 
         $accepted = 0;
         foreach (Reading::NODES as $node) {
-            Mqtt::subscribe($prefix.$node.'/data', function (string $topic, string $message) use (&$accepted): void {
+            MQTT::subscribe($prefix.$node.'/data', function (string $topic, string $message) use (&$accepted): void {
                 try {
                     $stored = ReadingIngester::ingestPayload($topic, $message);
                     $accepted += $stored;
@@ -49,7 +49,7 @@ class MqttConsumeCommand extends Command
         }
 
         $this->info(sprintf('Menunggu data sensor di %s{node1,node2}/data (Ctrl+C untuk berhenti)…', $prefix));
-        Mqtt::loop(true);
+        MQTT::loop(true);
 
         return self::SUCCESS;
     }
