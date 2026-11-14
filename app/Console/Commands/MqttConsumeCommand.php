@@ -7,6 +7,7 @@ namespace App\Console\Commands;
 use App\Http\Controllers\SettingsController;
 use App\Models\Reading;
 use App\Models\Setting;
+use App\Support\MqttConnectionSettings;
 use App\Support\ReadingIngester;
 use Illuminate\Console\Command;
 use PhpMqtt\Client\Facades\MQTT;
@@ -20,13 +21,21 @@ class MqttConsumeCommand extends Command
 
     public function handle(): int
     {
-        // Topik dasar mengikuti pengaturan admin (panel web); default 'growvia/node'
-        // menghasilkan filter growvia/node1/data dan growvia/node2/data.
-        $prefix = rtrim((string) (Setting::query()->where('key', 'mqtt_topic')->value('value')
+        // Topik dasar mengikuti pengaturan admin (panel web). Nilai boleh
+        // 'growvia/node', 'growvia/', atau 'growvia' — dinormalisasi agar
+        // filter selalu berujung {base}/node{1,2}/data sesuai ReadingIngester.
+        $base = rtrim((string) (Setting::query()->where('key', 'mqtt_topic')->value('value')
             ?: SettingsController::DEFAULTS['mqtt_topic']), '/');
+        if (str_ends_with($base, '/node')) {
+            $base = substr($base, 0, -strlen('/node'));
+        }
 
+        // php-mqtt/laravel-client >= 1.8: MQTT::connection() membuat koneksi
+        // sesuai config/mqtt-client.php dan langsung connect. Host, port, dan
+        // username dari pengaturan admin menimpa nilai .env saat terisi.
+        MqttConnectionSettings::apply();
         try {
-            MQTT::connect();
+            $client = MQTT::connection();
         } catch (Throwable $exception) {
             $this->error('Gagal terhubung ke broker MQTT: '.$exception->getMessage());
 
@@ -35,7 +44,7 @@ class MqttConsumeCommand extends Command
 
         $accepted = 0;
         foreach (Reading::NODES as $node) {
-            MQTT::subscribe($prefix.$node.'/data', function (string $topic, string $message) use (&$accepted): void {
+            $client->subscribe($base.'/'.$node.'/data', function (string $topic, string $message) use (&$accepted): void {
                 try {
                     $stored = ReadingIngester::ingestPayload($topic, $message);
                     $accepted += $stored;
@@ -48,8 +57,8 @@ class MqttConsumeCommand extends Command
             }, 0);
         }
 
-        $this->info(sprintf('Menunggu data sensor di %s{node1,node2}/data (Ctrl+C untuk berhenti)…', $prefix));
-        MQTT::loop(true);
+        $this->info(sprintf('Menunggu data sensor di %s/{node1,node2}/data (Ctrl+C untuk berhenti)…', $base));
+        $client->loop(true);
 
         return self::SUCCESS;
     }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use App\Models\Reading;
 use App\Models\Setting;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -83,10 +84,34 @@ class InterfaceTest extends TestCase
         $admin = User::factory()->admin()->create();
 
         $this->actingAs($admin)->get(route('dashboard'))->assertOk()
-            ->assertSee('Backend Growvia')
+            ->assertSee('Kebun hari ini')
             ->assertSee('Status data')
-            ->assertSee('Belum ada pembacaan')
+            ->assertSee('Belum ada cukup data suhu')
+            ->assertSee('Iklim · Device 1')
+            ->assertSee('Tanah &amp; air · Device 2', false)
             ->assertDontSee('Pengaturan yang kesimpen');
+    }
+
+    public function test_dashboard_renders_latest_sensor_values_and_trend(): void
+    {
+        $admin = User::factory()->admin()->create();
+
+        Reading::query()->create(['node' => 'node1', 'metric' => 'temperature', 'value' => 27.4, 'unit' => '°C', 'recorded_at' => now()->subMinutes(30)]);
+        Reading::query()->create(['node' => 'node1', 'metric' => 'temperature', 'value' => 28.2, 'unit' => '°C', 'recorded_at' => now()->subMinutes(10)]);
+        Reading::query()->create(['node' => 'node1', 'metric' => 'temperature2', 'value' => 29.0, 'unit' => '°C', 'recorded_at' => now()->subMinutes(10)]);
+        Reading::query()->create(['node' => 'node1', 'metric' => 'humidity', 'value' => 71.5, 'unit' => '%', 'recorded_at' => now()]);
+        Reading::query()->create(['node' => 'node1', 'metric' => 'fan1', 'value' => 1, 'unit' => 'state', 'recorded_at' => now()]);
+
+        $this->actingAs($admin)->get(route('dashboard'))->assertOk()
+            ->assertSee('Rata-rata 2 sensor')
+            ->assertSee('28.6')
+            ->assertSee('28.2 / 29.0')
+            ->assertSee('27.4')
+            ->assertSee('71.5')
+            ->assertSee('Rata-rata 1 dari 2 sensor')
+            ->assertSee('Menyala')
+            ->assertSee('Live')
+            ->assertSee('<polyline class="trend-line"', false);
     }
 
     public function test_dashboard_sidebar_no_node_sections(): void

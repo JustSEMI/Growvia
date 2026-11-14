@@ -15,14 +15,17 @@ return [
             'host' => env('MQTT_HOST', '127.0.0.1'),
             'port' => (int) env('MQTT_PORT', 1883),
             'clientId' => env('MQTT_CLIENT_ID', 'growvia-backend'),
-            'username' => env('MQTT_USERNAME'),
-            'password' => env('MQTT_PASSWORD'),
 
+            // php-mqtt/laravel-client >= 1.8 membaca kredensial dari
+            // connection_settings.auth, bukan level koneksi.
             'connection_settings' => [
+                'auth' => [
+                    'username' => env('MQTT_USERNAME'),
+                    'password' => env('MQTT_PASSWORD'),
+                ],
                 'connect_timeout' => 5,
                 'socket_timeout' => 5,
                 'keep_alive_interval' => 30,
-                'resend_failed_message' => false,
             ],
         ],
 

@@ -11,12 +11,12 @@
     <div class="stack">
         <x-account-forms :user="$user" />
         <section class="panel form-section form-section--amber" id="mqtt" aria-labelledby="mqtt-title" data-reveal>
-            <div class="panel-header"><div><p class="eyebrow">04 · Node & koneksi</p><h2 class="panel-title mt-2" id="mqtt-title">Broker MQTT</h2><p class="panel-subtitle">Settingan koneksi buat nyambungin perangkat.</p></div><x-badge tone="amber">Belum terintegrasi</x-badge></div>
+            <div class="panel-header"><div><p class="eyebrow">04 · Node & koneksi</p><h2 class="panel-title mt-2" id="mqtt-title">Broker MQTT</h2><p class="panel-subtitle">Koneksi yang dipakai consumer data sensor. Kosongkan untuk pakai nilai .env.</p></div><x-badge tone="green">Aktif</x-badge></div>
             <form method="POST" action="{{ route('settings.system') }}">@csrf @method('PATCH')<input type="hidden" name="section" value="mqtt">
                 <div class="panel-body form-grid">
-                    <div class="span-full"><x-field name="mqtt_host" label="Host broker" :value="old('mqtt_host', data_get($settings, 'mqtt_host'))" placeholder="broker.local" maxlength="255" hint="Nyimpen host doang belum bikin nyambung ke broker ya." /></div>
-                    <x-field name="mqtt_port" label="Port" type="number" :value="old('mqtt_port', data_get($settings, 'mqtt_port'))" min="1" max="65535" />
-                    <x-field name="mqtt_user" label="Nama pengguna broker" :value="old('mqtt_user', data_get($settings, 'mqtt_user'))" maxlength="255" autocomplete="off" />
+                    <div class="span-full"><x-field name="mqtt_host" label="Host broker" :value="old('mqtt_host', data_get($settings, 'mqtt_host'))" placeholder="broker.local" maxlength="255" hint="Kosong = pakai MQTT_HOST dari .env server." /></div>
+                    <x-field name="mqtt_port" label="Port" type="number" :value="old('mqtt_port', data_get($settings, 'mqtt_port'))" min="1" max="65535" hint="Kosong = pakai MQTT_PORT dari .env." />
+                    <x-field name="mqtt_user" label="Nama pengguna broker" :value="old('mqtt_user', data_get($settings, 'mqtt_user'))" maxlength="255" autocomplete="off" hint="Kosong = pakai MQTT_USERNAME dari .env. Password selalu dari .env." />
                     <x-field name="mqtt_topic" label="Topik dasar" :value="old('mqtt_topic', data_get($settings, 'mqtt_topic'))" maxlength="255" hint="Awalan topik untuk data node." />
                     <x-field name="update_interval" label="Interval pembaruan (detik)" type="number" :value="old('update_interval', data_get($settings, 'update_interval'))" :required="true" min="5" max="300" hint="Rentang 5–300 detik." />
                 </div><div class="form-actions"><button class="button" type="submit">Simpan koneksi</button></div>
