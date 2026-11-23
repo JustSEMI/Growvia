@@ -3,21 +3,41 @@
 @section('page', 'Riwayat')
 
 @section('content')
-<x-page-header title="Data mentah." description="Tabel vacuum langsung dari database. Scroll ke samping buat lihat semua metrik.">
+<x-page-header title="Data mentah." description="Tabel pembacaan langsung dari database. Geser ke samping untuk melihat semua metrik.">
     <x-slot:eyebrow>Ruang kerja / Riwayat</x-slot:eyebrow>
     <x-slot:actions>
-        <form method="GET" action="{{ route('dashboard.riwayat') }}" class="inline-form">
-            <label class="sr-only" for="node-filter">Filter node</label>
-            <select id="node-filter" name="node" onchange="this.form.submit()">
+        <a class="button button--secondary" href="{{ route('dashboard.riwayat.export', array_filter(['node' => $node, 'from' => $from, 'to' => $to])) }}">Export CSV</a>
+    </x-slot:actions>
+</x-page-header>
+<x-alerts />
+
+<div class="ledger-page">
+<form class="panel form-section form-section--neutral section-space" method="GET" action="{{ route('dashboard.riwayat') }}" aria-label="Filter riwayat sensor">
+    <div class="panel-body form-grid">
+        <div class="field">
+            <label class="field-label" for="node-filter">Node</label>
+            <select class="field-input" id="node-filter" name="node" data-custom-select @if($errors->has('node')) aria-invalid="true" aria-describedby="node-error" @endif>
                 <option value="">Semua node</option>
                 <option value="node1" @selected($node === 'node1')>Device 1</option>
                 <option value="node2" @selected($node === 'node2')>Device 2</option>
             </select>
-        </form>
-    </x-slot:actions>
-</x-page-header>
+            @error('node')<p class="field-error" id="node-error">{{ $message }}</p>@enderror
+        </div>
+        <x-field name="from" type="date" label="Dari tanggal" :value="$from" />
+        <x-field name="to" type="date" label="Sampai tanggal" :value="$to" />
+    </div>
+    <div class="form-actions">
+        @if($filtered)
+            <a class="button button--secondary" href="{{ route('dashboard.riwayat') }}">Hapus filter</a>
+        @endif
+        <button class="button" type="submit">Terapkan filter</button>
+    </div>
+</form>
 
-<section class="panel history-table-panel">
+<section class="panel history-table-panel mt-6">
+    <div class="table-toolbar">
+        <div><h2 class="panel-title">Pembacaan tercatat</h2><p class="panel-subtitle">{{ $paginator->total() }} waktu · Zona waktu {{ $timezone }}</p></div>
+    </div>
     <div class="history-list">
         @forelse($rows as $row)
             <article class="history-card">
@@ -56,4 +76,5 @@
     </div>
     {{ $paginator->links('vendor.pagination.growvia', ['noun' => 'data']) }}
 </section>
+</div>
 @endsection

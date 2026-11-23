@@ -263,7 +263,6 @@
     .history-card dt { color: var(--secondary); font-size: 11px; font-weight: 500; letter-spacing: .04em; text-transform: uppercase; }
     .history-card dd { margin: 2px 0 0; font-size: 14px; font-weight: 600; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
     .history-table-panel .table-empty { padding: 36px 20px; text-align: center; color: var(--secondary); font-size: 12px; }
-    .inline-form select { min-height: 40px; padding: 8px 10px; border: 1px solid var(--control-border); border-radius: 6px; background: var(--field-surface); color: var(--ink); font-size: 13px; }
     .device-row { display: flex; align-items: center; gap: 12px; padding: 18px 0; border-bottom: 1px solid var(--line); }
     .device-row:first-child { padding-top: 0; }
     .device-row:last-child { border-bottom: 0; padding-bottom: 0; }
@@ -602,8 +601,7 @@
     .page-title { font-size: clamp(26px, 8vw, 30px); }
     .page-description { font-size: 13px; }
     .header-actions { width: 100%; padding-top: 0; }
-    .header-actions .button, .header-actions .inline-form, .header-actions select { width: 100%; }
-    .header-actions .inline-form select { min-height: 48px; }
+    .header-actions .button, .header-actions select { width: 100%; }
     .metrics-grid { grid-template-columns: minmax(0, 1fr); gap: 12px; }
     .metric-card { padding: 18px; }
     .metric-value { font-size: 34px; }

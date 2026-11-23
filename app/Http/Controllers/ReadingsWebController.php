@@ -5,10 +5,16 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Models\Reading;
+use App\Support\MqttConnectionSettings;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ReadingsWebController extends Controller
 {
@@ -76,6 +82,46 @@ class ReadingsWebController extends Controller
         ]);
     }
 
+    public function petaniDashboard(): View
+    {
+        $lastRecorded = Reading::query()->max('recorded_at');
+        $latest = $this->latestPerNodeMetric();
+
+        return view('petani.dashboard', [
+            'lastRecorded' => $lastRecorded,
+            'live' => $lastRecorded !== null
+                && Carbon::parse($lastRecorded)->gt(now()->subSeconds(90)),
+            'tiles' => $this->buildTiles($latest),
+        ]);
+    }
+
+    public function petaniNode1(): View
+    {
+        $lastRecorded = Reading::query()->where('node', 'node1')->max('recorded_at');
+        $latest = $this->latestPerNodeMetric()['node1'] ?? [];
+
+        return view('petani.node1', [
+            'latest' => $latest,
+            'lastRecorded' => $lastRecorded,
+            'live' => $lastRecorded !== null
+                && Carbon::parse($lastRecorded)->gt(now()->subSeconds(90)),
+            'series' => $this->temperatureSeries(),
+        ]);
+    }
+
+    public function petaniNode2(): View
+    {
+        $lastRecorded = Reading::query()->where('node', 'node2')->max('recorded_at');
+        $latest = $this->latestPerNodeMetric()['node2'] ?? [];
+
+        return view('petani.node2', [
+            'latest' => $latest,
+            'lastRecorded' => $lastRecorded,
+            'live' => $lastRecorded !== null
+                && Carbon::parse($lastRecorded)->gt(now()->subSeconds(90)),
+        ]);
+    }
+
     /**
      * Rata-rata pembacaan terbaru per kartu, dengan catatan sensor yang ikut dihitung.
      *
@@ -108,14 +154,15 @@ class ReadingsWebController extends Controller
                 $avg = $values === [] ? null : array_sum($values) / count($values);
                 $detail = implode(' / ', array_map(fn (float $value): string => number_format($value, 1), $values));
 
+                $tz = config('app.timezone');
                 $note = match (true) {
                     $last === null => 'Menunggu data sensor',
-                    $expected === 1 => 'Terakhir '.$last->recorded_at->timezone('UTC')->format('d/m H:i').' UTC',
+                    $expected === 1 => 'Terakhir '.$last->recorded_at->timezone($tz)->format('d/m H:i T'),
                     count($values) === $expected => sprintf(
-                        'Rata-rata %d sensor · %s · terakhir %s UTC',
+                        'Rata-rata %d sensor · %s · terakhir %s',
                         count($values),
                         $detail,
-                        $last->recorded_at->timezone('UTC')->format('d/m H:i'),
+                        $last->recorded_at->timezone($tz)->format('d/m H:i T'),
                     ),
                     default => sprintf('Rata-rata %d dari %d sensor · %s', count($values), $expected, $detail),
                 };
@@ -135,27 +182,123 @@ class ReadingsWebController extends Controller
     }
 
     /**
-     * Tabel data mentah vacuum 14 kolom, paginasi 20.
+     * Tabel data mentah, paginasi 20 baris waktu per halaman.
      */
     public function history(Request $request): View
     {
-        $node = $request->query('node');
-        if (! in_array($node, Reading::NODES, true)) {
-            $node = null;
-        }
+        [$base, $filters] = $this->historyQuery($request);
 
-        $query = Reading::query();
-        if ($node) {
-            $query->where('node', $node);
-        }
+        $perPage = 20;
+        $page = LengthAwarePaginator::resolveCurrentPage();
+        $total = (int) (clone $base)->distinct()->count('recorded_at');
+        $timestamps = (clone $base)
+            ->toBase()
+            ->select('recorded_at')
+            ->distinct()
+            ->orderByDesc('recorded_at')
+            ->forPage($page, $perPage)
+            ->pluck('recorded_at');
 
-        $paginator = $query->orderByDesc('recorded_at')->orderByDesc('id')->paginate(20)->withQueryString();
+        $readings = $timestamps->isEmpty()
+            ? collect()
+            : (clone $base)
+                ->whereIn('recorded_at', $timestamps)
+                ->orderByDesc('recorded_at')
+                ->orderByDesc('id')
+                ->get();
+
+        $rows = $this->pivot($readings);
+        $paginator = (new LengthAwarePaginator(
+            $rows,
+            $total,
+            $perPage,
+            $page,
+            ['path' => LengthAwarePaginator::resolveCurrentPath()],
+        ))->withQueryString();
 
         return view('riwayat', [
-            'rows' => $this->pivot($paginator->getCollection()),
+            'rows' => $rows,
             'paginator' => $paginator,
-            'node' => $node,
+            'node' => $filters['node'] ?? null,
+            'from' => $filters['from'] ?? '',
+            'to' => $filters['to'] ?? '',
+            'filtered' => collect($filters)->contains(fn (?string $value): bool => $value !== null && $value !== ''),
+            'timezone' => config('app.timezone'),
         ]);
+    }
+
+    public function exportHistory(Request $request): StreamedResponse
+    {
+        [$base] = $this->historyQuery($request);
+        $filename = 'growvia-riwayat-'.now()->timezone(config('app.timezone'))->format('Ymd-His').'.csv';
+
+        return response()->streamDownload(function () use ($base): void {
+            $handle = fopen('php://output', 'wb');
+            if ($handle === false) {
+                return;
+            }
+            fputcsv($handle, ['waktu', 'node', ...self::COLUMNS]);
+
+            $timestamps = (clone $base)
+                ->toBase()
+                ->select('recorded_at')
+                ->distinct()
+                ->orderByDesc('recorded_at')
+                ->pluck('recorded_at');
+
+            foreach ($timestamps->chunk(200) as $chunk) {
+                $readings = (clone $base)
+                    ->whereIn('recorded_at', $chunk)
+                    ->orderByDesc('recorded_at')
+                    ->orderByDesc('id')
+                    ->get();
+
+                foreach ($this->pivot($readings) as $row) {
+                    $line = [$row['time'], $row['node']];
+                    foreach (self::COLUMNS as $col) {
+                        $line[] = $row[$col] ?? '';
+                    }
+                    fputcsv($handle, $line);
+                }
+            }
+
+            fclose($handle);
+        }, $filename, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Cache-Control' => 'no-store',
+        ]);
+    }
+
+    /**
+     * @return array{0: Builder<Reading>, 1: array<string, mixed>}
+     */
+    private function historyQuery(Request $request): array
+    {
+        $filters = Validator::make($request->query(), [
+            'node' => ['nullable', 'string', Rule::in(Reading::NODES)],
+            'from' => ['nullable', 'date_format:Y-m-d'],
+            'to' => ['nullable', 'date_format:Y-m-d', Rule::when($request->filled('from'), ['after_or_equal:from'])],
+        ], [
+            'node.in' => 'Pilih node yang tersedia.',
+            'from.date_format' => 'Tanggal mulai harus berformat tahun-bulan-tanggal.',
+            'to.date_format' => 'Tanggal akhir harus berformat tahun-bulan-tanggal.',
+            'to.after_or_equal' => 'Tanggal akhir tidak boleh sebelum tanggal mulai.',
+        ])->validate();
+
+        $tz = config('app.timezone');
+        $query = Reading::query();
+
+        if (! empty($filters['node'])) {
+            $query->where('node', $filters['node']);
+        }
+        if (! empty($filters['from'])) {
+            $query->where('recorded_at', '>=', Carbon::createFromFormat('Y-m-d', $filters['from'], $tz)->startOfDay()->utc());
+        }
+        if (! empty($filters['to'])) {
+            $query->where('recorded_at', '<', Carbon::createFromFormat('Y-m-d', $filters['to'], $tz)->addDay()->startOfDay()->utc());
+        }
+
+        return [$query, $filters];
     }
 
     public function apiDocs(): View
@@ -171,19 +314,19 @@ class ReadingsWebController extends Controller
 
     public function mqtt(): View
     {
-        $config = config('mqtt-client.connections.default');
+        MqttConnectionSettings::apply();
+        $connection = config('mqtt-client.default', 'default');
+        $config = config('mqtt-client.connections.'.$connection);
 
         return view('mqtt', [
             'mqtt' => [
                 'host' => $config['host'] ?? '127.0.0.1',
                 'port' => $config['port'] ?? 1883,
                 'clientId' => $config['clientId'] ?? 'growvia-backend',
-                'hasAuth' => filled($config['username'] ?? null) || filled($config['password'] ?? null),
+                'hasAuth' => filled($config['connection_settings']['auth']['username'] ?? null)
+                    || filled($config['connection_settings']['auth']['password'] ?? null),
             ],
-            'topics' => [
-                'growvia/node1/data',
-                'growvia/node2/data',
-            ],
+            'topics' => MqttConnectionSettings::topics(),
             'counts' => $this->countsPerNode(),
             'lastRecorded' => Reading::query()->max('recorded_at'),
         ]);
@@ -243,12 +386,14 @@ class ReadingsWebController extends Controller
             return sprintf('%.1f,%.1f', $x, $y);
         })->implode(' ');
 
+        $tz = config('app.timezone');
+
         return [
             'points' => $points,
             'min' => $min,
             'max' => $max,
-            'from' => $first->recorded_at->format('H:i'),
-            'to' => $last->recorded_at->format('H:i'),
+            'from' => $first->recorded_at->timezone($tz)->format('H:i'),
+            'to' => $last->recorded_at->timezone($tz)->format('H:i'),
             'count' => $sampled->count(),
         ];
     }
@@ -306,12 +451,13 @@ class ReadingsWebController extends Controller
     private function pivot(Collection $readings): Collection
     {
         $columns = self::COLUMNS;
+        $tz = config('app.timezone');
 
-        return $readings->groupBy(fn (Reading $r) => $r->recorded_at->format('Y-m-d H:i:s'))
+        return $readings->groupBy(fn (Reading $r) => $r->recorded_at->timezone($tz)->format('Y-m-d H:i:s'))
             ->map(function (Collection $group, string $time) use ($columns) {
                 $row = [
                     'time' => $time,
-                    'node' => $group->firstWhere('node', 'node1') ? 'node1/node2' : $group->first()->node,
+                    'node' => $group->pluck('node')->unique()->sort()->implode('/'),
                 ];
                 foreach ($columns as $col) {
                     $found = $group->firstWhere('metric', $col);

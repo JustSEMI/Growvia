@@ -40,6 +40,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/aktivitas', [ActivityController::class, 'index'])->name('activity.index');
         Route::get('/dashboard', [ReadingsWebController::class, 'dashboard'])->name('dashboard');
         Route::get('/dashboard/riwayat', [ReadingsWebController::class, 'history'])->name('dashboard.riwayat');
+        Route::get('/dashboard/riwayat/export', [ReadingsWebController::class, 'exportHistory'])->name('dashboard.riwayat.export');
         Route::get('/dashboard/api-docs', [ReadingsWebController::class, 'apiDocs'])->name('dashboard.api-docs');
         Route::get('/dashboard/mqtt', [ReadingsWebController::class, 'mqtt'])->name('dashboard.mqtt');
 
@@ -71,9 +72,9 @@ Route::middleware('auth')->group(function () {
     });
 
     Route::middleware('role:user,admin')->prefix('petani')->name('petani.')->group(function () {
-        Route::get('/', fn () => view('petani.dashboard'))->name('dashboard');
-        Route::get('/iklim', fn () => view('petani.node1'))->name('node1');
-        Route::get('/tanah', fn () => view('petani.node2'))->name('node2');
+        Route::get('/', [ReadingsWebController::class, 'petaniDashboard'])->name('dashboard');
+        Route::get('/iklim', [ReadingsWebController::class, 'petaniNode1'])->name('node1');
+        Route::get('/tanah', [ReadingsWebController::class, 'petaniNode2'])->name('node2');
         Route::get('/pengaturan', fn () => view('petani.pengaturan'))->name('settings');
         Route::get('/edukasi', fn () => view('petani.edukasi'))->name('edukasi');
     });

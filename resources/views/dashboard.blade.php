@@ -13,7 +13,7 @@
         @if($live)
             <x-badge tone="green" :dot="true">Live</x-badge>
         @elseif($lastRecorded)
-            <x-badge :dot="true">Terakhir {{ \Illuminate\Support\Carbon::parse($lastRecorded)->timezone('UTC')->format('d/m H:i') }} UTC</x-badge>
+            <x-badge :dot="true">Terakhir {{ \Illuminate\Support\Carbon::parse($lastRecorded)->timezone(config('app.timezone'))->format('d/m H:i T') }}</x-badge>
         @else
             <x-badge>Menunggu data</x-badge>
         @endif
@@ -78,7 +78,7 @@
                     <dl class="definition-list">
                         <div><dt>Node 1 (iklim)</dt><dd>{{ $counts['node1'] }} baris</dd></div>
                         <div><dt>Node 2 (tanah &amp; air)</dt><dd>{{ $counts['node2'] }} baris</dd></div>
-                        <div><dt>Pembacaan terakhir</dt><dd>{{ $lastRecorded ? \Illuminate\Support\Carbon::parse($lastRecorded)->timezone('UTC')->format('d/m H:i:s').' UTC' : 'Belum ada' }}</dd></div>
+                        <div><dt>Pembacaan terakhir</dt><dd>{{ $lastRecorded ? \Illuminate\Support\Carbon::parse($lastRecorded)->timezone(config('app.timezone'))->format('d/m H:i:s T') : 'Belum ada' }}</dd></div>
                     </dl>
                 </div>
             </section>

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature;
 
 use App\Models\Reading;
+use App\Models\Setting;
 use App\Models\User;
 use App\Support\ReadingIngester;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -123,5 +124,100 @@ class ReadingsTest extends TestCase
 
         $this->getJson('/api/v1/workspace', $headers)->assertOk()
             ->assertJsonPath('telemetry_available', true);
+    }
+
+    public function test_web_history_paginates_twenty_timestamps_per_page(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $base = Carbon::parse('2026-11-14 01:00:00');
+
+        foreach (range(0, 21) as $offset) {
+            Carbon::setTestNow($base->copy()->addSeconds($offset * 10));
+            ReadingIngester::ingestPayload('growvia/node1/data', (string) json_encode([
+                'temperature' => 26 + $offset * 0.1,
+                'humidity' => 70,
+                'temperature2' => 26.2,
+                'humidity2' => 71,
+                'fan1' => 1,
+                'fan2' => 0,
+            ]));
+        }
+
+        $response = $this->actingAs($admin)->get(route('dashboard.riwayat'))->assertOk();
+        $this->assertCount(20, $response->viewData('rows'));
+        $this->assertSame(22, $response->viewData('paginator')->total());
+    }
+
+    public function test_web_history_filters_by_dates_and_exports_csv(): void
+    {
+        $admin = User::factory()->admin()->create();
+        Carbon::setTestNow('2026-11-10 08:00:00');
+        ReadingIngester::ingestPayload('growvia/node1/data', (string) json_encode(['temperature' => 25.5, 'humidity' => 65]));
+        Carbon::setTestNow('2026-11-12 08:00:00');
+        ReadingIngester::ingestPayload('growvia/node1/data', (string) json_encode(['temperature' => 28.4, 'humidity' => 70]));
+
+        $filtered = $this->actingAs($admin)
+            ->get(route('dashboard.riwayat', ['from' => '2026-11-12', 'to' => '2026-11-12']))
+            ->assertOk();
+        $this->assertCount(1, $filtered->viewData('rows'));
+        $filtered->assertSee('28.4')->assertDontSee('25.5');
+
+        $csv = $this->actingAs($admin)
+            ->get(route('dashboard.riwayat.export', ['node' => 'node1', 'from' => '2026-11-12', 'to' => '2026-11-12']))
+            ->assertOk();
+        $this->assertStringStartsWith('text/csv', (string) $csv->headers->get('Content-Type'));
+        $body = $csv->streamedContent();
+        $this->assertStringContainsString('waktu,node,temperature,humidity', $body);
+        $this->assertStringContainsString('28.4', $body);
+        $this->assertStringNotContainsString('25.5', $body);
+    }
+
+    public function test_petani_pages_render_real_readings_and_empty_state(): void
+    {
+        $petani = User::factory()->create();
+
+        $this->actingAs($petani)->get(route('petani.dashboard'))
+            ->assertOk()
+            ->assertSee('Sensor belum tersambung.');
+
+        Carbon::setTestNow(now());
+        ReadingIngester::ingestPayload('growvia/node1/data', (string) json_encode([
+            'temperature' => 27.5, 'humidity' => 68.0, 'temperature2' => 28.5, 'humidity2' => 70.0, 'fan1' => 1, 'fan2' => 0,
+        ]));
+        ReadingIngester::ingestPayload('growvia/node2/data', (string) json_encode([
+            'soil_moisture' => 45.0, 'water_level' => 80.0, 'pump' => 1,
+        ]));
+
+        $this->actingAs($petani)->get(route('petani.dashboard'))
+            ->assertOk()
+            ->assertDontSee('Sensor belum tersambung.')
+            ->assertSee('28.0')
+            ->assertSee('80.0');
+
+        $this->actingAs($petani)->get(route('petani.node1'))
+            ->assertOk()
+            ->assertSee('27.5')
+            ->assertSee('28.5')
+            ->assertSee('Menyala');
+
+        $this->actingAs($petani)->get(route('petani.node2'))
+            ->assertOk()
+            ->assertSee('45.0')
+            ->assertSee('80.0')
+            ->assertSee('Menyala');
+    }
+
+    public function test_mqtt_page_reflects_admin_settings_and_topics(): void
+    {
+        $admin = User::factory()->admin()->create();
+        Setting::query()->updateOrCreate(['key' => 'mqtt_host'], ['value' => 'broker.kebun.local']);
+        Setting::query()->updateOrCreate(['key' => 'mqtt_port'], ['value' => '1884']);
+        Setting::query()->updateOrCreate(['key' => 'mqtt_topic'], ['value' => 'kebun/utama/node']);
+
+        $this->actingAs($admin)->get(route('dashboard.mqtt'))
+            ->assertOk()
+            ->assertSee('broker.kebun.local:1884')
+            ->assertSee('kebun/utama/node1/data')
+            ->assertSee('kebun/utama/node2/data');
     }
 }

@@ -9,7 +9,7 @@
 
 <div class="stack">
     <section class="panel">
-        <div class="panel-header"><div><h2 class="panel-title">Konfigurasi broker</h2><p class="panel-subtitle">Dari .env, bukan dari UI.</p></div></div>
+        <div class="panel-header"><div><h2 class="panel-title">Konfigurasi broker</h2><p class="panel-subtitle">Mengikuti Pengaturan admin (fallback ke .env bila kosong).</p></div><a class="text-link" href="{{ route('settings.index') }}">Ubah di Pengaturan <x-icon name="arrow" /></a></div>
         <div class="panel-body">
             <dl class="definition-list">
                 <div><dt>Host</dt><dd>{{ $mqtt['host'] }}:{{ $mqtt['port'] }}</dd></div>
@@ -35,7 +35,7 @@
             <dl class="definition-list">
                 <div><dt>Node 1</dt><dd>{{ $counts['node1'] }} baris</dd></div>
                 <div><dt>Node 2</dt><dd>{{ $counts['node2'] }} baris</dd></div>
-                <div><dt>Terakhir</dt><dd>{{ $lastRecorded ?: 'Belum ada' }}</dd></div>
+                <div><dt>Terakhir</dt><dd>{{ $lastRecorded ? \Illuminate\Support\Carbon::parse($lastRecorded)->timezone(config('app.timezone'))->format('d/m H:i:s T') : 'Belum ada' }}</dd></div>
             </dl>
         </div>
     </section>

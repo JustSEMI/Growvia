@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
+use App\Models\Reading;
 use App\Models\Setting;
 
 /**
@@ -33,5 +34,21 @@ final class MqttConnectionSettings
 
             config([$prefix.'.'.$configKey => $configKey === 'port' ? (int) $value : $value]);
         }
+    }
+
+    /**
+     * Topik dasar dari pengaturan admin dinormalisasi menjadi {base}/node{1,2}/data.
+     *
+     * @return list<string>
+     */
+    public static function topics(): array
+    {
+        $base = rtrim((string) (Setting::query()->where('key', 'mqtt_topic')->value('value')
+            ?: SettingRules::DEFAULTS['mqtt_topic']), '/');
+        if (str_ends_with($base, '/node')) {
+            $base = substr($base, 0, -strlen('/node'));
+        }
+
+        return array_map(fn (string $node): string => $base.'/'.$node.'/data', Reading::NODES);
     }
 }

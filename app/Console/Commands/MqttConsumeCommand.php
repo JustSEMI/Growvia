@@ -4,11 +4,8 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Models\Reading;
-use App\Models\Setting;
 use App\Support\MqttConnectionSettings;
 use App\Support\ReadingIngester;
-use App\Support\SettingRules;
 use Illuminate\Console\Command;
 use PhpMqtt\Client\Facades\MQTT;
 use Throwable;
@@ -21,15 +18,8 @@ class MqttConsumeCommand extends Command
 
     public function handle(): int
     {
-        // Topik dasar dari pengaturan admin dinormalisasi agar selalu berujung
-        // {base}/node{1,2}/data: 'growvia/node', 'growvia/', atau 'growvia'.
-        $base = rtrim((string) (Setting::query()->where('key', 'mqtt_topic')->value('value')
-            ?: SettingRules::DEFAULTS['mqtt_topic']), '/');
-        if (str_ends_with($base, '/node')) {
-            $base = substr($base, 0, -strlen('/node'));
-        }
+        $topics = MqttConnectionSettings::topics();
 
-        // php-mqtt/laravel-client >= 1.8: MQTT::connection() langsung connect sesuai config.
         // Host, port, dan username dari pengaturan admin menimpa nilai .env saat terisi.
         MqttConnectionSettings::apply();
         try {
@@ -41,8 +31,8 @@ class MqttConsumeCommand extends Command
         }
 
         $accepted = 0;
-        foreach (Reading::NODES as $node) {
-            $client->subscribe($base.'/'.$node.'/data', function (string $topic, string $message) use (&$accepted): void {
+        foreach ($topics as $topic) {
+            $client->subscribe($topic, function (string $topic, string $message) use (&$accepted): void {
                 try {
                     $stored = ReadingIngester::ingestPayload($topic, $message);
                     $accepted += $stored;
@@ -55,7 +45,7 @@ class MqttConsumeCommand extends Command
             }, 0);
         }
 
-        $this->info(sprintf('Menunggu data sensor di %s/{node1,node2}/data (Ctrl+C untuk berhenti)…', $base));
+        $this->info('Menunggu data sensor di '.implode(', ', $topics).' (Ctrl+C untuk berhenti)…');
         $client->loop(true);
 
         return self::SUCCESS;
