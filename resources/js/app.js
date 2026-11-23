@@ -6,13 +6,7 @@ import './notifications.js';
 
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
-// === Penghubungan halaman ===
-// Turbo Drive menukar <body> saat berpindah halaman tanpa reload penuh, jadi
-// semua ikatan berbasis elemen harus dijalankan ulang di setiap kunjungan.
-// Pendengar di level document/window dipasang sekali di module scope (di bawah),
-// sedangkan bindPage() berjalan pada turbo:load, termasuk saat memuat pertama.
-
-// === Dialog konfirmasi ===
+// Turbo Drive menukar <body> tiap navigasi; listener global dipasang sekali di bawah.
 const approved = new WeakSet();
 const submissions = new WeakSet();
 const submissionTimers = new WeakMap();
@@ -78,7 +72,7 @@ document.addEventListener('keydown', (event) => {
     if (event.key === 'Escape') resetSubmissions();
 });
 
-// === Menu navigasi seluler (delegasi, aman terhadap pergantian DOM) ===
+// Tutup menu navigasi seluler saat klik di luar atau tekan Escape.
 document.addEventListener('click', (event) => {
     for (const menu of document.querySelectorAll('details[data-mobile-nav][open]')) {
         if (!menu.contains(event.target)) menu.open = false;
@@ -92,15 +86,6 @@ document.addEventListener('keydown', (event) => {
     menu.querySelector('summary')?.focus();
 });
 
-// === Pintasan keyboard R untuk tombol refresh utama ===
-window.addEventListener('keydown', (event) => {
-    if (event.ctrlKey || event.altKey || event.metaKey) return;
-    const tag = document.activeElement?.tagName;
-    if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
-    if (event.key.toLowerCase() === 'r') document.querySelector('[data-refresh]')?.click();
-});
-
-// === Reveal-on-scroll: satu observer, mengamati elemen halaman baru tiap kunjungan ===
 const revealed = new WeakSet();
 const revealObserver = !reduceMotion.matches && 'IntersectionObserver' in window
     ? new IntersectionObserver((entries) => {
@@ -112,34 +97,15 @@ const revealObserver = !reduceMotion.matches && 'IntersectionObserver' in window
     }, { threshold: 0.04 })
     : null;
 
-// === Scrollspy section nav: state per halaman, dibaca ulang oleh hashchange di bawah ===
 let navSectionState = null;
 document.addEventListener('hashchange', () => navSectionState?.onHash());
 
-// Identitas <body> dipakai sebagai penanda halaman: Turbo Drive mengganti
-// seluruh elemen body pada tiap kunjungan, jadi pemanggilan berulang pada
-// halaman yang sama cukup diabaikan (termasuk turbo:load pertama).
+// Turbo Drive mengganti <body> di tiap kunjungan; boundBody mencegah ikatan ganda pada body yang sama.
 let boundBody = null;
 
 const bindPage = () => {
     if (document.body === boundBody) return;
     boundBody = document.body;
-    // Tombol "Segarkan" di header halaman: animasi ikon putar + teks "Menyegarkan...",
-    // lalu reload ulang halaman untuk menampilkan data terbaru.
-    for (const button of document.querySelectorAll('[data-refresh]')) {
-        button.addEventListener('click', () => {
-            if (button.classList.contains('is-refreshing')) return;
-            const text = button.querySelector('[data-refresh-text]');
-            const original = text ? text.textContent : '';
-
-            button.classList.add('is-refreshing');
-            button.setAttribute('disabled', '');
-            if (text) text.textContent = 'Menyegarkan...';
-
-            // Memberi kesempatan animasi ikon (0,85 detik) terlihat sebelum benar-benar reload.
-            setTimeout(() => window.location.reload(), reduceMotion.matches ? 0 : 850);
-        });
-    }
 
     for (const button of document.querySelectorAll('[data-sidebar-toggle]')) {
         button.hidden = false;

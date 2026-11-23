@@ -17,6 +17,6 @@
 <section class="panel form-section form-section--neutral form-section--row" id="sessions" aria-labelledby="sessions-title" data-reveal>
     <div class="panel-header"><div><p class="eyebrow">03 · Aktivitas akun</p><h2 class="panel-title mt-2" id="sessions-title">Sesi perangkat</h2><p class="panel-subtitle">Cek perangkat yang lagi nyambung ke akunmu.</p></div></div>
     <div class="panel-body">
-        <a class="settings-link-row" href="{{ route('sessions.index') }}"><span class="icon-tile"><x-icon name="clock" /></span><span class="settings-link-copy"><strong>Daftar sesi aktif</strong><small>Keluarin perangkat yang nggak kamu kenal.</small></span><x-icon name="arrow" class="settings-link-arrow" /></a>
+        <a class="settings-link-row" href="{{ route('sessions.index', request()->routeIs('petani.*') ? ['panel' => 'petani'] : []) }}"><span class="icon-tile"><x-icon name="clock" /></span><span class="settings-link-copy"><strong>Daftar sesi aktif</strong><small>Keluarin perangkat yang nggak kamu kenal.</small></span><x-icon name="arrow" class="settings-link-arrow" /></a>
     </div>
 </section>

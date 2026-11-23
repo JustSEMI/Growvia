@@ -15,19 +15,12 @@ use Illuminate\Validation\ValidationException;
 final class AccountMutation
 {
     /**
-     * Mutate accounts using fresh rows, without changing the request or session.
-     *
-     * Keep irreversible side effects outside the retryable callback. Callers remain
-     * responsible for authorization, input validation, and keeping their session.
+     * Mutasi akun pada baris terkunci; simpan efek samping ireversibel di luar callback.
      *
      * @template TReturn
      *
      * @param  Closure(User, ?User): TReturn  $callback
      * @return TReturn
-     *
-     * @throws AuthenticationException
-     * @throws ModelNotFoundException
-     * @throws ValidationException
      */
     public static function run(Request $request, Closure $callback, ?User $target = null): mixed
     {

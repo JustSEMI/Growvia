@@ -2,11 +2,11 @@
 
 namespace App\Providers;
 
-use App\Http\Controllers\SettingsController;
 use App\Models\ActivityLog;
 use App\Models\Setting;
 use App\Models\User;
 use App\Observers\UserObserver;
+use App\Support\SettingRules;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Cache\RateLimiting\Limit;
@@ -29,18 +29,21 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Gagal lebih awal dengan pesan jelas bila APP_KEY kosong. Konsol dikecualikan
-        // agar key:generate dan hook package:discover composer tetap dapat berjalan.
+        // Konsol dikecualikan agar key:generate dan package:discover tetap berjalan.
         if (! $this->app->runningInConsole() && blank(config('app.key'))) {
             throw new \RuntimeException('APP_KEY belum diatur. Jalankan: php artisan key:generate');
         }
 
-        RateLimiter::for('mobile-login', function (Request $request): array {
+        $perIpAndEmail = function (Request $request): array {
             $email = $request->input('email');
             $key = hash('sha256', is_string($email) ? mb_strtolower(trim($email)) : 'invalid');
 
             return [Limit::perMinute(5)->by('ip:'.$request->ip()), Limit::perMinute(5)->by('email:'.$key)];
-        });
+        };
+
+        RateLimiter::for('mobile-login', $perIpAndEmail);
+        RateLimiter::for('recovery', $perIpAndEmail);
+        RateLimiter::for('reset-submit', $perIpAndEmail);
         RateLimiter::for('mobile-api', fn (Request $request): array => [
             Limit::perMinute(120)->by('ip:'.$request->ip()),
         ]);
@@ -48,25 +51,6 @@ class AppServiceProvider extends ServiceProvider
             Limit::perMinute(6)->by('account:'.$request->user()->getAuthIdentifier()),
             Limit::perMinute(6)->by('ip:'.$request->ip()),
         ]);
-
-        RateLimiter::for('recovery', function (Request $request): array {
-            $email = $request->input('email');
-            $key = hash('sha256', is_string($email) ? mb_strtolower(trim($email)) : 'invalid');
-
-            return [
-                Limit::perMinute(5)->by('ip:'.$request->ip()),
-                Limit::perMinute(5)->by('email:'.$key),
-            ];
-        });
-        RateLimiter::for('reset-submit', function (Request $request): array {
-            $email = $request->input('email');
-            $key = hash('sha256', is_string($email) ? mb_strtolower(trim($email)) : 'invalid');
-
-            return [
-                Limit::perMinute(5)->by('ip:'.$request->ip()),
-                Limit::perMinute(5)->by('email:'.$key),
-            ];
-        });
 
         User::observe(UserObserver::class);
         Event::listen(Login::class, function (Login $event): void {
@@ -84,7 +68,7 @@ class AppServiceProvider extends ServiceProvider
 
         View::composer(['dashboard', 'petani.node1', 'petani.node2'], function (\Illuminate\View\View $view): void {
             $view->with('monitorSettings', array_merge(
-                SettingsController::DEFAULTS,
+                SettingRules::DEFAULTS,
                 Setting::query()->pluck('value', 'key')->all(),
             ));
         });

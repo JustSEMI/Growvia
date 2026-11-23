@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="id">
-<head><x-document-head description="Growvia — informasi halaman dan akses ruang kerja." /></head>
+<head><x-document-head description="Growvia: informasi halaman dan akses ruang kerja." /></head>
 <body>
 <main class="error-shell" id="main-content">
     <div class="error-tools"><x-language-select /><x-theme-select /></div>

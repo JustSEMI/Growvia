@@ -23,9 +23,8 @@ class ReadingsWebController extends Controller
     ];
 
     /**
-     * Kartu metrik dashboard: satu kartu per besaran, nilainya rata-rata
-     * dari sensor-sensor yang mengukur besaran yang sama. Sensor yang
-     * belum mengirim tetap dihitung sebagai "1 dari N" di catatan kartu.
+     * Satu kartu per besaran: rata-rata sensor yang mengukurnya, dan
+     * sensor yang belum mengirim tetap dilaporkan sebagai "1 dari N".
      *
      * @var array<string, list<array{metrics: list<string>, label: string, icon: string, tone: string, unit: string}>>
      */
@@ -78,8 +77,7 @@ class ReadingsWebController extends Controller
     }
 
     /**
-     * Hitung nilai rata-rata per kartu dari pembacaan terbaru tiap sensor,
-     * beserta catatan jumlah sensor yang ikut dihitung.
+     * Rata-rata pembacaan terbaru per kartu, dengan catatan sensor yang ikut dihitung.
      *
      * @param  array<string, array<string, Reading>>  $latest
      * @return array<string, list<array{label: string, icon: string, tone: string, unit: string, value: ?string, note: string}>>
@@ -260,12 +258,25 @@ class ReadingsWebController extends Controller
      */
     private function latestPerNodeMetric(): array
     {
+        $latestTimes = Reading::query()
+            ->selectRaw('node, metric, MAX(recorded_at) as max_at')
+            ->groupBy('node', 'metric');
+
+        $latestIds = Reading::query()
+            ->joinSub($latestTimes, 'latest', function ($join): void {
+                $join->on('readings.node', '=', 'latest.node')
+                    ->on('readings.metric', '=', 'latest.metric')
+                    ->on('readings.recorded_at', '=', 'latest.max_at');
+            })
+            ->selectRaw('MAX(readings.id) as id')
+            ->groupBy('readings.node', 'readings.metric');
+
         $rows = Reading::query()
-            ->orderByDesc('recorded_at')->orderByDesc('id')
+            ->whereIn('id', $latestIds)
             ->get(['node', 'metric', 'value', 'unit', 'recorded_at']);
 
         return $rows->groupBy('node')->map(
-            fn (Collection $group) => $group->unique('metric')->keyBy('metric')
+            fn (Collection $group) => $group->keyBy('metric')
         )->all();
     }
 

@@ -15,6 +15,30 @@ use Illuminate\Validation\Rule;
  */
 final class SettingRules
 {
+    public const DEFAULTS = [
+        'mqtt_host' => '',
+        'mqtt_port' => '1883',
+        'mqtt_user' => '',
+        'mqtt_topic' => 'growvia/node',
+        'update_interval' => '10',
+        'th_suhu_min' => '25',
+        'th_suhu_max' => '30',
+        'th_hum_min' => '60',
+        'th_hum_max' => '80',
+        'th_light_min' => '20',
+        'soil_on' => '30',
+        'soil_off' => '60',
+        'tank_min' => '20',
+        'pump_max_run' => '15',
+        'pump_mode' => 'auto',
+        'notif_pompa' => '1',
+        'notif_cahaya' => '1',
+        'notif_tandon' => '1',
+        'notif_offline' => '1',
+        'backup_schedule' => '',
+        'backup_keep_days' => '7',
+    ];
+
     /** @var list<string> */
     public const NOTIFICATION_KEYS = [
         'notif_pompa',

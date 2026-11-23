@@ -9,6 +9,7 @@ use App\Models\Setting;
 use App\Models\User;
 use App\Support\AccountMutation;
 use App\Support\DatabaseBackup;
+use App\Support\SettingRules;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -25,7 +26,7 @@ class BackupWebController extends Controller
     public function index(): View
     {
         $stored = Setting::query()->whereIn('key', ['backup_schedule', 'backup_keep_days'])->pluck('value', 'key')->all();
-        $raw = (string) ($stored['backup_schedule'] ?? SettingsController::DEFAULTS['backup_schedule']);
+        $raw = (string) ($stored['backup_schedule'] ?? SettingRules::DEFAULTS['backup_schedule']);
 
         $parsed = ['mode' => 'off', 'time' => '02:30', 'interval' => 3600];
         if (str_starts_with($raw, 'daily@')) {
@@ -41,7 +42,7 @@ class BackupWebController extends Controller
             'state' => $this->backups->state(),
             'schedule' => [
                 'backup_schedule' => $raw,
-                'backup_keep_days' => (string) ($stored['backup_keep_days'] ?? SettingsController::DEFAULTS['backup_keep_days']),
+                'backup_keep_days' => (string) ($stored['backup_keep_days'] ?? SettingRules::DEFAULTS['backup_keep_days']),
             ],
             'parsed' => $parsed,
             'formats' => DatabaseBackup::FORMATS,
@@ -96,9 +97,8 @@ class BackupWebController extends Controller
                 } catch (RuntimeException $exception) {
                     throw new HttpException(500, $exception->getMessage());
                 }
-                $keepDays = (int) (Setting::query()->where('key', 'backup_keep_days')->value('value') ?: 7);
-                $this->backups->prune(max(1, $keepDays));
-                ActivityLog::record('backup.created', $actor, null, ['backup_file' => $created['name']]);
+                $this->backups->pruneConfigured();
+                ActivityLog::record('backup.created', $actor, null, ['backup_file']);
 
                 return $created;
             });
@@ -124,7 +124,7 @@ class BackupWebController extends Controller
             AccountMutation::run($request, function (User $actor) use ($name): void {
                 abort_unless($actor->isAdmin(), 403);
                 $this->backups->delete($name);
-                ActivityLog::record('backup.deleted', $actor, null, ['backup_file' => $name]);
+                ActivityLog::record('backup.deleted', $actor, null, ['backup_file']);
             });
         } catch (HttpException $exception) {
             if ($exception->getStatusCode() === 404) {

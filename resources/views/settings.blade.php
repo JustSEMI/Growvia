@@ -1,5 +1,5 @@
 @extends('layouts.admin')
-@section('title', 'Pengaturan — Growvia')
+@section('title', 'Pengaturan - Growvia')
 @section('page', 'Pengaturan')
 
 @section('content')
@@ -7,8 +7,26 @@
 <x-page-header title="Atur-atur kebunmu." description="Urus akun, koneksi, dan settingan tempat tumbuh di sini."><x-slot:eyebrow>Kelola / Pengaturan</x-slot:eyebrow></x-page-header>
 <x-alerts />
 <div class="settings-layout">
-    <nav class="settings-nav" aria-label="Bagian pengaturan"><a href="#profile"><x-icon name="users" />Profil kamu<span class="settings-nav-num">01</span></a><a href="#security"><x-icon name="shield" />Kata sandi<span class="settings-nav-num">02</span></a><a href="#sessions"><x-icon name="clock" />Sesi perangkat<span class="settings-nav-num">03</span></a><a href="#mqtt"><x-icon name="connection" />Koneksi MQTT<span class="settings-nav-num">04</span></a><a href="#climate"><x-icon name="sun" />Ambang iklim<span class="settings-nav-num">05</span></a><a href="#soil"><x-icon name="drop" />Tanah & pompa<span class="settings-nav-num">06</span></a><a href="#notifications"><x-icon name="info" />Notifikasi<span class="settings-nav-num">07</span></a></nav>
+    <div class="settings-aside">
+        <nav class="settings-nav" aria-label="Bagian pengaturan"><a href="#profile"><x-icon name="users" />Profil kamu<span class="settings-nav-num">01</span></a><a href="#security"><x-icon name="shield" />Kata sandi<span class="settings-nav-num">02</span></a><a href="#sessions"><x-icon name="clock" />Sesi perangkat<span class="settings-nav-num">03</span></a><a href="#mqtt"><x-icon name="connection" />Koneksi MQTT<span class="settings-nav-num">04</span></a><a href="#climate"><x-icon name="sun" />Ambang iklim<span class="settings-nav-num">05</span></a><a href="#soil"><x-icon name="drop" />Tanah & pompa<span class="settings-nav-num">06</span></a><a href="#notifications"><x-icon name="info" />Notifikasi<span class="settings-nav-num">07</span></a></nav>
+        <div class="settings-tips">
+            <p class="settings-tips-title"><x-icon name="leaf" />Jaga akunmu tetap aman</p>
+            <p class="settings-tip"><x-icon name="shield" />Pake kata sandi unik yang nggak kepake di aplikasi lain.</p>
+            <p class="settings-tip"><x-icon name="clock" />Sering-sering cek daftar sesi, keluarin perangkat yang nggak kamu kenal.</p>
+            <p class="settings-tip"><x-icon name="mail" />Email aktif kepake buat kirim tautan pemulihan kata sandi.</p>
+        </div>
+    </div>
     <div class="stack">
+        <section class="panel account-card" data-reveal aria-label="Ringkasan akun">
+            <span class="avatar">{{ mb_strtoupper(mb_substr($user->name, 0, 1)) }}</span>
+            <div class="account-card-copy">
+                <p class="eyebrow">Akun aktif</p>
+                <strong>{{ $user->name }}</strong>
+                <small><x-icon name="mail" />{{ $user->email }}</small>
+                <small><x-icon name="clock" />Bergabung {{ $user->created_at?->format('d/m/Y') }}</small>
+            </div>
+            <x-badge>{{ $user->isAdmin() ? 'Administrator' : 'Petani' }}</x-badge>
+        </section>
         <x-account-forms :user="$user" />
         <section class="panel form-section form-section--amber" id="mqtt" aria-labelledby="mqtt-title" data-reveal>
             <div class="panel-header"><div><p class="eyebrow">04 · Node & koneksi</p><h2 class="panel-title mt-2" id="mqtt-title">Broker MQTT</h2><p class="panel-subtitle">Koneksi yang dipakai consumer data sensor. Kosongkan untuk pakai nilai .env.</p></div><x-badge tone="green">Aktif</x-badge></div>
@@ -43,7 +61,7 @@
                     <x-field name="soil_off" label="Berhenti menyiram di atas (%)" type="number" step="1" min="0" max="100" :value="old('soil_off', data_get($settings, 'soil_off'))" :required="true" />
                     <x-field name="tank_min" label="Isi minimum tandon (%)" type="number" step="1" min="0" max="100" :value="old('tank_min', data_get($settings, 'tank_min'))" :required="true" />
                     <x-field name="pump_max_run" label="Durasi maksimum (menit)" type="number" min="1" max="120" :value="old('pump_max_run', data_get($settings, 'pump_max_run'))" :required="true" />
-                    <div class="field span-full"><label class="field-label" for="pump_mode">Mode pompa</label><select class="field-input" id="pump_mode" name="pump_mode" data-custom-select required @if($errors->has('pump_mode')) aria-invalid="true" aria-describedby="pump_mode-error" @endif><option value="auto" @selected(old('pump_mode', data_get($settings, 'pump_mode')) === 'auto')>Otomatis — ngikutin ambang tanah</option><option value="manual" @selected(old('pump_mode', data_get($settings, 'pump_mode')) === 'manual')>Manual — lewat kontrol operator</option></select><p class="field-hint">Kontrol perangkat belum aktif.</p>@error('pump_mode')<p class="field-error" id="pump_mode-error">{{ $message }}</p>@enderror</div>
+                    <div class="field span-full"><label class="field-label" for="pump_mode">Mode pompa</label><select class="field-input" id="pump_mode" name="pump_mode" data-custom-select required @if($errors->has('pump_mode')) aria-invalid="true" aria-describedby="pump_mode-error" @endif><option value="auto" @selected(old('pump_mode', data_get($settings, 'pump_mode')) === 'auto')>Otomatis (mengikuti ambang tanah)</option><option value="manual" @selected(old('pump_mode', data_get($settings, 'pump_mode')) === 'manual')>Manual (lewat kontrol operator)</option></select><p class="field-hint">Kontrol perangkat belum aktif.</p>@error('pump_mode')<p class="field-error" id="pump_mode-error">{{ $message }}</p>@enderror</div>
                 </div><div class="form-actions"><button class="button" type="submit">Simpan tanah & pompa</button></div>
             </form>
         </section>

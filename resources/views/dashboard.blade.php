@@ -1,5 +1,5 @@
 @extends('layouts.admin')
-@section('title', 'Ringkasan — Growvia')
+@section('title', 'Ringkasan - Growvia')
 @section('page', 'Ringkasan')
 
 @php

@@ -1,9 +1,9 @@
 @extends('layouts.petani')
-@section('title', 'Tanah & air — Growvia')
+@section('title', 'Tanah & air - Growvia')
 @section('page', 'Tanah & air')
 
 @section('content')
-<x-page-header title="Tanah & air." description="Tanah, tandon, pompa — angka terakhir dari database."><x-slot:eyebrow>Device 2 / Tanah &amp; air</x-slot:eyebrow></x-page-header>
+<x-page-header title="Tanah & air." description="Tanah, tandon, dan pompa: angka terakhir dari database."><x-slot:eyebrow>Device 2 / Tanah &amp; air</x-slot:eyebrow></x-page-header>
 <x-connection-notice />
 <div class="metrics-grid">
     <x-metric-tile label="Tanah" unit="%" icon="leaf" />

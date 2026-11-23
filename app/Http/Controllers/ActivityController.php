@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Models\ActivityLog;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
@@ -29,25 +28,16 @@ class ActivityController extends Controller
             'to.date_format' => 'Tanggal akhir harus berformat tahun-bulan-tanggal.',
             'to.after_or_equal' => 'Tanggal akhir tidak boleh sebelum tanggal mulai.',
         ])->validate();
-        $query = ActivityLog::query();
 
-        $search = $filters['q'] ?? '';
-
-        if ($search !== '') {
-            $query->where(function (Builder $query) use ($search): void {
-                $query->where('actor_name', 'like', '%'.$search.'%')
-                    ->orWhere('subject_name', 'like', '%'.$search.'%');
-            });
-        }
-
-        if ($action = $filters['action'] ?? null) {
-            $query->where('action', $action);
-        }
-
-        $query->betweenDates($filters['from'] ?? null, $filters['to'] ?? null);
+        $activities = ActivityLog::query()
+            ->filter($filters)
+            ->latest('created_at')
+            ->latest('id')
+            ->paginate(15)
+            ->appends($filters);
 
         return view('activity', [
-            'activities' => $query->latest('created_at')->latest('id')->paginate(15)->appends($filters),
+            'activities' => $activities,
             'filters' => $filters,
             'filtered' => collect($filters)->contains(fn (?string $value): bool => $value !== null && $value !== ''),
             'search' => $filters['q'] ?? '',

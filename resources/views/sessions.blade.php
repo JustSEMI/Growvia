@@ -1,5 +1,5 @@
 @extends($layout)
-@section('title', 'Sesi perangkat — Growvia')
+@section('title', 'Sesi perangkat - Growvia')
 @section('page', 'Sesi perangkat')
 
 @section('content')

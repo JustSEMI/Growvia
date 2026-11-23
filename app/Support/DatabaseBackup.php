@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
+use App\Models\Setting;
 use Phar;
 use PharData;
 use RuntimeException;
@@ -149,6 +150,13 @@ final class DatabaseBackup
         if (! is_file($path) || ! @unlink($path)) {
             abort(404);
         }
+    }
+
+    public function pruneConfigured(): void
+    {
+        $keepDays = (int) (Setting::query()->where('key', 'backup_keep_days')->value('value')
+            ?: SettingRules::DEFAULTS['backup_keep_days']);
+        $this->prune(max(1, $keepDays));
     }
 
     public function prune(int $keepDays): void

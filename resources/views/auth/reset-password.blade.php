@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title', 'Atur ulang kata sandi — Growvia')
+@section('title', 'Atur ulang kata sandi - Growvia')
 
 @section('content')
 <span class="icon-tile"><x-icon name="shield" /></span><h1>Bikin kata sandi baru.</h1><p>Bikin kata sandi yang unik biar ruang kerjamu aman.</p>

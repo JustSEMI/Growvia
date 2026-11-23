@@ -1,9 +1,9 @@
 @extends('layouts.petani')
-@section('title', 'Iklim — Growvia')
+@section('title', 'Iklim - Growvia')
 @section('page', 'Iklim')
 
 @section('content')
-<x-page-header title="Iklim." description="Suhu, kelembapan, kipas — angka terakhir dari database."><x-slot:eyebrow>Device 1 / Iklim</x-slot:eyebrow></x-page-header>
+<x-page-header title="Iklim." description="Suhu, kelembapan, dan kipas: angka terakhir dari database."><x-slot:eyebrow>Device 1 / Iklim</x-slot:eyebrow></x-page-header>
 <x-connection-notice />
 <div class="metrics-grid">
     <x-metric-tile label="Suhu" unit="°C" icon="thermometer" tone="amber" />

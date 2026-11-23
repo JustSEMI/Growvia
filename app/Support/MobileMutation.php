@@ -47,9 +47,8 @@ final class MobileMutation
     }
 
     /**
-     * Roll back observer session deletions on a separate connection on failure.
-     * Independent database commits are not a distributed transaction; auth_version
-     * still makes any surviving web session unusable after account revocation.
+     * Commit lintas koneksi untuk membatalkan penghapusan sesi bila mutasi gagal.
+     * Sesi web yang tersisa tetap tertolak lewat pemeriksaan auth_version.
      */
     public static function atomic(Closure $callback): mixed
     {

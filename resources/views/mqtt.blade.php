@@ -1,5 +1,5 @@
 @extends('layouts.admin')
-@section('title', 'MQTT — Growvia')
+@section('title', 'MQTT - Growvia')
 @section('page', 'MQTT')
 
 @section('content')

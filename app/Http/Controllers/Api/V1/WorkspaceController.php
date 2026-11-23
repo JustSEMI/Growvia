@@ -76,16 +76,11 @@ class WorkspaceController extends Controller
             'to' => ['nullable', 'date_format:Y-m-d', Rule::when($request->filled('from'), ['after_or_equal:from'])],
             'page' => ['nullable', 'integer', 'min:1', 'max:1000000'],
         ]);
-        $query = ActivityLog::query();
-        $search = $filters['q'] ?? '';
-        if ($search !== '') {
-            $query->where(fn ($query) => $query->where('actor_name', 'like', '%'.$search.'%')->orWhere('subject_name', 'like', '%'.$search.'%'));
-        }
-        if ($action = $filters['action'] ?? null) {
-            $query->where('action', $action);
-        }
-        $query->betweenDates($filters['from'] ?? null, $filters['to'] ?? null);
-        $page = $query->latest('created_at')->latest('id')->paginate(15);
+        $page = ActivityLog::query()
+            ->filter($filters)
+            ->latest('created_at')
+            ->latest('id')
+            ->paginate(15);
 
         return response()->json(MobileInput::page($page, MobileActivityResource::class, $request) + ['actions' => ActivityLog::actionLabels(), 'timezone' => 'UTC'])->header('Cache-Control', 'no-store');
     }

@@ -1,5 +1,5 @@
 @extends('layouts.admin')
-@section('title', 'Pengguna — Growvia')
+@section('title', 'Pengguna - Growvia')
 @section('page', 'Pengguna')
 
 @section('content')

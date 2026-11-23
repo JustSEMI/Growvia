@@ -1,5 +1,5 @@
 @extends('layouts.admin')
-@section('title', 'Backup — Growvia')
+@section('title', 'Backup - Growvia')
 @section('page', 'Backup')
 
 @section('content')
@@ -11,7 +11,7 @@
         <div class="panel-header"><div><p class="eyebrow">01 · Penjadwalan</p><h2 class="panel-title mt-2" id="backup-schedule-title">Jadwal backup</h2><p class="panel-subtitle">Scheduler mengecek tiap menit; jam mengikuti zona server (UTC).</p></div><span class="icon-tile"><x-icon name="clock" /></span></div>
         <form method="POST" action="{{ route('dashboard.backup.schedule') }}">@csrf
             <div class="panel-body form-grid">
-                <div class="field span-full"><label class="field-label" for="backup_mode">Mode jadwal</label><select class="field-input" id="backup_mode" name="backup_mode" data-custom-select required @if($errors->has('backup_mode')) aria-invalid="true" aria-describedby="backup_mode-error" @endif><option value="off" @selected(old('backup_mode', $parsed['mode']) === 'off')>Nonaktif — backup manual saja</option><option value="daily" @selected(old('backup_mode', $parsed['mode']) === 'daily')>Harian — sekali sehari</option><option value="every" @selected(old('backup_mode', $parsed['mode']) === 'every')>Interval — tiap beberapa detik</option></select>@error('backup_mode')<p class="field-error" id="backup_mode-error">{{ $message }}</p>@enderror</div>
+                <div class="field span-full"><label class="field-label" for="backup_mode">Mode jadwal</label><select class="field-input" id="backup_mode" name="backup_mode" data-custom-select required @if($errors->has('backup_mode')) aria-invalid="true" aria-describedby="backup_mode-error" @endif><option value="off" @selected(old('backup_mode', $parsed['mode']) === 'off')>Nonaktif (backup manual saja)</option><option value="daily" @selected(old('backup_mode', $parsed['mode']) === 'daily')>Harian (sekali sehari)</option><option value="every" @selected(old('backup_mode', $parsed['mode']) === 'every')>Interval (tiap beberapa detik)</option></select>@error('backup_mode')<p class="field-error" id="backup_mode-error">{{ $message }}</p>@enderror</div>
                 <x-field name="backup_time" label="Jam backup (UTC)" type="time" :value="old('backup_time', $parsed['time'])" hint="Dipakai saat mode harian." />
                 <x-field name="backup_interval" label="Interval (detik)" type="number" min="60" max="999999" :value="old('backup_interval', $parsed['interval'])" hint="Dipakai saat mode interval; minimum 60 detik." />
                 <div class="span-full"><x-field name="backup_keep_days" label="Simpan berapa hari" type="number" min="1" max="90" :value="old('backup_keep_days', $schedule['backup_keep_days'])" :required="true" hint="Berkas lebih tua dari umur ini dihapus otomatis." /></div>

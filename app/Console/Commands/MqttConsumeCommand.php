@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Http\Controllers\SettingsController;
 use App\Models\Reading;
 use App\Models\Setting;
 use App\Support\MqttConnectionSettings;
 use App\Support\ReadingIngester;
+use App\Support\SettingRules;
 use Illuminate\Console\Command;
 use PhpMqtt\Client\Facades\MQTT;
 use Throwable;
@@ -21,18 +21,16 @@ class MqttConsumeCommand extends Command
 
     public function handle(): int
     {
-        // Topik dasar mengikuti pengaturan admin (panel web). Nilai boleh
-        // 'growvia/node', 'growvia/', atau 'growvia' — dinormalisasi agar
-        // filter selalu berujung {base}/node{1,2}/data sesuai ReadingIngester.
+        // Topik dasar dari pengaturan admin dinormalisasi agar selalu berujung
+        // {base}/node{1,2}/data: 'growvia/node', 'growvia/', atau 'growvia'.
         $base = rtrim((string) (Setting::query()->where('key', 'mqtt_topic')->value('value')
-            ?: SettingsController::DEFAULTS['mqtt_topic']), '/');
+            ?: SettingRules::DEFAULTS['mqtt_topic']), '/');
         if (str_ends_with($base, '/node')) {
             $base = substr($base, 0, -strlen('/node'));
         }
 
-        // php-mqtt/laravel-client >= 1.8: MQTT::connection() membuat koneksi
-        // sesuai config/mqtt-client.php dan langsung connect. Host, port, dan
-        // username dari pengaturan admin menimpa nilai .env saat terisi.
+        // php-mqtt/laravel-client >= 1.8: MQTT::connection() langsung connect sesuai config.
+        // Host, port, dan username dari pengaturan admin menimpa nilai .env saat terisi.
         MqttConnectionSettings::apply();
         try {
             $client = MQTT::connection();

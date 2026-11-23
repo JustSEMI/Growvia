@@ -57,18 +57,7 @@ class ActivityLog extends Model
         ]);
     }
 
-    /**
-     * Record a rejected authentication attempt.
-     *
-     * Kept separate from record(): a rejection has no actor (by definition the
-     * caller failed to prove who they are), and it is the only action that
-     * carries request context. The IP is stored as a salted hash so the audit
-     * trail can still group repeated attempts from one source without keeping
-     * the address itself.
-     *
-     * Never store the attempted password or a guessed email address: an
-     * unknown address has no subject to attach.
-     */
+    /** Dipisah dari record() karena percobaan ditolak tidak punya pelaku dan tidak menyimpan input email/sandi. */
     public static function recordRejected(?User $attempted, ?string $ip, ?string $userAgent): self
     {
         $log = self::query()->create([
@@ -161,9 +150,29 @@ class ActivityLog extends Model
     }
 
     /**
-     * Filter on the stored UTC timestamp without wrapping the column in a SQL
-     * function, so the created_at index stays usable. `to` still covers the
-     * whole day, matching the previous whereDate() behaviour.
+     * @param  Builder<ActivityLog>  $query
+     * @param  array<string, mixed>  $filters
+     * @return Builder<ActivityLog>
+     */
+    public function scopeFilter(Builder $query, array $filters): Builder
+    {
+        $search = $filters['q'] ?? '';
+        if (is_string($search) && $search !== '') {
+            $query->where(function (Builder $query) use ($search): void {
+                $query->where('actor_name', 'like', '%'.$search.'%')
+                    ->orWhere('subject_name', 'like', '%'.$search.'%');
+            });
+        }
+
+        if ($action = $filters['action'] ?? null) {
+            $query->where('action', $action);
+        }
+
+        return $query->betweenDates($filters['from'] ?? null, $filters['to'] ?? null);
+    }
+
+    /**
+     * Filter timestamp UTC langsung tanpa fungsi SQL agar indeks created_at tetap terpakai.
      *
      * @param  Builder<ActivityLog>  $query
      * @return Builder<ActivityLog>

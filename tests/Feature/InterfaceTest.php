@@ -114,6 +114,15 @@ class InterfaceTest extends TestCase
             ->assertSee('<polyline class="trend-line"', false);
     }
 
+    public function test_admin_opening_sessions_from_the_petani_panel_keeps_the_petani_shell(): void
+    {
+        $admin = User::factory()->admin()->create();
+
+        $this->actingAs($admin)->get(route('sessions.index', ['panel' => 'petani']))
+            ->assertOk()
+            ->assertSee('Kebun saya');
+    }
+
     public function test_dashboard_sidebar_no_node_sections(): void
     {
         $admin = User::factory()->admin()->create();

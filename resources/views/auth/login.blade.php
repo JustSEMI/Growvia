@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title', 'Masuk — Growvia')
+@section('title', 'Masuk - Growvia')
 
 @section('content')
 <div class="auth-head" data-reveal>

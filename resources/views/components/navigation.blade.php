@@ -22,7 +22,7 @@
         <p class="nav-label nav-label--spaced">Panduan &amp; akun</p>
         <x-nav-link :href="route('petani.edukasi')" :active="request()->routeIs('petani.edukasi')" icon="book">Edukasi</x-nav-link>
         <x-nav-link :href="route('petani.settings')" :active="request()->routeIs('petani.settings')" icon="settings">Pengaturan</x-nav-link>
-        <x-nav-link :href="route('sessions.index')" :active="request()->routeIs('sessions.*')" icon="shield">Sesi perangkat</x-nav-link>
+        <x-nav-link :href="route('sessions.index', ['panel' => 'petani'])" :active="request()->routeIs('sessions.*')" icon="shield">Sesi perangkat</x-nav-link>
         @if(auth()->user()->isAdmin())
             <p class="nav-label nav-label--spaced">Tampilan lain</p>
             <x-nav-link :href="route('dashboard')" icon="shield">Panel admin <x-icon name="arrow-up" class="nav-end-icon" /></x-nav-link>

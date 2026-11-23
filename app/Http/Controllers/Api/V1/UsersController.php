@@ -29,22 +29,8 @@ class UsersController extends Controller
             'sort' => ['nullable', Rule::in(['newest', 'oldest', 'name_asc', 'name_desc'])],
             'page' => ['nullable', 'integer', 'min:1', 'max:1000000'],
         ]);
-        $query = User::query();
-        $search = trim($filters['q'] ?? '');
-        if ($search !== '') {
-            $query->where(fn ($query) => $query->where('name', 'like', '%'.$search.'%')->orWhere('email', 'like', '%'.$search.'%'));
-        }
-        if ($role = $filters['role'] ?? null) {
-            $query->where('role', $role);
-        }
-        if ($status = $filters['status'] ?? null) {
-            $query->where('is_active', $status === 'active');
-        }
-        [$column, $direction] = match ($filters['sort'] ?? 'newest') {
-            'oldest' => ['created_at', 'asc'], 'name_asc' => ['name', 'asc'], 'name_desc' => ['name', 'desc'], default => ['created_at', 'desc'],
-        };
 
-        return response()->json(MobileInput::page($query->orderBy($column, $direction)->orderBy('id', $direction)->paginate(15), MobileUserResource::class, $request))->header('Cache-Control', 'no-store');
+        return response()->json(MobileInput::page(User::query()->filter($filters)->paginate(15), MobileUserResource::class, $request))->header('Cache-Control', 'no-store');
     }
 
     public function store(Request $request): JsonResponse

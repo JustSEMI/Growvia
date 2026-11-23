@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Http\Controllers\SettingsController;
 use App\Models\Setting;
 use Illuminate\Support\Facades\Validator;
 
@@ -27,7 +26,7 @@ final class MobileSettings
             $query->lockForUpdate();
         }
 
-        return array_replace(array_intersect_key(SettingsController::DEFAULTS, array_flip($keys)), $query->pluck('value', 'key')->all());
+        return array_replace(array_intersect_key(SettingRules::DEFAULTS, array_flip($keys)), $query->pluck('value', 'key')->all());
     }
 
     /** @param array<string, mixed> $values

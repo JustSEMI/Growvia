@@ -7,9 +7,8 @@ namespace App\Support;
 use App\Models\Setting;
 
 /**
- * Menimpa koneksi broker bawaan .env dengan pengaturan admin di tabel
- * settings. Field yang kosong berarti tetap memakai nilai .env, dan
- * password selalu dari .env (MQTT_PASSWORD) karena tak ada di form.
+ * Menimpa koneksi broker dari pengaturan admin; field kosong tetap pakai
+ * .env, dan password selalu dari .env karena tidak ada di form.
  */
 final class MqttConnectionSettings
 {
@@ -20,10 +19,10 @@ final class MqttConnectionSettings
         'mqtt_user' => 'connection_settings.auth.username',
     ];
 
-    /** Terapkan penimpaan pada config koneksi default php-mqtt. */
+    /** Timpa config koneksi default php-mqtt. */
     public static function apply(): void
     {
-        $prefix = 'mqtt-client.connections.'.config('mqtt-client.default_connection', 'default');
+        $prefix = 'mqtt-client.connections.'.config('mqtt-client.default', 'default');
         $stored = Setting::query()->whereIn('key', array_keys(self::MAP))->pluck('value', 'key');
 
         foreach (self::MAP as $key => $configKey) {

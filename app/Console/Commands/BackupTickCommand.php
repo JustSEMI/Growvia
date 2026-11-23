@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Http\Controllers\SettingsController;
 use App\Models\Setting;
 use App\Support\DatabaseBackup;
+use App\Support\SettingRules;
 use Illuminate\Console\Command;
 use Throwable;
 
@@ -19,7 +19,7 @@ class BackupTickCommand extends Command
     public function handle(DatabaseBackup $backups): int
     {
         $schedule = (string) (Setting::query()->where('key', 'backup_schedule')->value('value')
-            ?: SettingsController::DEFAULTS['backup_schedule']);
+            ?: SettingRules::DEFAULTS['backup_schedule']);
         if ($schedule === '') {
             return self::SUCCESS;
         }
@@ -30,12 +30,9 @@ class BackupTickCommand extends Command
             return self::SUCCESS;
         }
 
-        $keepDays = (int) (Setting::query()->where('key', 'backup_keep_days')->value('value')
-            ?: SettingsController::DEFAULTS['backup_keep_days']);
-
         try {
             $file = $backups->run();
-            $backups->prune(max(1, $keepDays));
+            $backups->pruneConfigured();
             $this->info('Backup dibuat: '.$file['name'].' ('.number_format($file['size'] / 1024, 1).' KB)');
         } catch (Throwable $exception) {
             report($exception);

@@ -8,7 +8,7 @@
 <meta name="turbo-cache-control" content="no-cache">
 <x-sidebar-bootstrap />
 <x-theme-bootstrap />
-<title>@yield('title', 'Growvia — Pemantauan rumah kaca')</title>
+<title>@yield('title', 'Growvia - Pemantauan rumah kaca')</title>
 <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
 @fonts
 @vite(['resources/css/app.css', 'resources/js/turbo.js', 'resources/js/app.js'])

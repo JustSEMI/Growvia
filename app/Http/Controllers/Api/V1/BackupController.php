@@ -41,12 +41,11 @@ class BackupController extends Controller
             MobileInput::validate($request, []);
             try {
                 $file = $this->backups->run();
-                $keepDays = (int) (Setting::query()->where('key', 'backup_keep_days')->value('value') ?: 7);
-                $this->backups->prune(max(1, $keepDays));
+                $this->backups->pruneConfigured();
             } catch (RuntimeException $exception) {
                 abort(500, $exception->getMessage());
             }
-            ActivityLog::record('backup.created', $actor, null, ['backup_file' => $file['name']]);
+            ActivityLog::record('backup.created', $actor, null, ['backup_file']);
 
             return [$file, 'Backup selesai dibuat.'];
         }, admin: true);
@@ -66,7 +65,7 @@ class BackupController extends Controller
         $message = MobileMutation::run($request, function (User $actor) use ($request, $name): string {
             MobileInput::validate($request, []);
             $this->backups->delete($name);
-            ActivityLog::record('backup.deleted', $actor, null, ['backup_file' => $name]);
+            ActivityLog::record('backup.deleted', $actor, null, ['backup_file']);
 
             return 'Backup dihapus.';
         }, admin: true);

@@ -28,28 +28,9 @@ class UsersController extends Controller
             'edit' => ['nullable', 'integer', 'min:1'],
             'page' => ['nullable', 'integer', 'min:1'],
         ]);
-        $query = User::query();
-        $search = trim($filters['q'] ?? '');
-        if ($search !== '') {
-            $query->where(function ($query) use ($search): void {
-                $query->where('name', 'like', '%'.$search.'%')->orWhere('email', 'like', '%'.$search.'%');
-            });
-        }
-        if (! empty($filters['role'])) {
-            $query->where('role', $filters['role']);
-        }
-        if (! empty($filters['status'])) {
-            $query->where('is_active', $filters['status'] === 'active');
-        }
-        [$column, $direction] = match ($filters['sort'] ?? 'newest') {
-            'oldest' => ['created_at', 'asc'],
-            'name_asc' => ['name', 'asc'],
-            'name_desc' => ['name', 'desc'],
-            default => ['created_at', 'desc'],
-        };
 
         return view('pengguna', [
-            'users' => $query->orderBy($column, $direction)->orderBy('id', $direction)->paginate(10)->appends($request->only('q', 'role', 'sort', 'status')),
+            'users' => User::query()->filter($filters)->paginate(10)->appends($request->only('q', 'role', 'sort', 'status')),
             'editing' => ! empty($filters['edit']) ? User::query()->findOrFail($filters['edit']) : null,
             'filters' => $filters,
         ]);

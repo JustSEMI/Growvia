@@ -50,8 +50,7 @@ class AuthenticatedSessionController extends Controller
             $request->session()->invalidate();
             $request->session()->regenerateToken();
             if ($invalidCredentials && $exception instanceof ValidationException) {
-                // Dicatat di luar transaksi yang di-rollback: log audit percobaan
-                // gagal hanya berguna jika tetap tersimpan saat transaksi gagal.
+                // Dicatat di luar transaksi agar log gagal login tidak ikut ter-rollback.
                 $this->recordFailedAttempt($attempted, $request);
                 if ($intended !== null) {
                     $request->session()->put('url.intended', $intended);
@@ -70,14 +69,7 @@ class AuthenticatedSessionController extends Controller
         return redirect()->to($intended ?? $home);
     }
 
-    /**
-     * Audit trail for brute-force detection. Failure to record must never
-     * change the login outcome, so it is swallowed and logged instead.
-     *
-     * The attempted password is never stored, and neither is the submitted
-     * email address: an unknown address has no subject, which is why the
-     * account is only attached when it actually exists.
-     */
+    /** Akun hanya ditautkan jika ada agar email asing tidak ikut tersimpan di log. */
     private function recordFailedAttempt(?User $attempted, Request $request): void
     {
         try {

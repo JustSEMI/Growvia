@@ -55,25 +55,11 @@ final class MobileSessions
             $sessions = $web->orderByDesc('last_activity')->orderBy('id')->offset(max(0, $offset - $mobileCount))->limit(15 - count($items))
                 ->get(['ip_address', 'user_agent', 'last_activity']);
             foreach ($sessions as $session) {
-                $agent = (string) $session->user_agent;
+                $agent = AccountSessions::describeAgent((string) $session->user_agent);
                 $items[] = [
                     'kind' => 'web',
-                    'label' => match (true) {
-                        str_contains($agent, 'Edg/') => 'Microsoft Edge',
-                        str_contains($agent, 'OPR/') => 'Opera',
-                        str_contains($agent, 'Firefox/'), str_contains($agent, 'FxiOS/') => 'Firefox',
-                        str_contains($agent, 'Chrome/'), str_contains($agent, 'CriOS/') => 'Chrome',
-                        str_contains($agent, 'Safari/') => 'Safari',
-                        default => 'Browser tidak dikenali',
-                    },
-                    'device' => match (true) {
-                        str_contains($agent, 'Android') => 'Android',
-                        str_contains($agent, 'iPhone'), str_contains($agent, 'iPad') => 'iOS / iPadOS',
-                        str_contains($agent, 'Windows') => 'Windows',
-                        str_contains($agent, 'Macintosh') => 'macOS',
-                        str_contains($agent, 'Linux') => 'Linux',
-                        default => 'Perangkat tidak dikenali',
-                    },
+                    'label' => $agent['browser'],
+                    'device' => $agent['device'],
                     'ip' => filter_var($session->ip_address, FILTER_VALIDATE_IP) ? $session->ip_address : null,
                     'current' => false,
                     'last_active' => Carbon::createFromTimestamp($session->last_activity, 'UTC')->toIso8601String(),

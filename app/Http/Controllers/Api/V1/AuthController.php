@@ -48,11 +48,8 @@ class AuthController extends Controller
             'device_name' => ['required', 'string', 'max:100', 'not_regex:/[\x00-\x1f\x7f]/'],
         ]);
 
-        // Objek penampung (stdClass), bukan variabel by-reference: arrow function
-        // di luar mengikat variabel by-value sehingga reference akan terlepas.
-        $state = new \stdClass;
-        $state->failed = false;
-        $state->attempted = null;
+        // Arrow function di bawah mengikat variabel by-value, sehingga butuh penampung objek.
+        $state = (object) ['failed' => false, 'attempted' => null];
 
         $response = (new Timebox)->call(fn () => DB::transaction(function () use ($credentials, $request, $state): JsonResponse {
             $user = User::query()->where('email', $credentials['email'])->lockForUpdate()->first();
@@ -78,12 +75,11 @@ class AuthController extends Controller
         }, attempts: 3), 200_000);
 
         if ($state->failed) {
-            // Di luar transaksi agar jejak audit tetap tersimpan mandiri
-            // dan tidak menghambat pengembalian respons 401.
+            // Dicatat di luar transaksi agar audit tetap tersimpan tanpa menghambat respons 401.
             try {
                 ActivityLog::recordRejected($state->attempted, $request->ip(), $request->userAgent());
             } catch (\Throwable) {
-                // Kegagalan pencatatan log tidak boleh mengubah hasil login.
+                // Kegagalan log tidak boleh mengubah hasil login.
             }
         }
 

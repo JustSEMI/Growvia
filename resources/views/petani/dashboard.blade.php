@@ -1,5 +1,5 @@
 @extends('layouts.petani')
-@section('title', 'Kebun saya — Growvia')
+@section('title', 'Kebun saya - Growvia')
 @section('page', 'Kebun saya')
 
 @section('content')
