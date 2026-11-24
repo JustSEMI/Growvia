@@ -428,9 +428,15 @@
     .garden-art { width: 100%; max-width: 360px; color: var(--illustration-ink); }
     .education-item { padding: 24px 0; border-bottom: 1px solid var(--line); }
     .education-item:first-child { padding-top: 0; }
-    .education-item summary { display: flex; align-items: center; gap: 16px; min-height: 44px; list-style: none; font-size: 16px; font-weight: 500; letter-spacing: -.02em; }
+    .education-item summary { display: flex; align-items: center; gap: 16px; min-height: 44px; list-style: none; font-size: 16px; font-weight: 500; letter-spacing: -.02em; cursor: pointer; }
     .education-item summary::-webkit-details-marker { display: none; }
     .education-number { color: var(--green); font-family: var(--font-mono); font-size: 12px; }
+    .education-chevron { width: 16px; height: 16px; margin-left: auto; color: var(--secondary); transition: transform .2s var(--ease); flex-shrink: 0; }
+    .education-item[open] .education-chevron { transform: rotate(180deg); color: var(--ink); }
+    .shortcut-card { display: flex; align-items: center; gap: 14px; transition: border-color .18s var(--ease); }
+    .shortcut-card:hover { border-color: var(--control-hover); }
+    .shortcut-arrow { width: 16px; height: 16px; margin-left: auto; color: var(--secondary); flex-shrink: 0; }
+    .api-topics-list { display: grid; gap: 8px; }
     .education-body { padding: 18px 34px 0; color: var(--secondary); font-size: 14px; }
     .education-body p + p { margin-top: 12px; }
     .education-body ul { padding-left: 20px; }

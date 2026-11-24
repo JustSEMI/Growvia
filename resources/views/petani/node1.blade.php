@@ -47,7 +47,26 @@
             <x-empty-chart title="Tren suhu udara" subtitle="Belum ada cukup data suhu di 6 jam terakhir." node="Device 1" period="6 jam" />
         @endif
 
-        <section class="panel"><div class="panel-header"><div><h2 class="panel-title">Target tersimpan</h2></div></div><div class="panel-body"><dl class="definition-list"><div><dt>Suhu</dt><dd>{{ $monitorSettings['th_suhu_min'] }}–{{ $monitorSettings['th_suhu_max'] }} °C</dd></div><div><dt>Lembap</dt><dd>{{ $monitorSettings['th_hum_min'] }}–{{ $monitorSettings['th_hum_max'] }}%</dd></div></dl></div></section>
+        <section class="panel" aria-label="Target tersimpan">
+            <div class="panel-header">
+                <div>
+                    <h2 class="panel-title">Target tersimpan</h2>
+                    <p class="panel-subtitle">Ambang konfigurasi untuk iklim rumah kaca.</p>
+                </div>
+            </div>
+            <div class="panel-body">
+                <dl class="definition-list">
+                    <div><dt>Rentang suhu</dt><dd>{{ $monitorSettings['th_suhu_min'] }}–{{ $monitorSettings['th_suhu_max'] }} °C</dd></div>
+                    <div><dt>Rentang kelembapan</dt><dd>{{ $monitorSettings['th_hum_min'] }}–{{ $monitorSettings['th_hum_max'] }}%</dd></div>
+                    <div><dt>Cahaya minimum</dt><dd>{{ $monitorSettings['th_light_min'] }} klux</dd></div>
+                    <div><dt>Interval pembaruan</dt><dd>{{ $monitorSettings['update_interval'] }} detik</dd></div>
+                </dl>
+            </div>
+            <div class="panel-footer">
+                <span>Diatur oleh administrator</span>
+                <a class="text-link" href="{{ route('petani.node2') }}">Lihat Device 2 (Tanah &amp; air) <x-icon name="arrow" /></a>
+            </div>
+        </section>
     </div>
 </turbo-frame>
 @endsection

@@ -32,14 +32,44 @@
         <x-connection-notice />
     @endif
     <div class="stack">
-        <div class="metrics-grid metrics-grid--3">
-            <x-metric-tile label="Tanah" :value="$val('soil_moisture')" unit="%" icon="leaf" :note="$note('soil_moisture')" />
-            <x-metric-tile label="Tanah 2" :value="$val('soil_moisture2')" unit="%" icon="leaf" :note="$note('soil_moisture2')" />
-            <x-metric-tile label="Tanah 3" :value="$val('soil_moisture3')" unit="%" icon="leaf" :note="$note('soil_moisture3')" />
-            <x-metric-tile label="Tandon" :value="$val('water_level')" unit="%" icon="tank" tone="blue" :note="$note('water_level')" />
-            <x-metric-tile label="Pompa" :value="$pumpState" icon="power" :tone="$pumpState === 'Menyala' ? 'green' : 'neutral'" :state="true" :note="$note('pump')" />
-        </div>
-        <section class="panel"><div class="panel-header"><div><h2 class="panel-title">Ambang tersimpan</h2></div></div><div class="panel-body"><dl class="definition-list"><div><dt>Mode</dt><dd>{{ $monitorSettings['pump_mode'] === 'manual' ? 'Manual' : 'Otomatis' }}</dd></div><div><dt>Mulai</dt><dd>&lt; {{ $monitorSettings['soil_on'] }}%</dd></div><div><dt>Berhenti</dt><dd>&gt; {{ $monitorSettings['soil_off'] }}%</dd></div><div><dt>Tandon min</dt><dd>{{ $monitorSettings['tank_min'] }}%</dd></div></dl></div></section>
+        <section aria-label="Sensor kelembapan tanah">
+            <div class="section-heading"><h2>Kelembapan tanah</h2></div>
+            <div class="metrics-grid metrics-grid--3">
+                <x-metric-tile label="Tanah" :value="$val('soil_moisture')" unit="%" icon="leaf" :note="$note('soil_moisture')" />
+                <x-metric-tile label="Tanah 2" :value="$val('soil_moisture2')" unit="%" icon="leaf" :note="$note('soil_moisture2')" />
+                <x-metric-tile label="Tanah 3" :value="$val('soil_moisture3')" unit="%" icon="leaf" :note="$note('soil_moisture3')" />
+            </div>
+        </section>
+
+        <section aria-label="Tandon dan pompa">
+            <div class="section-heading"><h2>Air &amp; pompa</h2></div>
+            <div class="metrics-grid metrics-grid--2">
+                <x-metric-tile label="Tandon" :value="$val('water_level')" unit="%" icon="tank" tone="blue" :note="$note('water_level')" />
+                <x-metric-tile label="Pompa" :value="$pumpState" icon="power" :tone="$pumpState === 'Menyala' ? 'green' : 'neutral'" :state="true" :note="$note('pump')" />
+            </div>
+        </section>
+
+        <section class="panel" aria-label="Ambang tersimpan">
+            <div class="panel-header">
+                <div>
+                    <h2 class="panel-title">Ambang tersimpan</h2>
+                    <p class="panel-subtitle">Aturan penyiraman dan batas tandon.</p>
+                </div>
+            </div>
+            <div class="panel-body">
+                <dl class="definition-list">
+                    <div><dt>Mode pompa</dt><dd>{{ $monitorSettings['pump_mode'] === 'manual' ? 'Manual' : 'Otomatis' }}</dd></div>
+                    <div><dt>Mulai menyiram</dt><dd>&lt; {{ $monitorSettings['soil_on'] }}%</dd></div>
+                    <div><dt>Berhenti menyiram</dt><dd>&gt; {{ $monitorSettings['soil_off'] }}%</dd></div>
+                    <div><dt>Tandon minimum</dt><dd>{{ $monitorSettings['tank_min'] }}%</dd></div>
+                    <div><dt>Durasi maks pompa</dt><dd>{{ $monitorSettings['pump_max_run'] }} menit</dd></div>
+                </dl>
+            </div>
+            <div class="panel-footer">
+                <span>Diatur oleh administrator</span>
+                <a class="text-link" href="{{ route('petani.edukasi') }}">Panduan penyiraman <x-icon name="arrow" /></a>
+            </div>
+        </section>
     </div>
 </turbo-frame>
 @endsection

@@ -340,6 +340,7 @@ class ReadingsWebController extends Controller
         MqttConnectionSettings::apply();
         $connection = config('mqtt-client.default', 'default');
         $config = config('mqtt-client.connections.'.$connection);
+        $lastRecorded = Reading::query()->max('recorded_at');
 
         return view('mqtt', [
             'mqtt' => [
@@ -351,7 +352,9 @@ class ReadingsWebController extends Controller
             ],
             'topics' => MqttConnectionSettings::topics(),
             'counts' => $this->countsPerNode(),
-            'lastRecorded' => Reading::query()->max('recorded_at'),
+            'lastRecorded' => $lastRecorded,
+            'live' => $lastRecorded !== null
+                && Carbon::parse($lastRecorded)->gt(now()->subSeconds(90)),
         ]);
     }
 

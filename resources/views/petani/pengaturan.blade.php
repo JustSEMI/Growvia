@@ -5,16 +5,16 @@
 @section('content')
 @php($user = auth()->user())
 <div class="ledger-page">
-<x-page-header title="Ruang akunmu." description="Benerin profil, ganti kata sandi, dan jagain akses kebunmu tetap aman."><x-slot:eyebrow>Panel petani / Pengaturan</x-slot:eyebrow></x-page-header>
+<x-page-header title="Ruang akunmu." description="Perbarui profil, ganti kata sandi, dan jaga keamanan akses kebunmu."><x-slot:eyebrow>Panel petani / Pengaturan</x-slot:eyebrow></x-page-header>
 <x-alerts />
 <div class="settings-layout">
     <div class="settings-aside">
         <nav class="settings-nav" aria-label="Bagian pengaturan"><a href="#profile"><x-icon name="users" />Profil kamu<span class="settings-nav-num">01</span></a><a href="#security"><x-icon name="shield" />Kata sandi<span class="settings-nav-num">02</span></a><a href="#sessions"><x-icon name="clock" />Sesi perangkat<span class="settings-nav-num">03</span></a></nav>
         <div class="settings-tips">
             <p class="settings-tips-title"><x-icon name="leaf" />Jaga akunmu tetap aman</p>
-            <p class="settings-tip"><x-icon name="shield" />Pake kata sandi unik yang nggak kepake di aplikasi lain.</p>
-            <p class="settings-tip"><x-icon name="clock" />Sering-sering cek daftar sesi, keluarin perangkat yang nggak kamu kenal.</p>
-            <p class="settings-tip"><x-icon name="mail" />Email aktif kepake buat kirim tautan pemulihan kata sandi.</p>
+            <p class="settings-tip"><x-icon name="shield" />Gunakan kata sandi unik yang tidak dipakai di layanan lain.</p>
+            <p class="settings-tip"><x-icon name="clock" />Periksa daftar sesi secara berkala dan keluarkan perangkat yang tidak dikenal.</p>
+            <p class="settings-tip"><x-icon name="mail" />Email aktif digunakan untuk mengirim tautan pemulihan kata sandi.</p>
         </div>
     </div>
     <div class="stack">

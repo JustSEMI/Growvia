@@ -30,28 +30,42 @@
 
 <section class="panel mt-6" aria-labelledby="activity-title" data-reveal>
     <div class="table-toolbar">
-        <div><h2 class="panel-title" id="activity-title">Aktivitas kecatat</h2><p class="panel-subtitle">{{ $activities->total() }} aktivitas · Zona waktu {{ $timezone }}</p></div>
+        <div><h2 class="panel-title" id="activity-title">Aktivitas tercatat</h2><p class="panel-subtitle">{{ $activities->total() }} aktivitas · Zona waktu {{ $timezone }}</p></div>
     </div>
     <div class="table-wrap" tabindex="0" role="region" aria-label="Riwayat aktivitas, geser untuk melihat semua kolom">
         <table class="data-table">
             <thead><tr><th scope="col">Waktu</th><th scope="col">Pelaku</th><th scope="col">Aktivitas</th><th scope="col">Akun terkait</th><th scope="col">Bagian yang berubah</th></tr></thead>
             <tbody>
             @forelse($activities as $activity)
+                @php
+                    $actionTone = match (true) {
+                        in_array($activity->action, ['auth.failed', 'user.deleted', 'user.deactivated'], true) => 'red',
+                        in_array($activity->action, ['auth.login', 'user.created', 'user.activated', 'backup.created'], true) => 'green',
+                        in_array($activity->action, ['settings.updated', 'account.password_changed', 'account.password_reset', 'account.email_changed'], true) => 'amber',
+                        default => 'neutral',
+                    };
+                    $changedFields = collect($activity->fields ?? [])
+                        ->filter(fn (mixed $field, mixed $key): bool => is_int($key) && is_string($field))
+                        ->map(fn (string $field): ?string => $fieldLabels[$field] ?? null)
+                        ->filter()
+                        ->unique()
+                        ->implode(', ');
+                @endphp
                 <tr>
                     <td><time datetime="{{ $activity->created_at->toIso8601String() }}">{{ $activity->created_at->copy()->timezone($timezone)->locale('id')->translatedFormat('d F Y, H.i.s') }} {{ $timezone }}</time></td>
                     <td>{{ $activity->actor_name }}</td>
-                    <td>{{ $actionLabels[$activity->action] ?? 'Aktivitas aplikasi' }}</td>
-                    <td>{{ $activity->subject_name ?? 'NULL' }}</td>
-                    <td>{{ collect($activity->fields ?? [])->filter(fn (mixed $field, mixed $key): bool => is_int($key) && is_string($field))->map(fn (string $field): ?string => $fieldLabels[$field] ?? null)->filter()->unique()->implode(', ') ?: 'NULL' }}</td>
+                    <td><x-badge :tone="$actionTone">{{ $actionLabels[$activity->action] ?? 'Aktivitas aplikasi' }}</x-badge></td>
+                    <td>{{ $activity->subject_name ?? '--' }}</td>
+                    <td>{{ $changedFields !== '' ? $changedFields : '--' }}</td>
                 </tr>
             @empty
                 <tr><td colspan="5" class="table-empty">
                     @if($filtered)
-                        <strong>Tidak ada aktivitas yang sesuai filter.</strong><p>Coba nama, jenis aktivitas, atau rentang tanggal lain ya.</p>
+                        <strong>Tidak ada aktivitas yang sesuai filter.</strong><p>Coba nama, jenis aktivitas, atau rentang tanggal lain.</p>
                     @elseif($activities->total() > 0)
-                        <strong>Nggak ada aktivitas di halaman ini.</strong><a class="text-link" href="{{ route('activity.index') }}">Balik ke halaman pertama</a>
+                        <strong>Tidak ada aktivitas di halaman ini.</strong><a class="text-link" href="{{ route('activity.index') }}">Kembali ke halaman pertama</a>
                     @else
-                        <strong>Belum ada aktivitas aplikasi.</strong><p>Catatannya muncul setelah ada yang ganti akun, sesi, atau pengaturan.</p>
+                        <strong>Belum ada aktivitas aplikasi.</strong><p>Catatan muncul setelah ada perubahan akun, sesi, atau pengaturan.</p>
                     @endif
                 </td></tr>
             @endforelse
@@ -74,7 +88,7 @@
             @endif
         </nav>
     @endif
-    <p class="panel-footer">Yang dicatat cuma nama bagiannya aja, bukan nilai isian atau kata sandi.</p>
+    <p class="panel-footer">Hanya nama bagian yang dicatat, bukan nilai isian atau kata sandi.</p>
 </section>
 </div>
 @endsection

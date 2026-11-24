@@ -40,6 +40,28 @@
                 </div>
             </section>
         @endforeach
+
+        <section aria-label="Pintasan kebun">
+            <div class="section-heading"><h2>Panduan &amp; akun</h2></div>
+            <div class="two-columns">
+                <a href="{{ route('petani.edukasi') }}" class="panel panel-body shortcut-card">
+                    <span class="icon-tile"><x-icon name="book" /></span>
+                    <div>
+                        <h3 class="panel-title">Edukasi perawatan</h3>
+                        <p class="panel-subtitle">Panduan suhu, kelembapan, penyiraman, dan tandon.</p>
+                    </div>
+                    <x-icon name="arrow" class="shortcut-arrow" />
+                </a>
+                <a href="{{ route('petani.settings') }}" class="panel panel-body shortcut-card">
+                    <span class="icon-tile icon-tile--neutral"><x-icon name="settings" /></span>
+                    <div>
+                        <h3 class="panel-title">Pengaturan akun</h3>
+                        <p class="panel-subtitle">Perbarui profil, kata sandi, dan sesi perangkat.</p>
+                    </div>
+                    <x-icon name="arrow" class="shortcut-arrow" />
+                </a>
+            </div>
+        </section>
     </div>
 </turbo-frame>
 @endsection
