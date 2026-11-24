@@ -331,6 +331,7 @@ class ReadingsWebController extends Controller
                 ['method' => 'POST', 'path' => '/backups', 'access' => 'Admin', 'tone' => 'amber', 'summary' => 'Jalankan backup database sekarang.'],
                 ['method' => 'GET', 'path' => '/backups/{name}/download', 'access' => 'Admin', 'tone' => 'amber', 'summary' => 'Unduh berkas backup (sql, sql.gz, tgz).'],
                 ['method' => 'DELETE', 'path' => '/backups/{name}', 'access' => 'Admin', 'tone' => 'amber', 'summary' => 'Hapus berkas backup tertentu.'],
+                ['method' => 'POST', 'path' => '/devices/control', 'access' => 'Bearer', 'tone' => 'blue', 'summary' => 'Kirim perintah manual kipas/pompa atau mode otomatis pompa via MQTT.'],
             ],
         ]);
     }
@@ -351,6 +352,8 @@ class ReadingsWebController extends Controller
                     || filled($config['connection_settings']['auth']['password'] ?? null),
             ],
             'topics' => MqttConnectionSettings::topics(),
+            'configTopics' => MqttConnectionSettings::topics('config'),
+            'controlTopics' => MqttConnectionSettings::topics('control'),
             'counts' => $this->countsPerNode(),
             'lastRecorded' => $lastRecorded,
             'live' => $lastRecorded !== null

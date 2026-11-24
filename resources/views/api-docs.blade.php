@@ -95,6 +95,26 @@
         </div>
     </section>
 
+    <section class="panel" aria-labelledby="api-control-sample-title">
+        <div class="panel-header">
+            <div>
+                <h2 class="panel-title" id="api-control-sample-title">Kontrol perangkat mobile</h2>
+                <p class="panel-subtitle"><code>POST /api/v1/devices/control</code> untuk manual pompa/kipas atau kembali ke mode otomatis pompa.</p>
+            </div>
+            <span class="chart-period">200 / 503</span>
+        </div>
+        <div class="panel-body">
+            <pre class="api-example"><code>// Nyalakan pompa secara manual (node2)
+{ "node": "node2", "actuator": "pump", "mode": "manual", "state": 1 }
+
+// Kembalikan pompa ke mode otomatis (mengikuti soil_on, soil_off, tank_min)
+{ "node": "node2", "actuator": "pump", "mode": "auto" }
+
+// Kontrol kipas (node1: fan1 atau fan2)
+{ "node": "node1", "actuator": "fan1", "mode": "manual", "state": 1 }</code></pre>
+        </div>
+    </section>
+
     <section class="panel" aria-labelledby="api-metrics-title">
         <div class="panel-header">
             <div>

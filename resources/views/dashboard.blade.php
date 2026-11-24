@@ -20,6 +20,7 @@
         @endif
     </x-slot:actions>
 </x-page-header>
+<x-alerts />
 
 <div class="stack">
     <turbo-frame id="dashboard-live" refresh="morph" data-turbo-refresh-interval="15000">
@@ -104,6 +105,105 @@
             </div>
         </div>
     </turbo-frame>
+
+    <section class="panel" aria-labelledby="device-control-title">
+        <div class="panel-header">
+            <div>
+                <h2 id="device-control-title" class="panel-title">Kontrol perangkat</h2>
+                <p class="panel-subtitle">Kirim perintah langsung ke topik MQTT kontrol perangkat.</p>
+            </div>
+            <x-badge :tone="($monitorSettings['pump_mode'] ?? 'auto') === 'manual' ? 'amber' : 'green'">Mode pompa: {{ ($monitorSettings['pump_mode'] ?? 'auto') === 'manual' ? 'Manual' : 'Otomatis' }}</x-badge>
+        </div>
+        <div class="panel-body">
+            <div class="device-control-grid">
+                <div class="device-control-item">
+                    <div>
+                        <strong class="device-control-name">Pompa air (Node 2)</strong>
+                        <p class="device-control-meta">Ambang otomatis {{ $monitorSettings['soil_on'] ?? 30 }}% - {{ $monitorSettings['soil_off'] ?? 60 }}%, tandon min {{ $monitorSettings['tank_min'] ?? 20 }}%.</p>
+                    </div>
+                    <div class="device-control-actions">
+                        <form method="POST" action="{{ route('dashboard.control') }}">
+                            @csrf
+                            <input type="hidden" name="node" value="node2">
+                            <input type="hidden" name="actuator" value="pump">
+                            <input type="hidden" name="mode" value="manual">
+                            <input type="hidden" name="state" value="1">
+                            <button type="submit" class="button">Nyalakan</button>
+                        </form>
+                        <form method="POST" action="{{ route('dashboard.control') }}">
+                            @csrf
+                            <input type="hidden" name="node" value="node2">
+                            <input type="hidden" name="actuator" value="pump">
+                            <input type="hidden" name="mode" value="manual">
+                            <input type="hidden" name="state" value="0">
+                            <button type="submit" class="button button--secondary">Matikan</button>
+                        </form>
+                        <form method="POST" action="{{ route('dashboard.control') }}">
+                            @csrf
+                            <input type="hidden" name="node" value="node2">
+                            <input type="hidden" name="actuator" value="pump">
+                            <input type="hidden" name="mode" value="auto">
+                            <button type="submit" class="button button--secondary">Otomatis</button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="device-control-item">
+                    <div>
+                        <strong class="device-control-name">Kipas 1 (Node 1)</strong>
+                        <p class="device-control-meta">Ambang suhu maksimal {{ $monitorSettings['th_suhu_max'] ?? 30 }} °C.</p>
+                    </div>
+                    <div class="device-control-actions">
+                        <form method="POST" action="{{ route('dashboard.control') }}">
+                            @csrf
+                            <input type="hidden" name="node" value="node1">
+                            <input type="hidden" name="actuator" value="fan1">
+                            <input type="hidden" name="mode" value="manual">
+                            <input type="hidden" name="state" value="1">
+                            <button type="submit" class="button">Nyalakan</button>
+                        </form>
+                        <form method="POST" action="{{ route('dashboard.control') }}">
+                            @csrf
+                            <input type="hidden" name="node" value="node1">
+                            <input type="hidden" name="actuator" value="fan1">
+                            <input type="hidden" name="mode" value="manual">
+                            <input type="hidden" name="state" value="0">
+                            <button type="submit" class="button button--secondary">Matikan</button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="device-control-item">
+                    <div>
+                        <strong class="device-control-name">Kipas 2 (Node 1)</strong>
+                        <p class="device-control-meta">Pendingin tambahan Node 1 (override manual).</p>
+                    </div>
+                    <div class="device-control-actions">
+                        <form method="POST" action="{{ route('dashboard.control') }}">
+                            @csrf
+                            <input type="hidden" name="node" value="node1">
+                            <input type="hidden" name="actuator" value="fan2">
+                            <input type="hidden" name="mode" value="manual">
+                            <input type="hidden" name="state" value="1">
+                            <button type="submit" class="button">Nyalakan</button>
+                        </form>
+                        <form method="POST" action="{{ route('dashboard.control') }}">
+                            @csrf
+                            <input type="hidden" name="node" value="node1">
+                            <input type="hidden" name="actuator" value="fan2">
+                            <input type="hidden" name="mode" value="manual">
+                            <input type="hidden" name="state" value="0">
+                            <button type="submit" class="button button--secondary">Matikan</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="panel-footer">
+            <span>Perintah manual juga tersedia lewat endpoint API mobile <code>POST /api/v1/devices/control</code>.</span>
+            <a class="text-link" href="{{ route('settings.index') }}">Atur ambang <x-icon name="arrow" /></a>
+        </div>
+    </section>
 
     <section class="panel" aria-labelledby="activity-title">
         <div class="panel-header"><div><h2 id="activity-title" class="panel-title">Aktivitas terbaru</h2><p class="panel-subtitle">Catatan akun, sesi, dan pengaturan aplikasi.</p></div><a class="text-link" href="{{ route('activity.index') }}">Lihat semua <x-icon name="arrow" /></a></div>

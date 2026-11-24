@@ -45,5 +45,6 @@ Route::prefix('v1')->name('api.v1.')->middleware('throttle:mobile-api')->group(f
         Route::get('/auth/me', [AuthController::class, 'show'])->name('auth.me');
         Route::post('/auth/logout', [AuthController::class, 'destroy'])->name('auth.logout');
         Route::get('/readings', [ReadingsController::class, 'index'])->name('readings.index');
+        Route::post('/devices/control', [WorkspaceController::class, 'control'])->name('devices.control');
     });
 });

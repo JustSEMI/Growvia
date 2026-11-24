@@ -10,9 +10,11 @@ use App\Models\ActivityLog;
 use App\Models\Reading;
 use App\Models\Setting;
 use App\Models\User;
+use App\Support\DeviceControl;
 use App\Support\MobileInput;
 use App\Support\MobileMutation;
 use App\Support\MobileSettings;
+use App\Support\MqttPublisher;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -46,8 +48,8 @@ class WorkspaceController extends Controller
 
     public function updateSettings(Request $request): JsonResponse
     {
-        $settings = MobileMutation::run($request, function (User $actor) use ($request): array {
-            $input = MobileInput::validate($request, ['section' => ['required', 'string', Rule::in(array_keys(MobileSettings::SECTIONS))], 'values' => ['present', 'array']]);
+        $input = MobileInput::validate($request, ['section' => ['required', 'string', Rule::in(array_keys(MobileSettings::SECTIONS))], 'values' => ['present', 'array']]);
+        $settings = MobileMutation::run($request, function (User $actor) use ($input): array {
             $stored = MobileSettings::values(true);
             $values = MobileSettings::validate($input['section'], $input['values'], $stored);
             $changed = [];
@@ -64,7 +66,69 @@ class WorkspaceController extends Controller
             return array_replace($stored, $values);
         }, admin: true);
 
-        return response()->json(['settings' => $settings, 'message' => 'Konfigurasi tersimpan. Belum diterapkan ke perangkat.'])->header('Cache-Control', 'no-store');
+        $published = MqttPublisher::publishSectionConfig($input['section'], $settings);
+
+        $message = match (true) {
+            in_array($input['section'], ['th1', 'th2', 'mqtt', 'climate', 'soil', 'general'], true) && $published => 'Konfigurasi tersimpan dan dikirim ke perangkat.',
+            in_array($input['section'], ['th1', 'th2', 'mqtt', 'climate', 'soil', 'general'], true) => 'Konfigurasi tersimpan, namun broker MQTT belum terjangkau.',
+            default => 'Konfigurasi tersimpan.',
+        };
+
+        return response()->json([
+            'settings' => $settings,
+            'published' => $published,
+            'message' => $message,
+        ])->header('Cache-Control', 'no-store');
+    }
+
+    public function control(Request $request): JsonResponse
+    {
+        $node = is_string($request->input('node')) ? $request->input('node') : null;
+        $mode = is_string($request->input('mode')) ? $request->input('mode') : null;
+        $validated = MobileInput::validate($request, DeviceControl::rules($node, $mode));
+        $state = array_key_exists('state', $validated) && $validated['state'] !== null
+            ? (bool) $validated['state']
+            : null;
+
+        $prepared = MobileMutation::run($request, fn (User $actor): array => DeviceControl::prepare(
+            $actor,
+            $validated['node'],
+            $validated['actuator'],
+            $state,
+            $validated['mode'] ?? null,
+        ));
+
+        $published = MqttPublisher::publishControl(
+            $validated['node'],
+            $validated['actuator'],
+            $prepared['state'],
+            $prepared['mode'],
+            $prepared['settings'],
+            $prepared['sync_config'],
+        );
+
+        $control = [
+            'node' => $validated['node'],
+            'actuator' => $validated['actuator'],
+            'mode' => $prepared['mode'],
+            'state' => $prepared['state'],
+        ];
+
+        if (! $published) {
+            return response()->json([
+                'message' => 'Broker MQTT tidak terhubung. Perintah tidak terkirim ke perangkat.',
+                'published' => false,
+                'control' => $control,
+            ], 503)->header('Cache-Control', 'no-store');
+        }
+
+        return response()->json([
+            'message' => $prepared['mode'] === 'auto'
+                ? 'Mode perangkat dikembalikan ke otomatis.'
+                : 'Perintah perangkat dikirim ke broker MQTT.',
+            'published' => true,
+            'control' => $control,
+        ])->header('Cache-Control', 'no-store');
     }
 
     public function activities(Request $request): JsonResponse

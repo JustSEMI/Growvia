@@ -242,9 +242,22 @@
     .icon-tile .icon { width: 17px; height: 17px; }
     .metric-value { display: flex; align-items: baseline; gap: 9px; font-size: 38px; font-weight: 500; line-height: 1.4; letter-spacing: -.05em; font-variant-numeric: tabular-nums; margin: 10px 0 12px; }
     .metric-value small { font-size: 15px; color: var(--secondary); letter-spacing: 0; font-weight: 400; }
-    .metric-value--empty { font-size: 20px; font-weight: 500; letter-spacing: -.02em; color: var(--muted); padding: 9px 0; }
-    .metric-state { display: flex; align-items: center; min-height: 53px; margin: 10px 0 12px; }
-    .metric-state .badge { min-height: 30px; padding: 6px 12px; font-size: 12px; }
+    .metric-value--empty { flex: 1; display: flex; align-items: center; font-size: 18px; font-weight: 500; letter-spacing: -.02em; color: var(--muted); margin: 12px 0; }
+    .metric-state { flex: 1; display: flex; align-items: center; min-height: 64px; margin: 10px 0 12px; }
+    .metric-state .badge { min-height: 32px; padding: 6px 14px; font-size: 12px; }
+    .gauge-wrap { position: relative; width: 100%; max-width: 210px; margin: 8px auto 12px; }
+    .gauge-svg { display: block; width: 100%; height: auto; overflow: visible; }
+    .gauge-track, .gauge-fill { fill: none; stroke-width: 11; stroke-linecap: round; }
+    .gauge-track { stroke: var(--chart-grid); }
+    .gauge-fill--green { stroke: var(--green); }
+    .gauge-fill--amber { stroke: var(--amber); }
+    .gauge-fill--blue { stroke: var(--blue); }
+    .gauge-fill--neutral { stroke: var(--secondary); }
+    .gauge-center { position: absolute; inset: auto 0 22px; display: grid; place-items: center; text-align: center; pointer-events: none; }
+    .gauge-value { display: inline-flex; align-items: baseline; gap: 4px; margin: 0; font-size: 28px; font-weight: 600; line-height: 1.1; letter-spacing: -.04em; font-variant-numeric: tabular-nums; color: var(--ink); }
+    .gauge-value small { font-size: 13px; font-weight: 500; letter-spacing: 0; color: var(--secondary); }
+    .gauge-empty { margin: 0; font-size: 14px; font-weight: 500; color: var(--muted); }
+    .gauge-scale { display: flex; justify-content: space-between; margin-top: 2px; padding: 0 6px; font-family: var(--font-mono); font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; }
     .metric-foot { display: flex; align-items: flex-start; gap: 6px; margin-top: auto; border-top: 1px solid var(--line); padding-top: 12px; font-size: 12px; line-height: 1.45; color: var(--secondary); }
     .metric-foot .icon { width: 12px; height: 12px; margin-top: 2px; flex-shrink: 0; }
     .stack { display: grid; gap: 24px; min-width: 0; }
@@ -819,9 +832,17 @@
 .empty-chart-box { display: flex; align-items: flex-start; gap: 14px; padding: 18px; border: 1px dashed var(--line); border-radius: 10px; background: var(--soft); }
 .empty-chart-box strong { display: block; font-size: 14px; font-weight: 600; color: var(--ink); }
 .empty-chart-box p { margin-top: 4px; font-size: 13px; color: var(--secondary); line-height: 1.5; }
+/* Kontrol perangkat (dashboard admin) */
+.device-control-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.device-control-item { display: flex; flex-direction: column; justify-content: space-between; gap: 14px; padding: 16px; border: 1px solid var(--line); border-radius: 10px; background: var(--soft); }
+.device-control-name { display: block; font-size: 14px; font-weight: 600; color: var(--ink); }
+.device-control-meta { margin-top: 4px; font-size: 12px; color: var(--secondary); line-height: 1.5; }
+.device-control-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+
 @media (max-width: 1023px) {
     .overview-split { grid-template-columns: minmax(0, 1fr); gap: 16px; }
     .api-metrics-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .device-control-grid { grid-template-columns: minmax(0, 1fr); }
 }
 @media (max-width: 639px) {
     .chart-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }

@@ -233,7 +233,8 @@ class ReadingsTest extends TestCase
             ->assertOk()
             ->assertSee('<polyline class="trend-line"', false)
             ->assertSee('Data terbaru')
-            ->assertSee('Historis');
+            ->assertSee('Historis')
+            ->assertSee('gauge-fill', false);
     }
 
     public function test_api_docs_renders_sanctum_endpoints_and_valid_metrics(): void

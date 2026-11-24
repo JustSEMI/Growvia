@@ -9,6 +9,7 @@ use App\Models\Setting;
 use App\Models\User;
 use App\Support\AccountMutation;
 use App\Support\AccountSessions;
+use App\Support\MqttPublisher;
 use App\Support\SettingRules;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -76,7 +77,7 @@ class SettingsController extends Controller
 
     public function updateSystem(Request $request): RedirectResponse
     {
-        AccountMutation::run($request, function (User $actor) use ($request): void {
+        $saved = AccountMutation::run($request, function (User $actor) use ($request): array {
             abort_unless($actor->isAdmin(), 403);
             $notificationKeys = SettingRules::NOTIFICATION_KEYS;
             $request->validate(array_fill_keys($notificationKeys, ['sometimes', 'boolean']));
@@ -90,19 +91,32 @@ class SettingsController extends Controller
             }
 
             $validated = Validator::make($input, SettingRules::rules())->validate();
-            $values = $validated;
+            $values = [];
             $changed = [];
-            foreach ($values as $key => $value) {
-                if ($value !== $stored[$key] && (string) $value !== (string) $stored[$key]) {
+            foreach ($validated as $key => $value) {
+                $stringValue = (string) $value;
+                $values[$key] = $stringValue;
+                if ($value !== $stored[$key] && $stringValue !== (string) $stored[$key]) {
                     $changed[] = $key;
                 }
-                Setting::updateOrCreate(['key' => $key], ['value' => (string) $value]);
+                Setting::updateOrCreate(['key' => $key], ['value' => $stringValue]);
             }
             if ($changed !== []) {
                 ActivityLog::record('settings.updated', $actor, null, $changed);
             }
+
+            return $values;
         });
 
-        return back()->with('status', 'Pengaturan sistem kesimpen.');
+        $section = (string) $request->input('section', '');
+        $published = MqttPublisher::publishSectionConfig($section, $saved);
+
+        $message = match (true) {
+            in_array($section, ['th1', 'th2', 'mqtt'], true) && $published => 'Pengaturan sistem tersimpan dan dikirim ke broker MQTT.',
+            in_array($section, ['th1', 'th2', 'mqtt'], true) && ! app()->environment('testing') => 'Pengaturan sistem tersimpan, namun broker MQTT belum merespons.',
+            default => 'Pengaturan sistem kesimpen.',
+        };
+
+        return back()->with('status', $message);
     }
 }

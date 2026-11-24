@@ -43,23 +43,32 @@
             <div class="panel-header">
                 <div>
                     <h2 class="panel-title" id="mqtt-topics-title">Topik &amp; worker</h2>
-                    <p class="panel-subtitle">Topik yang dilanggan oleh proses consumer.</p>
+                    <p class="panel-subtitle">Topik subscribe telemetri dan publish konfigurasi atau kontrol.</p>
                 </div>
                 <span class="icon-tile icon-tile--blue"><x-icon name="shield" /></span>
             </div>
             <div class="panel-body">
-                <div class="api-topics-list">
-                    @foreach($topics as $topic)
-                        <code class="api-code">{{ $topic }}</code>
-                    @endforeach
-                </div>
+                <dl class="definition-list">
+                    <div>
+                        <dt>Subscribe (telemetri)</dt>
+                        <dd>@foreach($topics as $topic)<code class="api-code">{{ $topic }}</code>@endforeach</dd>
+                    </div>
+                    <div>
+                        <dt>Publish config (retained)</dt>
+                        <dd>@foreach($configTopics as $topic)<code class="api-code">{{ $topic }}</code>@endforeach</dd>
+                    </div>
+                    <div>
+                        <dt>Publish kontrol manual</dt>
+                        <dd>@foreach($controlTopics as $topic)<code class="api-code">{{ $topic }}</code>@endforeach</dd>
+                    </div>
+                </dl>
                 <div class="api-url-row mt-6">
                     <code class="api-code">php artisan mqtt:consume</code>
                     <button type="button" class="button button--secondary" data-copy-text="php artisan mqtt:consume" hidden>Salin perintah</button>
                 </div>
             </div>
             <div class="panel-footer">
-                <span>QoS 0 · payload JSON tervalidasi per metrik</span>
+                <span>QoS 0 · JSON config retained &amp; kontrol real-time</span>
             </div>
         </section>
     </div>

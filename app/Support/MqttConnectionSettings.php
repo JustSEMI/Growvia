@@ -36,12 +36,7 @@ final class MqttConnectionSettings
         }
     }
 
-    /**
-     * Topik dasar dari pengaturan admin dinormalisasi menjadi {base}/node{1,2}/data.
-     *
-     * @return list<string>
-     */
-    public static function topics(): array
+    public static function baseTopic(): string
     {
         $base = rtrim((string) (Setting::query()->where('key', 'mqtt_topic')->value('value')
             ?: SettingRules::DEFAULTS['mqtt_topic']), '/');
@@ -49,6 +44,18 @@ final class MqttConnectionSettings
             $base = substr($base, 0, -strlen('/node'));
         }
 
-        return array_map(fn (string $node): string => $base.'/'.$node.'/data', Reading::NODES);
+        return $base !== '' ? $base : 'growvia';
+    }
+
+    /**
+     * Topik dasar dari pengaturan admin dinormalisasi menjadi {base}/node{1,2}/data.
+     *
+     * @return list<string>
+     */
+    public static function topics(string $suffix = 'data'): array
+    {
+        $base = self::baseTopic();
+
+        return array_map(fn (string $node): string => $base.'/'.$node.'/'.$suffix, Reading::NODES);
     }
 }
