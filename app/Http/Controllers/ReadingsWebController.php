@@ -363,9 +363,9 @@ class ReadingsWebController extends Controller
 
     /**
      * Suhu udara node1 6 jam terakhir (atau jendela 6 jam data terbaru bila 6 jam
-     * terakhir kosong), disampling maksimal 60 titik untuk digambar sebagai garis SVG.
+     * terakhir kosong), disampling maksimal 60 titik untuk dirender dengan ApexCharts.
      *
-     * @return array{points: string, areaPoints: string, lastX: float, lastY: float, min: float, mid: float, max: float, avg: float, latest: float, from: string, midTime: string, to: string, period: string, isRecent: bool, count: int}|array<never, never>
+     * @return array{points: list<array{x: int, y: float}>, min: float, mid: float, max: float, avg: float, latest: float, from: string, midTime: string, to: string, period: string, isRecent: bool, count: int}|array<never, never>
      */
     private function temperatureSeries(): array
     {
@@ -401,38 +401,20 @@ class ReadingsWebController extends Controller
             $sampled->push($averaged->last());
         }
 
-        $width = 560.0;
-        $height = 160.0;
-        $padX = 8.0;
-        $padY = 14.0;
-        $bottomY = $height - $padY;
-
         $first = $sampled->first();
         $last = $sampled->last();
         $min = (float) $sampled->min('value');
         $max = (float) $sampled->max('value');
         $avg = (float) $sampled->avg('value');
-        $span = max($max - $min, 0.5);
-        $spanMs = max(1, $last->recorded_at->getTimestampMs() - $first->recorded_at->getTimestampMs());
-
-        $coords = $sampled->map(function (object $point) use ($first, $spanMs, $min, $span, $width, $height, $padX, $padY): array {
-            $x = $padX + ($point->recorded_at->getTimestampMs() - $first->recorded_at->getTimestampMs()) / $spanMs * ($width - 2 * $padX);
-            $y = $padY + (1 - ($point->value - $min) / $span) * ($height - 2 * $padY);
-
-            return ['x' => round($x, 1), 'y' => round($y, 1)];
-        });
-
-        $points = $coords->map(fn (array $c): string => sprintf('%.1f,%.1f', $c['x'], $c['y']))->implode(' ');
-        $firstCoord = $coords->first();
-        $lastCoord = $coords->last();
-        $areaPoints = sprintf('%.1f,%.1f %s %.1f,%.1f', $firstCoord['x'], $bottomY, $points, $lastCoord['x'], $bottomY);
         $midPoint = $sampled->get((int) floor($sampled->count() / 2));
+
+        $points = $sampled->map(fn (object $point): array => [
+            'x' => $point->recorded_at->getTimestampMs(),
+            'y' => round((float) $point->value, 2),
+        ])->all();
 
         return [
             'points' => $points,
-            'areaPoints' => $areaPoints,
-            'lastX' => $lastCoord['x'],
-            'lastY' => $lastCoord['y'],
             'min' => $min,
             'mid' => ($min + $max) / 2,
             'max' => $max,
@@ -465,7 +447,7 @@ class ReadingsWebController extends Controller
         }
 
         return $query->get(['value', 'metric', 'recorded_at'])
-            ->groupBy(fn (Reading $reading): string => $reading->recorded_at->format('Y-m-d\TH:i:s.uP'))
+            ->groupBy(fn (Reading $reading): string => $reading->recorded_at->format('Y-m-d\TH:i:sP'))
             ->map(fn (Collection $group): object => (object) [
                 'recorded_at' => $group->first()->recorded_at,
                 'value' => (float) $group->avg('value'),

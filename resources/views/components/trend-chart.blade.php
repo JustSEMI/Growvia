@@ -1,4 +1,8 @@
-@props(['series', 'title' => 'Tren suhu udara'])
+@props(['series', 'title' => 'Tren suhu udara', 'thresholdMax' => null])
+
+@php
+    $chartId = 'trend-chart-'.md5($title);
+@endphp
 
 <section {{ $attributes->class(['panel', 'trend-panel']) }} aria-label="{{ $title }}">
     <div class="panel-header">
@@ -27,27 +31,17 @@
                 <strong>{{ number_format($series['max'], 1) }} °C</strong>
             </div>
         </div>
-        <div class="chart-stage">
-            <div class="chart-y-axis" aria-hidden="true">
-                <span>{{ number_format($series['max'], 1) }}°</span>
-                <span>{{ number_format($series['mid'], 1) }}°</span>
-                <span>{{ number_format($series['min'], 1) }}°</span>
-            </div>
-            <div class="chart-canvas">
-                <svg class="trend-chart" viewBox="0 0 560 160" preserveAspectRatio="none" role="img" aria-label="Grafik suhu udara {{ $series['period'] }}">
-                    <line x1="0" y1="14" x2="560" y2="14" class="trend-grid" />
-                    <line x1="0" y1="80" x2="560" y2="80" class="trend-grid" />
-                    <line x1="0" y1="146" x2="560" y2="146" class="trend-grid" />
-                    <polygon class="trend-area" points="{{ $series['areaPoints'] }}" />
-                    <polyline class="trend-line" points="{{ $series['points'] }}" />
-                    <circle class="trend-dot" cx="{{ $series['lastX'] }}" cy="{{ $series['lastY'] }}" r="4" />
-                </svg>
-                <div class="chart-x-axis" aria-hidden="true">
-                    <span>{{ $series['from'] }}</span>
-                    <span>{{ $series['midTime'] }}</span>
-                    <span>{{ $series['to'] }}</span>
-                </div>
-            </div>
+        <div
+            class="apex-chart-box"
+            data-trend-chart
+            data-points='@json($series['points'])'
+            data-timezone="{{ config('app.timezone') }}"
+            data-unit="°C"
+            data-series-name="Suhu udara"
+            @if($thresholdMax !== null && is_numeric($thresholdMax)) data-threshold-max="{{ $thresholdMax }}" @endif
+            role="img"
+            aria-label="Grafik suhu udara {{ $series['period'] }}">
+            <div id="{{ $chartId }}" class="apex-chart-mount" data-trend-chart-mount data-turbo-permanent></div>
         </div>
     </div>
     <div class="panel-footer">

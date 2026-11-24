@@ -21,25 +21,27 @@
         <x-connection-notice />
     @endif
     <div class="stack">
-        @foreach(['node1' => ['title' => 'Device 1 · Iklim', 'route' => 'petani.node1'], 'node2' => ['title' => 'Device 2 · Tanah & air', 'route' => 'petani.node2']] as $node => $meta)
-            <section aria-label="{{ $meta['title'] }}">
-                <div class="section-heading">
-                    <h2>{{ $meta['title'] }}</h2>
-                    <a class="text-link" href="{{ route($meta['route']) }}">Detail <x-icon name="arrow" /></a>
-                </div>
-                <div class="metrics-grid metrics-grid--2">
-                    @foreach($tiles[$node] as $tile)
-                        <x-metric-tile
-                            :label="$tile['label']"
-                            :value="$tile['value']"
-                            :unit="$tile['unit']"
-                            :icon="$tile['icon']"
-                            :tone="$tile['tone']"
-                            :note="$tile['note']" />
-                    @endforeach
-                </div>
-            </section>
-        @endforeach
+        <div class="two-columns device-overview-grid">
+            @foreach(['node1' => ['title' => 'Device 1 · Iklim', 'route' => 'petani.node1'], 'node2' => ['title' => 'Device 2 · Tanah & air', 'route' => 'petani.node2']] as $node => $meta)
+                <section class="device-group" aria-label="{{ $meta['title'] }}">
+                    <div class="section-heading section-heading--ruled">
+                        <h2>{{ $meta['title'] }}</h2>
+                        <a class="text-link" href="{{ route($meta['route']) }}">Detail <x-icon name="arrow" /></a>
+                    </div>
+                    <div class="metrics-grid metrics-grid--2 metrics-grid--open">
+                        @foreach($tiles[$node] as $tile)
+                            <x-metric-tile
+                                :label="$tile['label']"
+                                :value="$tile['value']"
+                                :unit="$tile['unit']"
+                                :icon="$tile['icon']"
+                                :tone="$tile['tone']"
+                                :note="$tile['note']" />
+                        @endforeach
+                    </div>
+                </section>
+            @endforeach
+        </div>
 
         <section aria-label="Pintasan kebun">
             <div class="section-heading"><h2>Panduan &amp; akun</h2></div>

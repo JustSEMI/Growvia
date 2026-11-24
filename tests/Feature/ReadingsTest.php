@@ -231,10 +231,11 @@ class ReadingsTest extends TestCase
 
         $this->actingAs($admin)->get(route('dashboard'))
             ->assertOk()
-            ->assertSee('<polyline class="trend-line"', false)
+            ->assertSee('data-trend-chart', false)
+            ->assertSee('data-points=', false)
             ->assertSee('Data terbaru')
             ->assertSee('Historis')
-            ->assertSee('gauge-fill', false);
+            ->assertSee('data-gauge-chart', false);
     }
 
     public function test_api_docs_renders_sanctum_endpoints_and_valid_metrics(): void

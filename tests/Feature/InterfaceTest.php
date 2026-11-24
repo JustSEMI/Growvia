@@ -111,7 +111,8 @@ class InterfaceTest extends TestCase
             ->assertSee('Rata-rata 1 dari 2 sensor')
             ->assertSee('Menyala')
             ->assertSee('Live')
-            ->assertSee('<polyline class="trend-line"', false);
+            ->assertSee('data-trend-chart', false)
+            ->assertSee('data-threshold-max', false);
     }
 
     public function test_admin_opening_sessions_from_the_petani_panel_keeps_the_petani_shell(): void

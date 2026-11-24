@@ -25,40 +25,44 @@
 <div class="stack">
     <turbo-frame id="dashboard-live" refresh="morph" data-turbo-refresh-interval="15000">
         <div class="stack">
-            @foreach(['node1' => 'Iklim · Device 1', 'node2' => 'Tanah &amp; air · Device 2'] as $node => $sectionLabel)
-                <section aria-label="{{ $sectionLabel }}">
-                    <div class="section-heading"><h2>{!! $sectionLabel !!}</h2></div>
-                    <div class="metrics-grid {{ $node === 'node2' ? 'metrics-grid--3' : '' }}">
-                        @foreach($tiles[$node] as $tile)
-                            <x-metric-tile
-                                :label="$tile['label']"
-                                :value="$tile['value']"
-                                :unit="$tile['unit']"
-                                :icon="$tile['icon']"
-                                :tone="$tile['tone']"
-                                :note="$tile['note']" />
-                        @endforeach
-                        @foreach($states[$node] as $state)
-                            @php
-                                $reading = $latest[$node][$state['metric']] ?? null;
-                                $stateValue = $reading ? $formatState($reading) : null;
-                                $stateNote = $reading ? 'Terakhir '.$reading->recorded_at->timezone($tz)->format('d/m H:i T') : 'Menunggu data sensor';
-                            @endphp
-                            <x-metric-tile
-                                :label="$state['label']"
-                                :value="$stateValue"
-                                icon="power"
-                                :tone="$stateValue === 'Menyala' ? 'green' : 'neutral'"
-                                :state="true"
-                                :note="$stateNote" />
-                        @endforeach
-                    </div>
-                </section>
-            @endforeach
+            <div class="two-columns device-overview-grid">
+                @foreach(['node1' => 'Iklim · Device 1', 'node2' => 'Tanah &amp; air · Device 2'] as $node => $sectionLabel)
+                    <section class="device-group" aria-label="{{ strip_tags($sectionLabel) }}">
+                        <div class="section-heading section-heading--ruled">
+                            <h2>{!! $sectionLabel !!}</h2>
+                            <div class="actuator-strip">
+                                @foreach($states[$node] as $state)
+                                    @php
+                                        $reading = $latest[$node][$state['metric']] ?? null;
+                                        $stateValue = $reading ? $formatState($reading) : null;
+                                        $stateNote = $reading ? $reading->recorded_at->timezone($tz)->format('d/m H:i T') : 'Menunggu';
+                                    @endphp
+                                    <div class="actuator-chip {{ $stateValue === 'Menyala' ? 'is-on' : '' }}" title="{{ $state['label'] }} · {{ $stateNote }}">
+                                        <span class="actuator-dot" aria-hidden="true"></span>
+                                        <span class="actuator-chip-name">{{ $state['label'] }}</span>
+                                        <span class="actuator-chip-value">{{ $stateValue ?? 'Belum ada' }}</span>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                        <div class="metrics-grid metrics-grid--2 metrics-grid--open">
+                            @foreach($tiles[$node] as $tile)
+                                <x-metric-tile
+                                    :label="$tile['label']"
+                                    :value="$tile['value']"
+                                    :unit="$tile['unit']"
+                                    :icon="$tile['icon']"
+                                    :tone="$tile['tone']"
+                                    :note="$tile['note']" />
+                            @endforeach
+                        </div>
+                    </section>
+                @endforeach
+            </div>
 
             <div class="overview-split">
                 @if(count($series))
-                    <x-trend-chart :series="$series" />
+                    <x-trend-chart :series="$series" :threshold-max="$monitorSettings['th_suhu_max'] ?? null" />
                 @else
                     <x-empty-chart title="Tren suhu udara" subtitle="Belum ada cukup data suhu di 6 jam terakhir." node="Device 1" period="6 jam" :href="route('dashboard.mqtt')" />
                 @endif
@@ -103,107 +107,100 @@
                     </div>
                 </section>
             </div>
+
+            @php
+                $pumpReading = $latest['node2']['pump'] ?? null;
+                $pumpOn = $pumpReading !== null && (float) $pumpReading->value >= 0.5;
+                $pumpAuto = ($monitorSettings['pump_mode'] ?? 'auto') !== 'manual';
+
+                $fan1Reading = $latest['node1']['fan1'] ?? null;
+                $fan1On = $fan1Reading !== null && (float) $fan1Reading->value >= 0.5;
+
+                $fan2Reading = $latest['node1']['fan2'] ?? null;
+                $fan2On = $fan2Reading !== null && (float) $fan2Reading->value >= 0.5;
+            @endphp
+
+            <section class="panel" aria-labelledby="device-control-title">
+                <div class="panel-header">
+                    <div>
+                        <h2 id="device-control-title" class="panel-title">Kontrol perangkat</h2>
+                        <p class="panel-subtitle">Sakelar langsung mengirim perintah ke broker MQTT.</p>
+                    </div>
+                    <x-badge :tone="$pumpAuto ? 'green' : 'amber'">Mode pompa: {{ $pumpAuto ? 'Otomatis' : 'Manual' }}</x-badge>
+                </div>
+                <div class="panel-body">
+                    <div class="device-control-grid">
+                        <div class="device-control-item">
+                            <div>
+                                <strong class="device-control-name">Pompa air (Node 2)</strong>
+                                <p class="device-control-meta">Ambang {{ $monitorSettings['soil_on'] ?? 30 }}% - {{ $monitorSettings['soil_off'] ?? 60 }}%, tandon min {{ $monitorSettings['tank_min'] ?? 20 }}%.</p>
+                            </div>
+                            <div class="device-switch-list">
+                                <x-device-switch
+                                    label="Daya pompa"
+                                    aria-label="Sakelar daya pompa air"
+                                    :state-text="$pumpReading ? ($pumpOn ? 'Menyala' : 'Mati') : 'Belum ada'"
+                                    :checked="$pumpOn"
+                                    node="node2"
+                                    actuator="pump"
+                                    mode="manual"
+                                    :next-state="$pumpOn ? 0 : 1" />
+                                <x-device-switch
+                                    label="Mode otomatis"
+                                    aria-label="Sakelar mode otomatis pompa air"
+                                    :state-text="$pumpAuto ? 'Aktif' : 'Manual'"
+                                    :checked="$pumpAuto"
+                                    node="node2"
+                                    actuator="pump"
+                                    :mode="$pumpAuto ? 'manual' : 'auto'"
+                                    :next-state="$pumpAuto ? ($pumpOn ? 1 : 0) : null" />
+                            </div>
+                        </div>
+
+                        <div class="device-control-item">
+                            <div>
+                                <strong class="device-control-name">Kipas 1 (Node 1)</strong>
+                                <p class="device-control-meta">Ambang suhu maksimal {{ $monitorSettings['th_suhu_max'] ?? 30 }} °C.</p>
+                            </div>
+                            <div class="device-switch-list">
+                                <x-device-switch
+                                    label="Daya kipas"
+                                    aria-label="Sakelar Kipas 1"
+                                    :state-text="$fan1Reading ? ($fan1On ? 'Menyala' : 'Mati') : 'Belum ada'"
+                                    :checked="$fan1On"
+                                    node="node1"
+                                    actuator="fan1"
+                                    mode="manual"
+                                    :next-state="$fan1On ? 0 : 1" />
+                            </div>
+                        </div>
+
+                        <div class="device-control-item">
+                            <div>
+                                <strong class="device-control-name">Kipas 2 (Node 1)</strong>
+                                <p class="device-control-meta">Pendingin tambahan Node 1 (override manual).</p>
+                            </div>
+                            <div class="device-switch-list">
+                                <x-device-switch
+                                    label="Daya kipas"
+                                    aria-label="Sakelar Kipas 2"
+                                    :state-text="$fan2Reading ? ($fan2On ? 'Menyala' : 'Mati') : 'Belum ada'"
+                                    :checked="$fan2On"
+                                    node="node1"
+                                    actuator="fan2"
+                                    mode="manual"
+                                    :next-state="$fan2On ? 0 : 1" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel-footer">
+                    <span>Perintah manual juga tersedia lewat API mobile <code>POST /api/v1/devices/control</code>.</span>
+                    <a class="text-link" href="{{ route('settings.index') }}">Atur ambang <x-icon name="arrow" /></a>
+                </div>
+            </section>
         </div>
     </turbo-frame>
-
-    <section class="panel" aria-labelledby="device-control-title">
-        <div class="panel-header">
-            <div>
-                <h2 id="device-control-title" class="panel-title">Kontrol perangkat</h2>
-                <p class="panel-subtitle">Kirim perintah langsung ke topik MQTT kontrol perangkat.</p>
-            </div>
-            <x-badge :tone="($monitorSettings['pump_mode'] ?? 'auto') === 'manual' ? 'amber' : 'green'">Mode pompa: {{ ($monitorSettings['pump_mode'] ?? 'auto') === 'manual' ? 'Manual' : 'Otomatis' }}</x-badge>
-        </div>
-        <div class="panel-body">
-            <div class="device-control-grid">
-                <div class="device-control-item">
-                    <div>
-                        <strong class="device-control-name">Pompa air (Node 2)</strong>
-                        <p class="device-control-meta">Ambang otomatis {{ $monitorSettings['soil_on'] ?? 30 }}% - {{ $monitorSettings['soil_off'] ?? 60 }}%, tandon min {{ $monitorSettings['tank_min'] ?? 20 }}%.</p>
-                    </div>
-                    <div class="device-control-actions">
-                        <form method="POST" action="{{ route('dashboard.control') }}">
-                            @csrf
-                            <input type="hidden" name="node" value="node2">
-                            <input type="hidden" name="actuator" value="pump">
-                            <input type="hidden" name="mode" value="manual">
-                            <input type="hidden" name="state" value="1">
-                            <button type="submit" class="button">Nyalakan</button>
-                        </form>
-                        <form method="POST" action="{{ route('dashboard.control') }}">
-                            @csrf
-                            <input type="hidden" name="node" value="node2">
-                            <input type="hidden" name="actuator" value="pump">
-                            <input type="hidden" name="mode" value="manual">
-                            <input type="hidden" name="state" value="0">
-                            <button type="submit" class="button button--secondary">Matikan</button>
-                        </form>
-                        <form method="POST" action="{{ route('dashboard.control') }}">
-                            @csrf
-                            <input type="hidden" name="node" value="node2">
-                            <input type="hidden" name="actuator" value="pump">
-                            <input type="hidden" name="mode" value="auto">
-                            <button type="submit" class="button button--secondary">Otomatis</button>
-                        </form>
-                    </div>
-                </div>
-
-                <div class="device-control-item">
-                    <div>
-                        <strong class="device-control-name">Kipas 1 (Node 1)</strong>
-                        <p class="device-control-meta">Ambang suhu maksimal {{ $monitorSettings['th_suhu_max'] ?? 30 }} °C.</p>
-                    </div>
-                    <div class="device-control-actions">
-                        <form method="POST" action="{{ route('dashboard.control') }}">
-                            @csrf
-                            <input type="hidden" name="node" value="node1">
-                            <input type="hidden" name="actuator" value="fan1">
-                            <input type="hidden" name="mode" value="manual">
-                            <input type="hidden" name="state" value="1">
-                            <button type="submit" class="button">Nyalakan</button>
-                        </form>
-                        <form method="POST" action="{{ route('dashboard.control') }}">
-                            @csrf
-                            <input type="hidden" name="node" value="node1">
-                            <input type="hidden" name="actuator" value="fan1">
-                            <input type="hidden" name="mode" value="manual">
-                            <input type="hidden" name="state" value="0">
-                            <button type="submit" class="button button--secondary">Matikan</button>
-                        </form>
-                    </div>
-                </div>
-
-                <div class="device-control-item">
-                    <div>
-                        <strong class="device-control-name">Kipas 2 (Node 1)</strong>
-                        <p class="device-control-meta">Pendingin tambahan Node 1 (override manual).</p>
-                    </div>
-                    <div class="device-control-actions">
-                        <form method="POST" action="{{ route('dashboard.control') }}">
-                            @csrf
-                            <input type="hidden" name="node" value="node1">
-                            <input type="hidden" name="actuator" value="fan2">
-                            <input type="hidden" name="mode" value="manual">
-                            <input type="hidden" name="state" value="1">
-                            <button type="submit" class="button">Nyalakan</button>
-                        </form>
-                        <form method="POST" action="{{ route('dashboard.control') }}">
-                            @csrf
-                            <input type="hidden" name="node" value="node1">
-                            <input type="hidden" name="actuator" value="fan2">
-                            <input type="hidden" name="mode" value="manual">
-                            <input type="hidden" name="state" value="0">
-                            <button type="submit" class="button button--secondary">Matikan</button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="panel-footer">
-            <span>Perintah manual juga tersedia lewat endpoint API mobile <code>POST /api/v1/devices/control</code>.</span>
-            <a class="text-link" href="{{ route('settings.index') }}">Atur ambang <x-icon name="arrow" /></a>
-        </div>
-    </section>
 
     <section class="panel" aria-labelledby="activity-title">
         <div class="panel-header"><div><h2 id="activity-title" class="panel-title">Aktivitas terbaru</h2><p class="panel-subtitle">Catatan akun, sesi, dan pengaturan aplikasi.</p></div><a class="text-link" href="{{ route('activity.index') }}">Lihat semua <x-icon name="arrow" /></a></div>

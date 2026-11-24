@@ -267,7 +267,12 @@ class MqttControlTest extends TestCase
             ->get('/dashboard')
             ->assertOk()
             ->assertSee('Kontrol perangkat')
-            ->assertSee('/dashboard/kontrol');
+            ->assertSee('/dashboard/kontrol')
+            ->assertSee('role="switch"', false)
+            ->assertSee('Sakelar daya pompa air')
+            ->assertSee('Sakelar mode otomatis pompa air')
+            ->assertSee('Sakelar Kipas 1')
+            ->assertSee('Sakelar Kipas 2');
 
         $this->actingAs($admin)
             ->get('/dashboard/mqtt')

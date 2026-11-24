@@ -32,17 +32,27 @@
         <x-connection-notice />
     @endif
     <div class="stack">
-        <div class="metrics-grid metrics-grid--3">
+        <div class="actuator-strip actuator-strip--bar" aria-label="Status kipas">
+            @foreach(['fan1' => 'Kipas 1', 'fan2' => 'Kipas 2'] as $metric => $fanLabel)
+                @php($fanVal = $state($metric))
+                <div class="actuator-chip {{ $fanVal === 'Menyala' ? 'is-on' : '' }}">
+                    <span class="actuator-dot" aria-hidden="true"></span>
+                    <span class="actuator-chip-name">{{ $fanLabel }}</span>
+                    <span class="actuator-chip-value">{{ $fanVal ?? 'Belum ada' }}</span>
+                    <span class="actuator-chip-time">{{ $note($metric) }}</span>
+                </div>
+            @endforeach
+        </div>
+
+        <div class="metrics-grid metrics-grid--2 metrics-grid--open">
             <x-metric-tile label="Suhu" :value="$val('temperature')" unit="°C" icon="thermometer" tone="amber" :note="$note('temperature')" />
             <x-metric-tile label="Lembap" :value="$val('humidity')" unit="%" icon="drop" tone="blue" :note="$note('humidity')" />
             <x-metric-tile label="Suhu 2" :value="$val('temperature2')" unit="°C" icon="thermometer" tone="amber" :note="$note('temperature2')" />
             <x-metric-tile label="Lembap 2" :value="$val('humidity2')" unit="%" icon="drop" tone="blue" :note="$note('humidity2')" />
-            <x-metric-tile label="Kipas 1" :value="$state('fan1')" icon="power" :tone="$state('fan1') === 'Menyala' ? 'green' : 'neutral'" :state="true" :note="$note('fan1')" />
-            <x-metric-tile label="Kipas 2" :value="$state('fan2')" icon="power" :tone="$state('fan2') === 'Menyala' ? 'green' : 'neutral'" :state="true" :note="$note('fan2')" />
         </div>
 
         @if(count($series))
-            <x-trend-chart :series="$series" />
+            <x-trend-chart :series="$series" :threshold-max="$monitorSettings['th_suhu_max'] ?? null" />
         @else
             <x-empty-chart title="Tren suhu udara" subtitle="Belum ada cukup data suhu di 6 jam terakhir." node="Device 1" period="6 jam" />
         @endif

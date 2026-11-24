@@ -42,10 +42,19 @@
         </section>
 
         <section aria-label="Tandon dan pompa">
-            <div class="section-heading"><h2>Air &amp; pompa</h2></div>
-            <div class="metrics-grid metrics-grid--2">
+            <div class="section-heading section-heading--ruled">
+                <h2>Air &amp; pompa</h2>
+                <div class="actuator-strip">
+                    <div class="actuator-chip {{ $pumpState === 'Menyala' ? 'is-on' : '' }}">
+                        <span class="actuator-dot" aria-hidden="true"></span>
+                        <span class="actuator-chip-name">Pompa</span>
+                        <span class="actuator-chip-value">{{ $pumpState ?? 'Belum ada' }}</span>
+                        <span class="actuator-chip-time">{{ $note('pump') }}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="metrics-grid metrics-grid--open">
                 <x-metric-tile label="Tandon" :value="$val('water_level')" unit="%" icon="tank" tone="blue" :note="$note('water_level')" />
-                <x-metric-tile label="Pompa" :value="$pumpState" icon="power" :tone="$pumpState === 'Menyala' ? 'green' : 'neutral'" :state="true" :note="$note('pump')" />
             </div>
         </section>
 

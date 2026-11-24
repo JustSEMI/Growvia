@@ -1,6 +1,7 @@
 import './theme.js';
 import './language.js';
 import { initCustomSelects } from './custom-select.js';
+import { initTrendCharts } from './trend-chart.js';
 import { initValidation } from './validation.js';
 import './notifications.js';
 
@@ -299,6 +300,7 @@ const start = () => {
     bindPage();
     initCustomSelects();
     initValidation();
+    initTrendCharts();
 };
 
 // Turbo Drive menukar isi halaman tanpa reload penuh, jadi ikatan dijalankan
