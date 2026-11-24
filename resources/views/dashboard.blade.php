@@ -49,39 +49,53 @@
                 </section>
             @endforeach
 
-            @if(count($series))
-                <section class="panel" aria-label="Tren suhu udara">
+            <div class="overview-split">
+                @if(count($series))
+                    <x-trend-chart :series="$series" />
+                @else
+                    <x-empty-chart title="Tren suhu udara" subtitle="Belum ada cukup data suhu di 6 jam terakhir." node="Device 1" period="6 jam" :href="route('dashboard.mqtt')" />
+                @endif
+
+                <section class="panel status-panel" aria-label="Status data">
                     <div class="panel-header">
                         <div>
-                            <h2 class="panel-title">Tren suhu udara</h2>
-                            <p class="panel-subtitle">6 jam terakhir · {{ $series['count'] }} titik · minimum {{ number_format($series['min'], 1) }} °C · maksimum {{ number_format($series['max'], 1) }} °C</p>
+                            <h2 class="panel-title">Status data</h2>
+                            <p class="panel-subtitle">Ringkasan baris di tabel readings.</p>
                         </div>
-                        <span class="chart-period">{{ $series['from'] }}–{{ $series['to'] }}</span>
+                        @if($live)
+                            <x-badge tone="green" :dot="true">Aktif</x-badge>
+                        @elseif($lastRecorded)
+                            <x-badge tone="amber">Historis</x-badge>
+                        @else
+                            <x-badge>Kosong</x-badge>
+                        @endif
                     </div>
                     <div class="panel-body">
-                        <svg class="trend-chart" viewBox="0 0 560 140" preserveAspectRatio="none" role="img" aria-label="Grafik suhu udara 6 jam terakhir">
-                            <line x1="0" y1="24" x2="560" y2="24" class="trend-grid" />
-                            <line x1="0" y1="70" x2="560" y2="70" class="trend-grid" />
-                            <line x1="0" y1="116" x2="560" y2="116" class="trend-grid" />
-                            <polyline class="trend-line" points="{{ $series['points'] }}" />
-                        </svg>
+                        <dl class="definition-list">
+                            <div>
+                                <dt>Node 1 (iklim)</dt>
+                                <dd><span class="status-num">{{ number_format($counts['node1']) }}</span> baris</dd>
+                            </div>
+                            <div>
+                                <dt>Node 2 (tanah &amp; air)</dt>
+                                <dd><span class="status-num">{{ number_format($counts['node2']) }}</span> baris</dd>
+                            </div>
+                            <div>
+                                <dt>Total tersimpan</dt>
+                                <dd><span class="status-num">{{ number_format($counts['node1'] + $counts['node2']) }}</span> baris</dd>
+                            </div>
+                            <div>
+                                <dt>Pembacaan terakhir</dt>
+                                <dd>{{ $lastRecorded ? \Illuminate\Support\Carbon::parse($lastRecorded)->timezone(config('app.timezone'))->format('d/m H:i:s T') : 'Belum ada' }}</dd>
+                            </div>
+                        </dl>
                     </div>
-                    <div class="panel-footer">Rata-rata sensor suhu Node 1 · sumber data MQTT · disegarkan otomatis tiap 15 detik.</div>
+                    <div class="panel-footer">
+                        <a class="text-link" href="{{ route('dashboard.riwayat') }}">Data mentah <x-icon name="arrow" /></a>
+                        <a class="text-link" href="{{ route('dashboard.mqtt') }}">Status MQTT <x-icon name="arrow" /></a>
+                    </div>
                 </section>
-            @else
-                <x-empty-chart title="Tren suhu udara" subtitle="Belum ada cukup data suhu di 6 jam terakhir." node="Device 1" period="6 jam" />
-            @endif
-
-            <section class="panel">
-                <div class="panel-header"><div><h2 class="panel-title">Status data</h2><p class="panel-subtitle">Baris tersimpan di tabel readings.</p></div></div>
-                <div class="panel-body">
-                    <dl class="definition-list">
-                        <div><dt>Node 1 (iklim)</dt><dd>{{ $counts['node1'] }} baris</dd></div>
-                        <div><dt>Node 2 (tanah &amp; air)</dt><dd>{{ $counts['node2'] }} baris</dd></div>
-                        <div><dt>Pembacaan terakhir</dt><dd>{{ $lastRecorded ? \Illuminate\Support\Carbon::parse($lastRecorded)->timezone(config('app.timezone'))->format('d/m H:i:s T') : 'Belum ada' }}</dd></div>
-                    </dl>
-                </div>
-            </section>
+            </div>
         </div>
     </turbo-frame>
 

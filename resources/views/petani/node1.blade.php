@@ -42,24 +42,7 @@
         </div>
 
         @if(count($series))
-            <section class="panel" aria-label="Tren suhu udara">
-                <div class="panel-header">
-                    <div>
-                        <h2 class="panel-title">Tren suhu udara</h2>
-                        <p class="panel-subtitle">6 jam terakhir · {{ $series['count'] }} titik · minimum {{ number_format($series['min'], 1) }} °C · maksimum {{ number_format($series['max'], 1) }} °C</p>
-                    </div>
-                    <span class="chart-period">{{ $series['from'] }}–{{ $series['to'] }}</span>
-                </div>
-                <div class="panel-body">
-                    <svg class="trend-chart" viewBox="0 0 560 140" preserveAspectRatio="none" role="img" aria-label="Grafik suhu udara 6 jam terakhir">
-                        <line x1="0" y1="24" x2="560" y2="24" class="trend-grid" />
-                        <line x1="0" y1="70" x2="560" y2="70" class="trend-grid" />
-                        <line x1="0" y1="116" x2="560" y2="116" class="trend-grid" />
-                        <polyline class="trend-line" points="{{ $series['points'] }}" />
-                    </svg>
-                </div>
-                <div class="panel-footer">Rata-rata sensor suhu Node 1 · disegarkan otomatis tiap 15 detik.</div>
-            </section>
+            <x-trend-chart :series="$series" />
         @else
             <x-empty-chart title="Tren suhu udara" subtitle="Belum ada cukup data suhu di 6 jam terakhir." node="Device 1" period="6 jam" />
         @endif

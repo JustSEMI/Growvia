@@ -220,4 +220,19 @@ class ReadingsTest extends TestCase
             ->assertSee('kebun/utama/node1/data')
             ->assertSee('kebun/utama/node2/data');
     }
+
+    public function test_dashboard_renders_historical_temperature_chart_when_no_recent_6h_readings(): void
+    {
+        $admin = User::factory()->admin()->create();
+        Carbon::setTestNow('2026-11-24 08:00:00');
+
+        Reading::query()->create(['node' => 'node1', 'metric' => 'temperature', 'value' => 26.2, 'unit' => '°C', 'recorded_at' => Carbon::parse('2026-11-14 01:00:00')]);
+        Reading::query()->create(['node' => 'node1', 'metric' => 'temperature', 'value' => 29.7, 'unit' => '°C', 'recorded_at' => Carbon::parse('2026-11-14 01:21:54')]);
+
+        $this->actingAs($admin)->get(route('dashboard'))
+            ->assertOk()
+            ->assertSee('<polyline class="trend-line"', false)
+            ->assertSee('Data terbaru')
+            ->assertSee('Historis');
+    }
 }

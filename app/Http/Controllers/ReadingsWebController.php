@@ -333,29 +333,109 @@ class ReadingsWebController extends Controller
     }
 
     /**
-     * Suhu udara node1 6 jam terakhir (rata-rata dua sensor per timestamp),
-     * disampling maksimal 60 titik untuk digambar sebagai garis SVG.
+     * Suhu udara node1 6 jam terakhir (atau jendela 6 jam data terbaru bila 6 jam
+     * terakhir kosong), disampling maksimal 60 titik untuk digambar sebagai garis SVG.
      *
-     * @return array{points: string, min: float, max: float, from: string, to: string, count: int}|array<never, never>
+     * @return array{points: string, areaPoints: string, lastX: float, lastY: float, min: float, mid: float, max: float, avg: float, latest: float, from: string, midTime: string, to: string, period: string, isRecent: bool, count: int}|array<never, never>
      */
     private function temperatureSeries(): array
     {
-        $rows = Reading::query()
-            ->where('node', 'node1')
-            ->whereIn('metric', ['temperature', 'temperature2'])
-            ->where('recorded_at', '>=', now()->subHours(6))
-            ->orderBy('recorded_at')
-            ->orderBy('id')
-            ->get(['value', 'metric', 'recorded_at']);
+        $tz = config('app.timezone');
+        $isRecent = true;
 
-        $count = $rows->count();
-        if ($count < 2) {
+        $averaged = $this->loadAveragedTemperatures(now()->subHours(6));
+        if ($averaged->count() < 2) {
+            $lastAt = Reading::query()
+                ->where('node', 'node1')
+                ->whereIn('metric', ['temperature', 'temperature2'])
+                ->max('recorded_at');
+
+            if ($lastAt === null) {
+                return [];
+            }
+
+            $isRecent = false;
+            $anchor = Carbon::parse($lastAt);
+            $averaged = $this->loadAveragedTemperatures($anchor->copy()->subHours(6));
+            if ($averaged->count() < 2) {
+                $averaged = $this->loadAveragedTemperatures(null, 120);
+            }
+        }
+
+        if ($averaged->count() < 2) {
             return [];
         }
 
-        // Kedua SHT dikirim dalam payload yang sama, jadi berbagi timestamp:
-        // rata-ratakan nilai per titik waktu sebelum disampling.
-        $averaged = $rows
+        $step = (int) max(1, ceil($averaged->count() / 60));
+        $sampled = $averaged->filter(fn (object $point, int $index): bool => $index % $step === 0)->values();
+        if ($sampled->last() !== $averaged->last()) {
+            $sampled->push($averaged->last());
+        }
+
+        $width = 560.0;
+        $height = 160.0;
+        $padX = 8.0;
+        $padY = 14.0;
+        $bottomY = $height - $padY;
+
+        $first = $sampled->first();
+        $last = $sampled->last();
+        $min = (float) $sampled->min('value');
+        $max = (float) $sampled->max('value');
+        $avg = (float) $sampled->avg('value');
+        $span = max($max - $min, 0.5);
+        $spanMs = max(1, $last->recorded_at->getTimestampMs() - $first->recorded_at->getTimestampMs());
+
+        $coords = $sampled->map(function (object $point) use ($first, $spanMs, $min, $span, $width, $height, $padX, $padY): array {
+            $x = $padX + ($point->recorded_at->getTimestampMs() - $first->recorded_at->getTimestampMs()) / $spanMs * ($width - 2 * $padX);
+            $y = $padY + (1 - ($point->value - $min) / $span) * ($height - 2 * $padY);
+
+            return ['x' => round($x, 1), 'y' => round($y, 1)];
+        });
+
+        $points = $coords->map(fn (array $c): string => sprintf('%.1f,%.1f', $c['x'], $c['y']))->implode(' ');
+        $firstCoord = $coords->first();
+        $lastCoord = $coords->last();
+        $areaPoints = sprintf('%.1f,%.1f %s %.1f,%.1f', $firstCoord['x'], $bottomY, $points, $lastCoord['x'], $bottomY);
+        $midPoint = $sampled->get((int) floor($sampled->count() / 2));
+
+        return [
+            'points' => $points,
+            'areaPoints' => $areaPoints,
+            'lastX' => $lastCoord['x'],
+            'lastY' => $lastCoord['y'],
+            'min' => $min,
+            'mid' => ($min + $max) / 2,
+            'max' => $max,
+            'avg' => $avg,
+            'latest' => (float) $last->value,
+            'from' => $first->recorded_at->timezone($tz)->format('H:i'),
+            'midTime' => $midPoint->recorded_at->timezone($tz)->format('H:i'),
+            'to' => $last->recorded_at->timezone($tz)->format('H:i'),
+            'period' => $isRecent ? '6 jam terakhir' : 'Data terbaru · '.$last->recorded_at->timezone($tz)->format('d/m'),
+            'isRecent' => $isRecent,
+            'count' => $sampled->count(),
+        ];
+    }
+
+    /**
+     * Kedua SHT dikirim dalam payload yang sama, jadi dirata-rata per detik.
+     *
+     * @return Collection<int, object{recorded_at: Carbon, value: float}>
+     */
+    private function loadAveragedTemperatures(?Carbon $since, ?int $limit = null): Collection
+    {
+        $query = Reading::query()
+            ->where('node', 'node1')
+            ->whereIn('metric', ['temperature', 'temperature2']);
+
+        if ($since !== null) {
+            $query->where('recorded_at', '>=', $since)->orderBy('recorded_at')->orderBy('id');
+        } else {
+            $query->orderByDesc('recorded_at')->orderByDesc('id')->limit($limit ?? 120);
+        }
+
+        return $query->get(['value', 'metric', 'recorded_at'])
             ->groupBy(fn (Reading $reading): string => $reading->recorded_at->format('Y-m-d\TH:i:s.uP'))
             ->map(fn (Collection $group): object => (object) [
                 'recorded_at' => $group->first()->recorded_at,
@@ -363,39 +443,6 @@ class ReadingsWebController extends Controller
             ])
             ->sortBy('recorded_at')
             ->values();
-
-        $step = (int) max(1, ceil($averaged->count() / 60));
-        $sampled = $averaged->filter(fn (object $point, int $index): bool => $index % $step === 0)->values();
-
-        $width = 560.0;
-        $height = 140.0;
-        $padX = 8.0;
-        $padY = 16.0;
-
-        $first = $sampled->first();
-        $last = $sampled->last();
-        $min = (float) $sampled->min('value');
-        $max = (float) $sampled->max('value');
-        $span = max($max - $min, 0.5);
-        $spanMs = max(1, $last->recorded_at->getTimestampMs() - $first->recorded_at->getTimestampMs());
-
-        $points = $sampled->map(function (object $point) use ($first, $spanMs, $min, $span, $width, $height, $padX, $padY): string {
-            $x = $padX + ($point->recorded_at->getTimestampMs() - $first->recorded_at->getTimestampMs()) / $spanMs * ($width - 2 * $padX);
-            $y = $padY + (1 - ($point->value - $min) / $span) * ($height - 2 * $padY);
-
-            return sprintf('%.1f,%.1f', $x, $y);
-        })->implode(' ');
-
-        $tz = config('app.timezone');
-
-        return [
-            'points' => $points,
-            'min' => $min,
-            'max' => $max,
-            'from' => $first->recorded_at->timezone($tz)->format('H:i'),
-            'to' => $last->recorded_at->timezone($tz)->format('H:i'),
-            'count' => $sampled->count(),
-        ];
     }
 
     /**
