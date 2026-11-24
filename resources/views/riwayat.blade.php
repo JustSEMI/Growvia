@@ -43,17 +43,17 @@
             <article class="history-card">
                 <header><strong>{{ $row['time'] }}</strong><span>{{ $row['node'] ?? '' }}</span></header>
                 <dl>
-                    <div><dt>Suhu</dt><dd>{{ $row['temperature'] ?? '—' }} °C</dd></div>
-                    <div><dt>Lembap</dt><dd>{{ $row['humidity'] ?? '—' }}%</dd></div>
-                    <div><dt>Suhu 2</dt><dd>{{ $row['temperature2'] ?? '—' }} °C</dd></div>
-                    <div><dt>Lembap 2</dt><dd>{{ $row['humidity2'] ?? '—' }}%</dd></div>
-                    <div><dt>Tanah</dt><dd>{{ $row['soil_moisture'] ?? '—' }}%</dd></div>
-                    <div><dt>Tanah 2</dt><dd>{{ $row['soil_moisture2'] ?? '—' }}%</dd></div>
-                    <div><dt>Tanah 3</dt><dd>{{ $row['soil_moisture3'] ?? '—' }}%</dd></div>
-                    <div><dt>Tandon</dt><dd>{{ $row['water_level'] ?? '—' }}%</dd></div>
-                    <div><dt>Pompa</dt><dd>{{ $row['pump'] ?? '—' }}</dd></div>
-                    <div><dt>Kipas 1</dt><dd>{{ $row['fan1'] ?? '—' }}</dd></div>
-                    <div><dt>Kipas 2</dt><dd>{{ $row['fan2'] ?? '—' }}</dd></div>
+                    <div><dt>Suhu</dt><dd>{{ $row['temperature'] ?? '--' }} °C</dd></div>
+                    <div><dt>Lembap</dt><dd>{{ $row['humidity'] ?? '--' }}%</dd></div>
+                    <div><dt>Suhu 2</dt><dd>{{ $row['temperature2'] ?? '--' }} °C</dd></div>
+                    <div><dt>Lembap 2</dt><dd>{{ $row['humidity2'] ?? '--' }}%</dd></div>
+                    <div><dt>Tanah</dt><dd>{{ $row['soil_moisture'] ?? '--' }}%</dd></div>
+                    <div><dt>Tanah 2</dt><dd>{{ $row['soil_moisture2'] ?? '--' }}%</dd></div>
+                    <div><dt>Tanah 3</dt><dd>{{ $row['soil_moisture3'] ?? '--' }}%</dd></div>
+                    <div><dt>Tandon</dt><dd>{{ $row['water_level'] ?? '--' }}%</dd></div>
+                    <div><dt>Pompa</dt><dd>{{ $row['pump'] ?? '--' }}</dd></div>
+                    <div><dt>Kipas 1</dt><dd>{{ $row['fan1'] ?? '--' }}</dd></div>
+                    <div><dt>Kipas 2</dt><dd>{{ $row['fan2'] ?? '--' }}</dd></div>
                 </dl>
             </article>
         @empty
@@ -67,7 +67,7 @@
             </tr></thead>
             <tbody>
                 @forelse($rows as $row)
-                    <tr><td>{{ $row['time'] }}</td><td>{{ $row['temperature'] ?? '—' }}</td><td>{{ $row['humidity'] ?? '—' }}</td><td>{{ $row['temperature2'] ?? '—' }}</td><td>{{ $row['humidity2'] ?? '—' }}</td><td>{{ $row['soil_moisture'] ?? '—' }}</td><td>{{ $row['soil_moisture2'] ?? '—' }}</td><td>{{ $row['soil_moisture3'] ?? '—' }}</td><td>{{ $row['water_level'] ?? '—' }}</td><td>{{ $row['pump'] ?? '—' }}</td><td>{{ $row['fan1'] ?? '—' }}</td><td>{{ $row['fan2'] ?? '—' }}</td></tr>
+                    <tr><td>{{ $row['time'] }}</td><td>{{ $row['temperature'] ?? '--' }}</td><td>{{ $row['humidity'] ?? '--' }}</td><td>{{ $row['temperature2'] ?? '--' }}</td><td>{{ $row['humidity2'] ?? '--' }}</td><td>{{ $row['soil_moisture'] ?? '--' }}</td><td>{{ $row['soil_moisture2'] ?? '--' }}</td><td>{{ $row['soil_moisture3'] ?? '--' }}</td><td>{{ $row['water_level'] ?? '--' }}</td><td>{{ $row['pump'] ?? '--' }}</td><td>{{ $row['fan1'] ?? '--' }}</td><td>{{ $row['fan2'] ?? '--' }}</td></tr>
                 @empty
                     <tr><td colspan="12" class="table-empty">Belum ada pembacaan.</td></tr>
                 @endforelse

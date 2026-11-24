@@ -27,7 +27,7 @@
                     <h2>{{ $meta['title'] }}</h2>
                     <a class="text-link" href="{{ route($meta['route']) }}">Detail <x-icon name="arrow" /></a>
                 </div>
-                <div class="metrics-grid">
+                <div class="metrics-grid metrics-grid--2">
                     @foreach($tiles[$node] as $tile)
                         <x-metric-tile
                             :label="$tile['label']"

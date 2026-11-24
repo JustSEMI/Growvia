@@ -60,10 +60,7 @@ class ReadingsWebController extends Controller
         ],
     ];
 
-    /**
-     * Halaman admin: ringkasan kebun dengan nilai terbaru, grafik tren,
-     * dan status data. Bagian live di-refresh Turbo tiap 15 detik.
-     */
+    /** Ringkasan kebun admin; bagian live di-refresh Turbo tiap 15 detik. */
     public function dashboard(): View
     {
         $lastRecorded = Reading::query()->max('recorded_at');
@@ -159,7 +156,7 @@ class ReadingsWebController extends Controller
                     $last === null => 'Menunggu data sensor',
                     $expected === 1 => 'Terakhir '.$last->recorded_at->timezone($tz)->format('d/m H:i T'),
                     count($values) === $expected => sprintf(
-                        'Rata-rata %d sensor · %s · terakhir %s',
+                        'Rata-rata %d sensor · %s · %s',
                         count($values),
                         $detail,
                         $last->recorded_at->timezone($tz)->format('d/m H:i T'),
@@ -309,6 +306,32 @@ class ReadingsWebController extends Controller
             'base' => $base,
             'metrics' => Reading::METRICS,
             'nodes' => Reading::NODES,
+            'endpoints' => [
+                ['method' => 'GET', 'path' => '/health', 'access' => 'Publik', 'tone' => 'neutral', 'summary' => 'Status layanan dan versi API.'],
+                ['method' => 'POST', 'path' => '/auth/login', 'access' => 'Publik', 'tone' => 'neutral', 'summary' => 'Login dengan email, password, dan device_name untuk token Sanctum.'],
+                ['method' => 'POST', 'path' => '/auth/forgot-password', 'access' => 'Publik', 'tone' => 'neutral', 'summary' => 'Kirim tautan pemulihan kata sandi.'],
+                ['method' => 'POST', 'path' => '/auth/reset-password', 'access' => 'Publik', 'tone' => 'neutral', 'summary' => 'Atur ulang kata sandi memakai token pemulihan.'],
+                ['method' => 'GET', 'path' => '/auth/me', 'access' => 'Bearer', 'tone' => 'blue', 'summary' => 'Data akun yang sedang login.'],
+                ['method' => 'POST', 'path' => '/auth/logout', 'access' => 'Bearer', 'tone' => 'blue', 'summary' => 'Cabut token Sanctum perangkat ini.'],
+                ['method' => 'GET', 'path' => '/workspace', 'access' => 'Bearer', 'tone' => 'blue', 'summary' => 'Pengaturan, ringkasan admin, dan telemetry_available.'],
+                ['method' => 'GET', 'path' => '/readings', 'access' => 'Bearer', 'tone' => 'blue', 'summary' => 'Riwayat sensor (query: node, metric, from, to, limit maks 1000).'],
+                ['method' => 'GET', 'path' => '/account/sessions', 'access' => 'Bearer', 'tone' => 'blue', 'summary' => 'Daftar token mobile dan sesi web aktif.'],
+                ['method' => 'PATCH', 'path' => '/account/profile', 'access' => 'Bearer', 'tone' => 'blue', 'summary' => 'Ubah nama atau email (wajib current_password jika ganti email).'],
+                ['method' => 'PATCH', 'path' => '/account/password', 'access' => 'Bearer', 'tone' => 'blue', 'summary' => 'Ubah kata sandi akun sendiri.'],
+                ['method' => 'POST', 'path' => '/account/sessions/revoke-others', 'access' => 'Bearer', 'tone' => 'blue', 'summary' => 'Akhiri sesi di perangkat lain.'],
+                ['method' => 'GET', 'path' => '/users', 'access' => 'Admin', 'tone' => 'amber', 'summary' => 'Daftar pengguna dengan filter q, role, status, sort, dan page.'],
+                ['method' => 'POST', 'path' => '/users', 'access' => 'Admin', 'tone' => 'amber', 'summary' => 'Buat akun pengguna baru.'],
+                ['method' => 'PATCH', 'path' => '/users/{user}', 'access' => 'Admin', 'tone' => 'amber', 'summary' => 'Perbarui profil, hak akses, atau kata sandi pengguna.'],
+                ['method' => 'PATCH', 'path' => '/users/{user}/status', 'access' => 'Admin', 'tone' => 'amber', 'summary' => 'Aktifkan atau nonaktifkan akun pengguna.'],
+                ['method' => 'DELETE', 'path' => '/users/{user}', 'access' => 'Admin', 'tone' => 'amber', 'summary' => 'Hapus akun pengguna.'],
+                ['method' => 'GET', 'path' => '/settings', 'access' => 'Admin', 'tone' => 'amber', 'summary' => 'Ambil konfigurasi sistem saat ini.'],
+                ['method' => 'PATCH', 'path' => '/settings', 'access' => 'Admin', 'tone' => 'amber', 'summary' => 'Perbarui konfigurasi sistem per section.'],
+                ['method' => 'GET', 'path' => '/activities', 'access' => 'Admin', 'tone' => 'amber', 'summary' => 'Log aktivitas aplikasi dengan filter tanggal dan aksi.'],
+                ['method' => 'GET', 'path' => '/backups', 'access' => 'Admin', 'tone' => 'amber', 'summary' => 'Daftar berkas cadangan database dan jadwalnya.'],
+                ['method' => 'POST', 'path' => '/backups', 'access' => 'Admin', 'tone' => 'amber', 'summary' => 'Jalankan backup database sekarang.'],
+                ['method' => 'GET', 'path' => '/backups/{name}/download', 'access' => 'Admin', 'tone' => 'amber', 'summary' => 'Unduh berkas backup (sql, sql.gz, tgz).'],
+                ['method' => 'DELETE', 'path' => '/backups/{name}', 'access' => 'Admin', 'tone' => 'amber', 'summary' => 'Hapus berkas backup tertentu.'],
+            ],
         ]);
     }
 

@@ -229,18 +229,24 @@
     .panel-body { padding: 24px; }
     .panel-footer { border-top: 1px solid var(--line); padding: 14px 24px; font-size: 12px; color: var(--secondary); display: flex; align-items: center; justify-content: space-between; gap: 12px; }
     .metrics-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin-bottom: 24px; }
-    .metric-card { padding: 22px 24px 18px; }
+    .metrics-grid--2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .metrics-grid--3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .metric-card { display: flex; flex-direction: column; padding: 22px 24px 18px; }
     .metric-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
     .metric-label { font-size: 13px; font-weight: 500; color: var(--secondary); }
     .icon-tile { display: inline-grid; place-items: center; width: 34px; height: 34px; border-radius: 8px; background: var(--pale-green); color: var(--green); flex-shrink: 0; }
+    .icon-tile--green { color: var(--green); background: var(--pale-green); }
     .icon-tile--blue { color: var(--blue); background: var(--pale-blue); }
     .icon-tile--amber { color: var(--amber); background: var(--pale-amber); }
     .icon-tile--neutral { color: var(--secondary); background: var(--neutral); }
     .icon-tile .icon { width: 17px; height: 17px; }
     .metric-value { display: flex; align-items: baseline; gap: 9px; font-size: 38px; font-weight: 500; line-height: 1.4; letter-spacing: -.05em; font-variant-numeric: tabular-nums; margin: 10px 0 12px; }
     .metric-value small { font-size: 15px; color: var(--secondary); letter-spacing: 0; font-weight: 400; }
-    .metric-foot { display: flex; align-items: center; gap: 6px; border-top: 1px solid var(--line); padding-top: 12px; font-size: 12px; color: var(--secondary); }
-    .metric-foot .icon { width: 12px; height: 12px; }
+    .metric-value--empty { font-size: 20px; font-weight: 500; letter-spacing: -.02em; color: var(--muted); padding: 9px 0; }
+    .metric-state { display: flex; align-items: center; min-height: 53px; margin: 10px 0 12px; }
+    .metric-state .badge { min-height: 30px; padding: 6px 12px; font-size: 12px; }
+    .metric-foot { display: flex; align-items: flex-start; gap: 6px; margin-top: auto; border-top: 1px solid var(--line); padding-top: 12px; font-size: 12px; line-height: 1.45; color: var(--secondary); }
+    .metric-foot .icon { width: 12px; height: 12px; margin-top: 2px; flex-shrink: 0; }
     .stack { display: grid; gap: 24px; min-width: 0; }
     .two-columns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
     .section-space { margin-top: 32px; scroll-margin-top: 100px; }
@@ -457,7 +463,6 @@
     .auth-divider::before, .auth-divider::after { content: ''; height: 1px; background: var(--line); flex: 1; }
     .auth-note { text-align: center; color: var(--secondary); font-size: 12px; text-wrap: pretty; }
     .auth-footer { text-align: center; color: var(--secondary); font-size: 12px; }
-    /* --- Overhaul login: hero story + fokus form (Laws of UX) --- */
     .auth-story { background: var(--story-surface); }
     .auth-story-content { max-width: 520px; }
     .auth-story-title { font-size: clamp(36px, min(5.2vw, 6.5vh), 76px); letter-spacing: -.04em; line-height: 1; }
@@ -472,7 +477,6 @@
     .auth-form-wrap .button--wide:active .icon { transform: translateX(5px); }
     .auth-form-wrap .auth-divider { font-weight: 500; letter-spacing: .02em; }
     .auth-access strong, .auth-top .language-select, .auth-top .theme-select { font-weight: 500; }
-    /* --- Pembaruan form: datar, tenang, tanpa glow/gradasi --- */
     .auth-main { background: var(--canvas); }
     .auth-form-wrap { align-self: center; width: 100%; max-width: 412px; margin: clamp(20px, 3.5vh, 40px) auto; padding: clamp(24px, 3.5vh, 36px) 40px clamp(18px, 3vh, 30px); background: var(--surface); border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 16px 40px -20px rgb(20 28 22 / 25%); }
     .auth-form-wrap .field { gap: 6px; }
@@ -488,7 +492,6 @@
     .auth-form-wrap .auth-divider { margin: 24px 0 16px; }
     .auth-form-wrap .auth-note { font-size: 12px; }
     .auth-story-footer { font-size: 11px; letter-spacing: .02em; }
-    /* --- Fix pesan error di kartu login: gaya modern & konsisten --- */
     .auth-form-wrap .alert { border-radius: 10px; padding: 14px 16px; margin-bottom: 20px; gap: 12px; font-size: 13px; border: 1px solid var(--danger-line); }
     .auth-form-wrap .alert--error { background: color-mix(in oklab, var(--pale-red) 65%, var(--surface)); color: var(--ink); }
     .auth-form-wrap .alert--error strong { color: var(--red); font-weight: 600; }
@@ -497,13 +500,24 @@
     .auth-form-wrap .field-error { display: flex; align-items: flex-start; gap: 6px; color: var(--red); font-size: 12px; font-weight: 500; line-height: 1.5; }
     .auth-form-wrap .field-error::before { content: '!'; display: inline-grid; place-items: center; min-width: 14px; height: 14px; border-radius: 50%; background: var(--red); color: white; font-size: 10px; font-weight: 700; line-height: 1; margin-top: 1px; }
     .auth-form-wrap .alert--error > .icon { width: 18px; height: 18px; color: var(--red); margin-top: 1px; flex-shrink: 0; }
-    .api-code { overflow-wrap: anywhere; }
-    .api-example { overflow-x: auto; }
-    .api-example code { display: block; min-width: 0; overflow-wrap: anywhere; white-space: pre-wrap; word-break: break-word; }
+    .api-url-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+    .api-code { flex: 1; min-width: 0; padding: 10px 14px; border: 1px solid var(--line); border-radius: 8px; background: var(--soft); font-family: var(--font-mono); font-size: 13px; color: var(--ink); overflow-wrap: anywhere; }
+    .api-example { margin: 0; padding: 14px 16px; border: 1px solid var(--line); border-radius: 8px; background: var(--soft); font-family: var(--font-mono); font-size: 12px; line-height: 1.55; color: var(--ink); overflow-x: auto; }
+    .api-example code { display: block; min-width: 0; white-space: pre; }
+    .api-table th, .api-table td { vertical-align: middle; }
+    .api-method { display: inline-block; min-width: 64px; padding: 3px 8px; border-radius: 6px; font-family: var(--font-mono); font-size: 12px; font-weight: 600; text-align: center; }
+    .api-method--get { background: var(--pale-green); color: var(--green); }
+    .api-method--post { background: var(--pale-blue); color: var(--blue); }
+    .api-method--patch { background: var(--pale-amber); color: var(--amber); }
+    .api-method--delete { background: var(--pale-red); color: var(--red); }
+    .api-path { font-family: var(--font-mono); font-size: 13px; font-weight: 500; color: var(--ink); white-space: nowrap; }
+    .api-metrics-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+    .api-metric-item { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 14px; border: 1px solid var(--line); border-radius: 8px; background: var(--soft); font-size: 13px; }
+    .api-metric-item code { font-family: var(--font-mono); font-size: 12px; color: var(--ink); overflow-wrap: anywhere; }
+    .api-metric-item span { font-size: 12px; color: var(--secondary); white-space: nowrap; }
     .auth-form-wrap .auth-login-error p { color: var(--red); font-weight: 500; }
     .auth-login-error ~ .form-stack .field .field-error { display: none; }
     .auth-mobile-brand { display: none; }
-    /* --- Pembaruan auth: story datar bersekat garis 1px, tanpa gradasi dekoratif --- */
     .auth-story { border-right: 1px solid var(--line); }
     .auth-head { display: grid; grid-template-columns: 42px 1fr; gap: 14px; align-items: start; margin-bottom: 26px; }
     .auth-head .icon-tile { width: 42px; height: 42px; border-radius: 12px; }
@@ -588,6 +602,7 @@
     .mobile-menu-panel .logout-link { margin-top: 10px; }
     .history-list { display: grid; }
     .history-table-wrap { display: none; }
+    .metrics-grid, .metrics-grid--3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .auth-story .auth-story-title { font-size: clamp(32px, 5vw, 48px); }
     .auth-story .garden-art { max-height: 200px; }
 }
@@ -602,7 +617,7 @@
     .page-description { font-size: 13px; }
     .header-actions { width: 100%; padding-top: 0; }
     .header-actions .button, .header-actions select { width: 100%; }
-    .metrics-grid { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+    .metrics-grid, .metrics-grid--2, .metrics-grid--3 { grid-template-columns: minmax(0, 1fr); gap: 12px; }
     .metric-card { padding: 18px; }
     .metric-value { font-size: 34px; }
     .metric-label { font-size: 12px; }
@@ -800,7 +815,9 @@
 .empty-chart-box p { margin-top: 4px; font-size: 13px; color: var(--secondary); line-height: 1.5; }
 @media (max-width: 1023px) {
     .overview-split { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+    .api-metrics-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 639px) {
     .chart-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .api-metrics-grid { grid-template-columns: minmax(0, 1fr); }
 }

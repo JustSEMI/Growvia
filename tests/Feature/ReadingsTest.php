@@ -235,4 +235,17 @@ class ReadingsTest extends TestCase
             ->assertSee('Data terbaru')
             ->assertSee('Historis');
     }
+
+    public function test_api_docs_renders_sanctum_endpoints_and_valid_metrics(): void
+    {
+        $admin = User::factory()->admin()->create();
+
+        $this->actingAs($admin)->get(route('dashboard.api-docs'))
+            ->assertOk()
+            ->assertSee('/api/v1')
+            ->assertSee('/auth/login')
+            ->assertSee('/readings')
+            ->assertSee('temperature')
+            ->assertSee('soil_moisture');
+    }
 }

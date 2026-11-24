@@ -3,6 +3,7 @@
 @section('page', 'Ringkasan')
 
 @php
+    $tz = config('app.timezone');
     $formatState = fn ($reading) => (float) $reading->value >= 0.5 ? 'Menyala' : 'Mati';
 @endphp
 
@@ -13,7 +14,7 @@
         @if($live)
             <x-badge tone="green" :dot="true">Live</x-badge>
         @elseif($lastRecorded)
-            <x-badge :dot="true">Terakhir {{ \Illuminate\Support\Carbon::parse($lastRecorded)->timezone(config('app.timezone'))->format('d/m H:i T') }}</x-badge>
+            <x-badge :dot="true">Terakhir {{ \Illuminate\Support\Carbon::parse($lastRecorded)->timezone($tz)->format('d/m H:i T') }}</x-badge>
         @else
             <x-badge>Menunggu data</x-badge>
         @endif
@@ -26,7 +27,7 @@
             @foreach(['node1' => 'Iklim · Device 1', 'node2' => 'Tanah &amp; air · Device 2'] as $node => $sectionLabel)
                 <section aria-label="{{ $sectionLabel }}">
                     <div class="section-heading"><h2>{!! $sectionLabel !!}</h2></div>
-                    <div class="metrics-grid">
+                    <div class="metrics-grid {{ $node === 'node2' ? 'metrics-grid--3' : '' }}">
                         @foreach($tiles[$node] as $tile)
                             <x-metric-tile
                                 :label="$tile['label']"
@@ -37,13 +38,18 @@
                                 :note="$tile['note']" />
                         @endforeach
                         @foreach($states[$node] as $state)
-                            @php($reading = $latest[$node][$state['metric']] ?? null)
+                            @php
+                                $reading = $latest[$node][$state['metric']] ?? null;
+                                $stateValue = $reading ? $formatState($reading) : null;
+                                $stateNote = $reading ? 'Terakhir '.$reading->recorded_at->timezone($tz)->format('d/m H:i T') : 'Menunggu data sensor';
+                            @endphp
                             <x-metric-tile
                                 :label="$state['label']"
-                                :value="$reading ? $formatState($reading) : null"
+                                :value="$stateValue"
                                 icon="power"
-                                tone="neutral"
-                                :note="$reading ? 'Status perangkat' : 'Menunggu data sensor'" />
+                                :tone="$stateValue === 'Menyala' ? 'green' : 'neutral'"
+                                :state="true"
+                                :note="$stateNote" />
                         @endforeach
                     </div>
                 </section>

@@ -136,6 +136,19 @@ const bindPage = () => {
         });
     }
 
+    for (const button of document.querySelectorAll('[data-copy-text]')) {
+        if (!navigator.clipboard?.writeText) continue;
+        button.hidden = false;
+        const original = button.textContent;
+        button.addEventListener('click', async () => {
+            try {
+                await navigator.clipboard.writeText(button.dataset.copyText ?? '');
+                button.textContent = 'Tersalin';
+                setTimeout(() => { button.textContent = original; }, 2000);
+            } catch {}
+        });
+    }
+
     for (const button of document.querySelectorAll('[data-password-toggle]')) {
         const input = document.getElementById(button.getAttribute('aria-controls'));
         if (!input) continue;

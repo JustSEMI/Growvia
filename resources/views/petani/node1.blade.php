@@ -32,13 +32,13 @@
         <x-connection-notice />
     @endif
     <div class="stack">
-        <div class="metrics-grid">
+        <div class="metrics-grid metrics-grid--3">
             <x-metric-tile label="Suhu" :value="$val('temperature')" unit="°C" icon="thermometer" tone="amber" :note="$note('temperature')" />
             <x-metric-tile label="Lembap" :value="$val('humidity')" unit="%" icon="drop" tone="blue" :note="$note('humidity')" />
             <x-metric-tile label="Suhu 2" :value="$val('temperature2')" unit="°C" icon="thermometer" tone="amber" :note="$note('temperature2')" />
             <x-metric-tile label="Lembap 2" :value="$val('humidity2')" unit="%" icon="drop" tone="blue" :note="$note('humidity2')" />
-            <x-metric-tile label="Kipas 1" :value="$state('fan1')" icon="power" tone="neutral" :note="isset($latest['fan1']) ? 'Status perangkat' : 'Menunggu data sensor'" />
-            <x-metric-tile label="Kipas 2" :value="$state('fan2')" icon="power" tone="neutral" :note="isset($latest['fan2']) ? 'Status perangkat' : 'Menunggu data sensor'" />
+            <x-metric-tile label="Kipas 1" :value="$state('fan1')" icon="power" :tone="$state('fan1') === 'Menyala' ? 'green' : 'neutral'" :state="true" :note="$note('fan1')" />
+            <x-metric-tile label="Kipas 2" :value="$state('fan2')" icon="power" :tone="$state('fan2') === 'Menyala' ? 'green' : 'neutral'" :state="true" :note="$note('fan2')" />
         </div>
 
         @if(count($series))
