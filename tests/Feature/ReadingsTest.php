@@ -238,6 +238,34 @@ class ReadingsTest extends TestCase
             ->assertSee('data-gauge-chart', false);
     }
 
+    public function test_dashboard_renders_device1_and_device2_multi_metric_trends(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $t1 = now()->subMinutes(40);
+        $t2 = now()->subMinutes(15);
+
+        Reading::query()->create(['node' => 'node1', 'metric' => 'temperature', 'value' => 27.0, 'unit' => '°C', 'recorded_at' => $t1]);
+        Reading::query()->create(['node' => 'node1', 'metric' => 'temperature', 'value' => 29.2, 'unit' => '°C', 'recorded_at' => $t2]);
+        Reading::query()->create(['node' => 'node1', 'metric' => 'humidity', 'value' => 64.0, 'unit' => '%', 'recorded_at' => $t1]);
+        Reading::query()->create(['node' => 'node1', 'metric' => 'humidity', 'value' => 70.5, 'unit' => '%', 'recorded_at' => $t2]);
+
+        Reading::query()->create(['node' => 'node2', 'metric' => 'soil_moisture', 'value' => 42.0, 'unit' => '%', 'recorded_at' => $t1]);
+        Reading::query()->create(['node' => 'node2', 'metric' => 'soil_moisture2', 'value' => 44.0, 'unit' => '%', 'recorded_at' => $t1]);
+        Reading::query()->create(['node' => 'node2', 'metric' => 'soil_moisture', 'value' => 48.0, 'unit' => '%', 'recorded_at' => $t2]);
+        Reading::query()->create(['node' => 'node2', 'metric' => 'soil_moisture2', 'value' => 50.0, 'unit' => '%', 'recorded_at' => $t2]);
+        Reading::query()->create(['node' => 'node2', 'metric' => 'water_level', 'value' => 78.0, 'unit' => '%', 'recorded_at' => $t1]);
+        Reading::query()->create(['node' => 'node2', 'metric' => 'water_level', 'value' => 76.0, 'unit' => '%', 'recorded_at' => $t2]);
+
+        $this->actingAs($admin)->get(route('dashboard'))
+            ->assertOk()
+            ->assertSee('Tren iklim')
+            ->assertSee('Tren tanah &amp; air', false)
+            ->assertSee('data-chart-tab="humidity"', false)
+            ->assertSee('data-chart-tab="soil_moisture"', false)
+            ->assertSee('data-chart-tab="water_level"', false)
+            ->assertSee('49.0 %');
+    }
+
     public function test_api_docs_renders_sanctum_endpoints_and_valid_metrics(): void
     {
         $admin = User::factory()->admin()->create();

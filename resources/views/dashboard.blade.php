@@ -18,6 +18,10 @@
         @else
             <x-badge>Menunggu data</x-badge>
         @endif
+        <div class="header-button-group">
+            <a class="button button--secondary button--sm" href="{{ route('dashboard.riwayat') }}"><x-icon name="clock" /><span>Riwayat</span></a>
+            <a class="button button--sm" href="{{ route('settings.index') }}"><x-icon name="settings" /><span>Atur ambang</span></a>
+        </div>
     </x-slot:actions>
 </x-page-header>
 <x-alerts />
@@ -26,10 +30,16 @@
     <turbo-frame id="dashboard-live" refresh="morph" data-turbo-refresh-interval="15000">
         <div class="stack">
             <div class="two-columns device-overview-grid">
-                @foreach(['node1' => 'Iklim · Device 1', 'node2' => 'Tanah &amp; air · Device 2'] as $node => $sectionLabel)
-                    <section class="device-group" aria-label="{{ strip_tags($sectionLabel) }}">
-                        <div class="section-heading section-heading--ruled">
-                            <h2>{!! $sectionLabel !!}</h2>
+                @foreach([
+                    'node1' => ['title' => 'Iklim · Device 1', 'meta' => '2x SHT (udara) · 2 kipas'],
+                    'node2' => ['title' => 'Tanah &amp; air · Device 2', 'meta' => '3x sensor tanah · tandon'],
+                ] as $node => $nodeMeta)
+                    <section class="panel device-panel" aria-label="{{ strip_tags($nodeMeta['title']) }}">
+                        <div class="panel-header device-panel-head">
+                            <div>
+                                <h2 class="panel-title">{!! $nodeMeta['title'] !!}</h2>
+                                <p class="panel-subtitle">{{ $nodeMeta['meta'] }}</p>
+                            </div>
                             <div class="actuator-strip">
                                 @foreach($states[$node] as $state)
                                     @php
@@ -45,67 +55,98 @@
                                 @endforeach
                             </div>
                         </div>
-                        <div class="metrics-grid metrics-grid--2 metrics-grid--open">
-                            @foreach($tiles[$node] as $tile)
-                                <x-metric-tile
-                                    :label="$tile['label']"
-                                    :value="$tile['value']"
-                                    :unit="$tile['unit']"
-                                    :icon="$tile['icon']"
-                                    :tone="$tile['tone']"
-                                    :note="$tile['note']" />
-                            @endforeach
+                        <div class="panel-body device-panel-body">
+                            <div class="metrics-grid metrics-grid--2 metrics-grid--open">
+                                @foreach($tiles[$node] as $tile)
+                                    <x-metric-tile
+                                        :label="$tile['label']"
+                                        :value="$tile['value']"
+                                        :unit="$tile['unit']"
+                                        :icon="$tile['icon']"
+                                        :tone="$tile['tone']"
+                                        :note="$tile['note']" />
+                                @endforeach
+                            </div>
                         </div>
                     </section>
                 @endforeach
             </div>
 
-            <div class="overview-split">
-                @if(count($series))
-                    <x-trend-chart :series="$series" :threshold-max="$monitorSettings['th_suhu_max'] ?? null" />
+            @php
+                $node1Tabs = [
+                    [
+                        'key' => 'temperature',
+                        'label' => 'Suhu udara',
+                        'subtitle' => 'Rata-rata sensor Node 1',
+                        'unit' => '°C',
+                        'tone' => 'amber',
+                        'series' => $series,
+                        'thresholdMax' => $monitorSettings['th_suhu_max'] ?? null,
+                        'thresholdMaxLabel' => isset($monitorSettings['th_suhu_max']) ? 'Batas '.$monitorSettings['th_suhu_max'].' °C' : null,
+                        'emptyTitle' => 'Menunggu minimal 2 titik suhu (Device 1)',
+                        'emptySubtitle' => 'Grafik ApexCharts otomatis aktif begitu sensor mengirim minimal dua pembacaan suhu.',
+                    ],
+                    [
+                        'key' => 'humidity',
+                        'label' => 'Kelembapan udara',
+                        'subtitle' => 'Rata-rata sensor Node 1',
+                        'unit' => '%',
+                        'tone' => 'blue',
+                        'series' => $humiditySeries,
+                        'thresholdMin' => $monitorSettings['th_hum_min'] ?? null,
+                        'thresholdMinLabel' => isset($monitorSettings['th_hum_min']) ? 'Min '.$monitorSettings['th_hum_min'].'%' : null,
+                        'thresholdMax' => $monitorSettings['th_hum_max'] ?? null,
+                        'thresholdMaxLabel' => isset($monitorSettings['th_hum_max']) ? 'Maks '.$monitorSettings['th_hum_max'].'%' : null,
+                        'emptyTitle' => 'Menunggu minimal 2 titik kelembapan udara (Device 1)',
+                        'emptySubtitle' => 'Grafik ApexCharts otomatis aktif begitu sensor SHT mengirim minimal dua pembacaan.',
+                    ],
+                ];
+
+                $node2Tabs = [
+                    [
+                        'key' => 'soil_moisture',
+                        'label' => 'Kelembapan tanah',
+                        'subtitle' => 'Rata-rata tanah Node 2',
+                        'unit' => '%',
+                        'tone' => 'green',
+                        'series' => $soilSeries,
+                        'thresholdMin' => $monitorSettings['soil_on'] ?? null,
+                        'thresholdMinLabel' => isset($monitorSettings['soil_on']) ? 'Siram < '.$monitorSettings['soil_on'].'%' : null,
+                        'thresholdMax' => $monitorSettings['soil_off'] ?? null,
+                        'thresholdMaxLabel' => isset($monitorSettings['soil_off']) ? 'Stop > '.$monitorSettings['soil_off'].'%' : null,
+                        'emptyTitle' => 'Menunggu minimal 2 titik kelembapan tanah (Device 2)',
+                        'emptySubtitle' => 'Grafik ApexCharts otomatis aktif begitu sensor soil Node 2 mengirim minimal dua pembacaan.',
+                    ],
+                    [
+                        'key' => 'water_level',
+                        'label' => 'Tandon air',
+                        'subtitle' => 'Sensor ultrasonik Node 2',
+                        'unit' => '%',
+                        'tone' => 'blue',
+                        'series' => $waterSeries,
+                        'thresholdMin' => $monitorSettings['tank_min'] ?? null,
+                        'thresholdMinLabel' => isset($monitorSettings['tank_min']) ? 'Min tandon '.$monitorSettings['tank_min'].'%' : null,
+                        'emptyTitle' => 'Menunggu minimal 2 titik level tandon (Device 2)',
+                        'emptySubtitle' => 'Grafik ApexCharts otomatis aktif begitu sensor tandon Node 2 mengirim minimal dua pembacaan.',
+                    ],
+                ];
+
+                $hasNode1Chart = count($series) > 0 || count($humiditySeries) > 0;
+                $hasNode2Chart = count($soilSeries) > 0 || count($waterSeries) > 0;
+            @endphp
+
+            <div class="charts-split">
+                @if($hasNode1Chart)
+                    <x-trend-chart title="Tren iklim · Device 1" node="Device 1" :tabs="$node1Tabs" :href="route('dashboard.riwayat', ['node' => 'node1'])" link-label="Tabel Device 1" />
                 @else
-                    <x-empty-chart title="Tren suhu udara" subtitle="Belum ada cukup data suhu di 6 jam terakhir." node="Device 1" period="6 jam" :href="route('dashboard.mqtt')" />
+                    <x-empty-chart title="Tren iklim · Device 1" subtitle="Belum ada cukup data suhu dan kelembapan udara di 6 jam terakhir." metric-label="suhu" node="Device 1" period="6 jam" :href="route('dashboard.mqtt')" />
                 @endif
 
-                <section class="panel status-panel" aria-label="Status data">
-                    <div class="panel-header">
-                        <div>
-                            <h2 class="panel-title">Status data</h2>
-                            <p class="panel-subtitle">Ringkasan baris di tabel readings.</p>
-                        </div>
-                        @if($live)
-                            <x-badge tone="green" :dot="true">Aktif</x-badge>
-                        @elseif($lastRecorded)
-                            <x-badge tone="amber">Historis</x-badge>
-                        @else
-                            <x-badge>Kosong</x-badge>
-                        @endif
-                    </div>
-                    <div class="panel-body">
-                        <dl class="definition-list">
-                            <div>
-                                <dt>Node 1 (iklim)</dt>
-                                <dd><span class="status-num">{{ number_format($counts['node1']) }}</span> baris</dd>
-                            </div>
-                            <div>
-                                <dt>Node 2 (tanah &amp; air)</dt>
-                                <dd><span class="status-num">{{ number_format($counts['node2']) }}</span> baris</dd>
-                            </div>
-                            <div>
-                                <dt>Total tersimpan</dt>
-                                <dd><span class="status-num">{{ number_format($counts['node1'] + $counts['node2']) }}</span> baris</dd>
-                            </div>
-                            <div>
-                                <dt>Pembacaan terakhir</dt>
-                                <dd>{{ $lastRecorded ? \Illuminate\Support\Carbon::parse($lastRecorded)->timezone(config('app.timezone'))->format('d/m H:i:s T') : 'Belum ada' }}</dd>
-                            </div>
-                        </dl>
-                    </div>
-                    <div class="panel-footer">
-                        <a class="text-link" href="{{ route('dashboard.riwayat') }}">Data mentah <x-icon name="arrow" /></a>
-                        <a class="text-link" href="{{ route('dashboard.mqtt') }}">Status MQTT <x-icon name="arrow" /></a>
-                    </div>
-                </section>
+                @if($hasNode2Chart)
+                    <x-trend-chart title="Tren tanah & air · Device 2" node="Device 2" :tabs="$node2Tabs" :href="route('dashboard.riwayat', ['node' => 'node2'])" link-label="Tabel Device 2" />
+                @else
+                    <x-empty-chart title="Tren tanah & air · Device 2" subtitle="Belum ada cukup data kelembapan tanah dan tandon di 6 jam terakhir." metric-label="kelembapan tanah" node="Device 2" period="6 jam" :href="route('dashboard.mqtt')" />
+                @endif
             </div>
 
             @php
@@ -130,10 +171,13 @@
                 </div>
                 <div class="panel-body">
                     <div class="device-control-grid">
-                        <div class="device-control-item">
-                            <div>
-                                <strong class="device-control-name">Pompa air (Node 2)</strong>
-                                <p class="device-control-meta">Ambang {{ $monitorSettings['soil_on'] ?? 30 }}% - {{ $monitorSettings['soil_off'] ?? 60 }}%, tandon min {{ $monitorSettings['tank_min'] ?? 20 }}%.</p>
+                        <article class="device-control-item">
+                            <div class="device-control-head">
+                                <span class="icon-tile icon-tile--blue"><x-icon name="drop" /></span>
+                                <div>
+                                    <h3 class="device-control-name">Pompa air (Node 2)</h3>
+                                    <p class="device-control-meta">Ambang {{ $monitorSettings['soil_on'] ?? 30 }}% - {{ $monitorSettings['soil_off'] ?? 60 }}%, tandon min {{ $monitorSettings['tank_min'] ?? 20 }}%.</p>
+                                </div>
                             </div>
                             <div class="device-switch-list">
                                 <x-device-switch
@@ -155,12 +199,15 @@
                                     :mode="$pumpAuto ? 'manual' : 'auto'"
                                     :next-state="$pumpAuto ? ($pumpOn ? 1 : 0) : null" />
                             </div>
-                        </div>
+                        </article>
 
-                        <div class="device-control-item">
-                            <div>
-                                <strong class="device-control-name">Kipas 1 (Node 1)</strong>
-                                <p class="device-control-meta">Ambang suhu maksimal {{ $monitorSettings['th_suhu_max'] ?? 30 }} °C.</p>
+                        <article class="device-control-item">
+                            <div class="device-control-head">
+                                <span class="icon-tile icon-tile--amber"><x-icon name="thermometer" /></span>
+                                <div>
+                                    <h3 class="device-control-name">Kipas 1 (Node 1)</h3>
+                                    <p class="device-control-meta">Ambang suhu maksimal {{ $monitorSettings['th_suhu_max'] ?? 30 }} °C.</p>
+                                </div>
                             </div>
                             <div class="device-switch-list">
                                 <x-device-switch
@@ -173,12 +220,15 @@
                                     mode="manual"
                                     :next-state="$fan1On ? 0 : 1" />
                             </div>
-                        </div>
+                        </article>
 
-                        <div class="device-control-item">
-                            <div>
-                                <strong class="device-control-name">Kipas 2 (Node 1)</strong>
-                                <p class="device-control-meta">Pendingin tambahan Node 1 (override manual).</p>
+                        <article class="device-control-item">
+                            <div class="device-control-head">
+                                <span class="icon-tile icon-tile--neutral"><x-icon name="power" /></span>
+                                <div>
+                                    <h3 class="device-control-name">Kipas 2 (Node 1)</h3>
+                                    <p class="device-control-meta">Pendingin tambahan Node 1 (override manual).</p>
+                                </div>
                             </div>
                             <div class="device-switch-list">
                                 <x-device-switch
@@ -191,7 +241,7 @@
                                     mode="manual"
                                     :next-state="$fan2On ? 0 : 1" />
                             </div>
-                        </div>
+                        </article>
                     </div>
                 </div>
                 <div class="panel-footer">
@@ -202,9 +252,59 @@
         </div>
     </turbo-frame>
 
-    <section class="panel" aria-labelledby="activity-title">
-        <div class="panel-header"><div><h2 id="activity-title" class="panel-title">Aktivitas terbaru</h2><p class="panel-subtitle">Catatan akun, sesi, dan pengaturan aplikasi.</p></div><a class="text-link" href="{{ route('activity.index') }}">Lihat semua <x-icon name="arrow" /></a></div>
-        <x-activity-list :activities="$recentActivities" />
-    </section>
+    <div class="ops-split">
+        <section class="panel status-panel" aria-label="Status data">
+            <div class="panel-header">
+                <div>
+                    <h2 class="panel-title">Status data</h2>
+                    <p class="panel-subtitle">Ringkasan baris di tabel readings.</p>
+                </div>
+                @if($live)
+                    <x-badge tone="green" :dot="true">Aktif</x-badge>
+                @elseif($lastRecorded)
+                    <x-badge tone="amber">Historis</x-badge>
+                @else
+                    <x-badge>Kosong</x-badge>
+                @endif
+            </div>
+            <div class="panel-body">
+                <div class="status-kpis">
+                    <div class="status-kpi">
+                        <span>Node 1 (iklim)</span>
+                        <strong><span class="status-num">{{ number_format($counts['node1']) }}</span> <small>baris</small></strong>
+                    </div>
+                    <div class="status-kpi">
+                        <span>Node 2 (tanah &amp; air)</span>
+                        <strong><span class="status-num">{{ number_format($counts['node2']) }}</span> <small>baris</small></strong>
+                    </div>
+                </div>
+                <dl class="definition-list mt-6">
+                    <div>
+                        <dt>Total tersimpan</dt>
+                        <dd><span class="status-num">{{ number_format($counts['node1'] + $counts['node2']) }}</span> baris</dd>
+                    </div>
+                    <div>
+                        <dt>Pembacaan terakhir</dt>
+                        <dd>{{ $lastRecorded ? \Illuminate\Support\Carbon::parse($lastRecorded)->timezone(config('app.timezone'))->format('d/m H:i:s T') : 'Belum ada' }}</dd>
+                    </div>
+                </dl>
+            </div>
+            <div class="panel-footer">
+                <a class="text-link" href="{{ route('dashboard.riwayat') }}">Data mentah <x-icon name="arrow" /></a>
+                <a class="text-link" href="{{ route('dashboard.mqtt') }}">Status MQTT <x-icon name="arrow" /></a>
+            </div>
+        </section>
+
+        <section class="panel activity-panel" aria-labelledby="activity-title">
+            <div class="panel-header">
+                <div>
+                    <h2 id="activity-title" class="panel-title">Aktivitas terbaru</h2>
+                    <p class="panel-subtitle">Catatan akun, sesi, dan pengaturan aplikasi.</p>
+                </div>
+                <a class="text-link" href="{{ route('activity.index') }}">Lihat semua <x-icon name="arrow" /></a>
+            </div>
+            <x-activity-list :activities="$recentActivities" />
+        </section>
+    </div>
 </div>
 @endsection

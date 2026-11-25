@@ -1,7 +1,7 @@
 const themeKey = 'growvia.theme';
 const themeRoot = document.documentElement;
 const themeMedia = window.matchMedia('(prefers-color-scheme: dark)');
-const themeControls = document.querySelectorAll('[data-theme-select]');
+const boundThemeControls = new WeakSet();
 let themePreference = themeRoot.dataset.themePreference ?? 'system';
 
 const applyTheme = (preference) => {
@@ -11,19 +11,26 @@ const applyTheme = (preference) => {
     themeRoot.dataset.theme = theme;
     themeRoot.style.colorScheme = theme;
     document.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme === 'dark' ? '#0f1310' : '#f7f6f3');
-    themeControls.forEach((control) => {
+    document.querySelectorAll('[data-theme-select]').forEach((control) => {
         control.value = themePreference;
         control.dispatchEvent(new Event('growvia:select-sync'));
     });
 };
 
-for (const control of themeControls) {
-    control.addEventListener('change', () => {
-        applyTheme(control.value);
-        try { localStorage.setItem(themeKey, themePreference); } catch {}
-    });
-    control.closest('[data-theme-control]').hidden = false;
-}
+const initThemeControls = () => {
+    for (const control of document.querySelectorAll('[data-theme-select]')) {
+        if (!boundThemeControls.has(control)) {
+            boundThemeControls.add(control);
+            control.addEventListener('change', () => {
+                applyTheme(control.value);
+                try { localStorage.setItem(themeKey, themePreference); } catch {}
+            });
+        }
+        const wrapper = control.closest('[data-theme-control]');
+        if (wrapper) wrapper.hidden = false;
+    }
+    applyTheme(themePreference);
+};
 
 themeMedia.addEventListener('change', () => {
     if (themePreference === 'system') applyTheme('system');
@@ -39,4 +46,5 @@ window.addEventListener('pageshow', () => {
     applyTheme(preference);
 });
 
-applyTheme(themePreference);
+document.addEventListener?.('turbo:load', initThemeControls);
+initThemeControls();

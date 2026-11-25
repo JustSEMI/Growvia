@@ -73,7 +73,10 @@ class ReadingsWebController extends Controller
             'lastRecorded' => $lastRecorded,
             'live' => $lastRecorded !== null
                 && Carbon::parse($lastRecorded)->gt(now()->subSeconds(90)),
-            'series' => $this->temperatureSeries(),
+            'series' => $this->metricSeries('node1', ['temperature', 'temperature2']),
+            'humiditySeries' => $this->metricSeries('node1', ['humidity', 'humidity2']),
+            'soilSeries' => $this->metricSeries('node2', ['soil_moisture', 'soil_moisture2', 'soil_moisture3']),
+            'waterSeries' => $this->metricSeries('node2', ['water_level']),
             'tiles' => $this->buildTiles($latest),
             'states' => self::DASHBOARD_STATES,
         ]);
@@ -362,21 +365,22 @@ class ReadingsWebController extends Controller
     }
 
     /**
-     * Suhu udara node1 6 jam terakhir (atau jendela 6 jam data terbaru bila 6 jam
-     * terakhir kosong), disampling maksimal 60 titik untuk dirender dengan ApexCharts.
+     * Deret waktu satu metrik (atau rata-rata multi-sensor per detik pada node yang sama)
+     * dalam 6 jam terakhir (atau jendela 6 jam data terbaru), disampling maksimal 60 titik.
      *
+     * @param  list<string>  $metrics
      * @return array{points: list<array{x: int, y: float}>, min: float, mid: float, max: float, avg: float, latest: float, from: string, midTime: string, to: string, period: string, isRecent: bool, count: int}|array<never, never>
      */
-    private function temperatureSeries(): array
+    private function metricSeries(string $node, array $metrics): array
     {
         $tz = config('app.timezone');
         $isRecent = true;
 
-        $averaged = $this->loadAveragedTemperatures(now()->subHours(6));
+        $averaged = $this->loadAveragedSeries($node, $metrics, now()->subHours(6));
         if ($averaged->count() < 2) {
             $lastAt = Reading::query()
-                ->where('node', 'node1')
-                ->whereIn('metric', ['temperature', 'temperature2'])
+                ->where('node', $node)
+                ->whereIn('metric', $metrics)
                 ->max('recorded_at');
 
             if ($lastAt === null) {
@@ -385,9 +389,9 @@ class ReadingsWebController extends Controller
 
             $isRecent = false;
             $anchor = Carbon::parse($lastAt);
-            $averaged = $this->loadAveragedTemperatures($anchor->copy()->subHours(6));
+            $averaged = $this->loadAveragedSeries($node, $metrics, $anchor->copy()->subHours(6));
             if ($averaged->count() < 2) {
-                $averaged = $this->loadAveragedTemperatures(null, 120);
+                $averaged = $this->loadAveragedSeries($node, $metrics, null, 120);
             }
         }
 
@@ -430,15 +434,26 @@ class ReadingsWebController extends Controller
     }
 
     /**
-     * Kedua SHT dikirim dalam payload yang sama, jadi dirata-rata per detik.
+     * Suhu udara node1; tetap dipanggil oleh panel petani node1.
      *
+     * @return array{points: list<array{x: int, y: float}>, min: float, mid: float, max: float, avg: float, latest: float, from: string, midTime: string, to: string, period: string, isRecent: bool, count: int}|array<never, never>
+     */
+    private function temperatureSeries(): array
+    {
+        return $this->metricSeries('node1', ['temperature', 'temperature2']);
+    }
+
+    /**
+     * Sensor sejenis pada node yang sama dikirim dalam payload yang sama, jadi dirata-rata per detik.
+     *
+     * @param  list<string>  $metrics
      * @return Collection<int, object{recorded_at: Carbon, value: float}>
      */
-    private function loadAveragedTemperatures(?Carbon $since, ?int $limit = null): Collection
+    private function loadAveragedSeries(string $node, array $metrics, ?Carbon $since, ?int $limit = null): Collection
     {
         $query = Reading::query()
-            ->where('node', 'node1')
-            ->whereIn('metric', ['temperature', 'temperature2']);
+            ->where('node', $node)
+            ->whereIn('metric', $metrics);
 
         if ($since !== null) {
             $query->where('recorded_at', '>=', $since)->orderBy('recorded_at')->orderBy('id');

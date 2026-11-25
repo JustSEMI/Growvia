@@ -5,21 +5,30 @@
 <a class="skip-link" href="#main-content">Lewati ke konten</a>
 <div class="workspace">
     <aside class="sidebar">
-        <x-brand />
+        <div class="sidebar-head">
+            <x-brand />
+        </div>
         <x-navigation :panel="$panel" />
         <div class="sidebar-bottom">
-            <a href="{{ $panel === 'admin' ? route('settings.index') : route('petani.settings') }}" class="sidebar-account" data-label="Pengaturan akun">
-                <span class="avatar">{{ mb_strtoupper(mb_substr(auth()->user()->name, 0, 1)) }}</span>
-                <span class="account-copy"><strong>{{ auth()->user()->name }}</strong><small>{{ auth()->user()->isAdmin() ? 'Administrator' : 'Petani' }}</small></span>
-                <x-icon name="settings" />
-            </a>
-            <form method="POST" action="{{ route('logout') }}">@csrf<button class="nav-link logout-link" type="submit" data-label="Keluar"><x-icon name="logout" /><span>Keluar</span></button></form>
+            <div class="sidebar-userbar">
+                <a href="{{ $panel === 'admin' ? route('settings.index') : route('petani.settings') }}" class="sidebar-account" data-label="Pengaturan akun">
+                    <span class="avatar">{{ mb_strtoupper(mb_substr(auth()->user()->name, 0, 1)) }}</span>
+                    <span class="account-copy"><strong>{{ auth()->user()->name }}</strong><small>{{ auth()->user()->isAdmin() ? 'Administrator' : 'Petani' }}</small></span>
+                </a>
+                <form method="POST" action="{{ route('logout') }}" class="sidebar-logout-form">
+                    @csrf
+                    <button class="sidebar-logout" type="submit" data-label="Keluar" aria-label="Keluar" title="Keluar">
+                        <x-icon name="logout" />
+                        <span class="sr-only">Keluar</span>
+                    </button>
+                </form>
+            </div>
         </div>
     </aside>
     <div class="workspace-main">
         <header class="topbar">
             <div class="topbar-left">
-                <button type="button" class="icon-button sidebar-toggle" data-sidebar-toggle hidden aria-expanded="true" aria-label="Ciutkan navigasi"><x-icon name="chevron-down" /></button>
+                <button type="button" class="icon-button sidebar-toggle" data-sidebar-toggle hidden aria-expanded="true" aria-label="Ciutkan navigasi"><x-icon name="panel-left" /></button>
                 <details class="mobile-menu" data-mobile-nav>
                     <summary class="icon-button mobile-menu-toggle" aria-label="Buka navigasi"><x-icon name="menu" /><span class="sr-only">Buka navigasi</span></summary>
                     <div class="mobile-menu-panel" role="dialog" aria-label="Navigasi">
@@ -28,11 +37,18 @@
                             <button class="icon-button mobile-menu-close" type="button" data-mobile-close aria-label="Tutup navigasi"><x-icon name="close" /></button>
                         </div>
                         <x-navigation :panel="$panel" />
-                        <a href="{{ $panel === 'admin' ? route('settings.index') : route('petani.settings') }}" class="mobile-account">
-                            <span class="avatar">{{ mb_strtoupper(mb_substr(auth()->user()->name, 0, 1)) }}</span>
-                            <span class="account-copy"><strong>{{ auth()->user()->name }}</strong><small>{{ auth()->user()->isAdmin() ? 'Administrator' : 'Petani' }}</small></span>
-                        </a>
-                        <form method="POST" action="{{ route('logout') }}">@csrf<button class="nav-link logout-link" type="submit"><x-icon name="logout" /><span>Keluar</span></button></form>
+                        <div class="sidebar-bottom mobile-menu-foot">
+                            <div class="sidebar-userbar">
+                                <a href="{{ $panel === 'admin' ? route('settings.index') : route('petani.settings') }}" class="sidebar-account mobile-account">
+                                    <span class="avatar">{{ mb_strtoupper(mb_substr(auth()->user()->name, 0, 1)) }}</span>
+                                    <span class="account-copy"><strong>{{ auth()->user()->name }}</strong><small>{{ auth()->user()->isAdmin() ? 'Administrator' : 'Petani' }}</small></span>
+                                </a>
+                                <form method="POST" action="{{ route('logout') }}" class="sidebar-logout-form">
+                                    @csrf
+                                    <button class="sidebar-logout" type="submit" aria-label="Keluar" title="Keluar"><x-icon name="logout" /><span class="sr-only">Keluar</span></button>
+                                </form>
+                            </div>
+                        </div>
                     </div>
                 </details>
                 <div class="topbar-location"><span class="topbar-divider" aria-hidden="true"></span><span class="topbar-workspace">Growvia</span><span class="topbar-current" aria-hidden="true">/</span><span class="topbar-page">@yield('page', 'Ringkasan')</span></div>
