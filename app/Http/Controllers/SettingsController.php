@@ -104,6 +104,9 @@ class SettingsController extends Controller
             if ($changed !== []) {
                 ActivityLog::record('settings.updated', $actor, null, $changed);
             }
+            if (($values['pump_mode'] ?? 'auto') === 'auto') {
+                Setting::query()->where('key', 'pump_manual_state')->delete();
+            }
 
             return $values;
         });

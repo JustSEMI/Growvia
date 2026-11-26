@@ -140,12 +140,12 @@ final class MqttPublisher
     {
         MqttConnectionSettings::apply();
 
-        $connectionName = (string) config('mqtt-client.default', 'default');
+        $connectionName = MqttConnectionSettings::connectionName();
         $prefix = 'mqtt-client.connections.'.$connectionName;
-        $originalClientId = config($prefix.'.clientId');
+        $originalClientId = config($prefix.'.client_id');
 
-        // Pakai clientId unik per publish agar tidak menendang koneksi mqtt:consume dari broker.
-        config([$prefix.'.clientId' => ($originalClientId ?: 'growvia-backend').'-pub-'.bin2hex(random_bytes(3))]);
+        // Pakai client_id unik per publish agar tidak menendang koneksi mqtt:consume dari broker.
+        config([$prefix.'.client_id' => ($originalClientId ?: 'growvia-backend').'-pub-'.bin2hex(random_bytes(3))]);
 
         try {
             $client = MQTT::connection($connectionName);
@@ -160,7 +160,7 @@ final class MqttPublisher
 
             return false;
         } finally {
-            config([$prefix.'.clientId' => $originalClientId]);
+            config([$prefix.'.client_id' => $originalClientId]);
         }
     }
 }

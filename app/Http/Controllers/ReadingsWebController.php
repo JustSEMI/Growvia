@@ -342,7 +342,7 @@ class ReadingsWebController extends Controller
     public function mqtt(): View
     {
         MqttConnectionSettings::apply();
-        $connection = config('mqtt-client.default', 'default');
+        $connection = MqttConnectionSettings::connectionName();
         $config = config('mqtt-client.connections.'.$connection);
         $lastRecorded = Reading::query()->max('recorded_at');
 
@@ -350,7 +350,7 @@ class ReadingsWebController extends Controller
             'mqtt' => [
                 'host' => $config['host'] ?? '127.0.0.1',
                 'port' => $config['port'] ?? 1883,
-                'clientId' => $config['clientId'] ?? 'growvia-backend',
+                'clientId' => $config['client_id'] ?? $config['clientId'] ?? 'growvia-backend',
                 'hasAuth' => filled($config['connection_settings']['auth']['username'] ?? null)
                     || filled($config['connection_settings']['auth']['password'] ?? null),
             ],

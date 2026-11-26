@@ -3,7 +3,7 @@ import './language.js';
 import { initCustomSelects } from './custom-select.js';
 import { initTrendCharts } from './trend-chart.js';
 import { initValidation } from './validation.js';
-import './notifications.js';
+import { enhanceFlashes } from './notifications.js';
 
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
@@ -301,6 +301,7 @@ const start = () => {
     initCustomSelects();
     initValidation();
     initTrendCharts();
+    enhanceFlashes();
 };
 
 // Turbo Drive menukar isi halaman tanpa reload penuh, jadi ikatan dijalankan

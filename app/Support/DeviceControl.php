@@ -11,13 +11,22 @@ use Illuminate\Validation\Rule;
 
 final class DeviceControl
 {
-    /** @return array<string, list<mixed>> */
-    public static function rules(?string $node, ?string $mode): array
-    {
-        $actuators = $node === 'node1' ? ['fan1', 'fan2'] : ['pump'];
+    /**
+     * @param  list<string>|null  $allowedNodes
+     * @param  list<string>|null  $allowedActuators
+     * @return array<string, list<mixed>>
+     */
+    public static function rules(
+        ?string $node,
+        ?string $mode,
+        ?array $allowedNodes = null,
+        ?array $allowedActuators = null,
+    ): array {
+        $nodes = $allowedNodes ?? ['node1', 'node2'];
+        $actuators = $allowedActuators ?? ($node === 'node1' ? ['fan1', 'fan2'] : ['pump']);
 
         return [
-            'node' => ['required', 'string', Rule::in(['node1', 'node2'])],
+            'node' => ['required', 'string', Rule::in($nodes)],
             'actuator' => ['required', 'string', Rule::in($actuators)],
             'mode' => ['nullable', 'string', Rule::in(['auto', 'manual'])],
             'state' => [Rule::requiredIf($mode !== 'auto'), 'nullable', 'boolean'],
@@ -25,26 +34,21 @@ final class DeviceControl
     }
 
     /**
-     * Simpan perubahan mode pompa bila ada lalu kembalikan konfigurasi terkini untuk publish MQTT.
+     * Hitung payload kontrol dan config terkini tanpa memutasi database sebelum publish MQTT berhasil.
      *
      * @return array{mode: string, state: ?bool, sync_config: bool, settings: array<string, string>}
      */
-    public static function prepare(
-        User $actor,
+    public static function plan(
         string $node,
         string $actuator,
         ?bool $state,
         ?string $requestedMode,
     ): array {
         $mode = $requestedMode ?? 'manual';
-        $stored = array_replace(SettingRules::DEFAULTS, Setting::query()->lockForUpdate()->pluck('value', 'key')->all());
-        $syncConfig = false;
-
-        if ($node === 'node2' && $actuator === 'pump' && $stored['pump_mode'] !== $mode) {
-            Setting::updateOrCreate(['key' => 'pump_mode'], ['value' => $mode]);
-            ActivityLog::record('settings.updated', $actor, null, ['pump_mode']);
+        $stored = array_replace(SettingRules::DEFAULTS, Setting::query()->pluck('value', 'key')->all());
+        $syncConfig = $node === 'node2' && $actuator === 'pump' && $stored['pump_mode'] !== $mode;
+        if ($syncConfig) {
             $stored['pump_mode'] = $mode;
-            $syncConfig = true;
         }
 
         return [
@@ -53,5 +57,34 @@ final class DeviceControl
             'sync_config' => $syncConfig,
             'settings' => $stored,
         ];
+    }
+
+    /**
+     * Simpan perubahan mode pompa dan status perintah manual terakhir setelah broker MQTT menerima perintah.
+     */
+    public static function commit(
+        User $actor,
+        string $node,
+        string $actuator,
+        ?bool $state,
+        string $mode,
+    ): void {
+        if ($node !== 'node2' || $actuator !== 'pump') {
+            return;
+        }
+
+        $storedMode = (string) (Setting::query()->where('key', 'pump_mode')->lockForUpdate()->value('value')
+            ?? SettingRules::DEFAULTS['pump_mode']);
+
+        if ($storedMode !== $mode) {
+            Setting::updateOrCreate(['key' => 'pump_mode'], ['value' => $mode]);
+            ActivityLog::record('settings.updated', $actor, null, ['pump_mode']);
+        }
+
+        if ($mode === 'manual' && $state !== null) {
+            Setting::updateOrCreate(['key' => 'pump_manual_state'], ['value' => $state ? '1' : '0']);
+        } elseif ($mode === 'auto') {
+            Setting::query()->where('key', 'pump_manual_state')->delete();
+        }
     }
 }

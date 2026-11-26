@@ -62,6 +62,9 @@ class WorkspaceController extends Controller
             if ($changed !== []) {
                 ActivityLog::record('settings.updated', $actor, null, $changed);
             }
+            if (($values['pump_mode'] ?? $stored['pump_mode']) === 'auto') {
+                Setting::query()->where('key', 'pump_manual_state')->delete();
+            }
 
             return array_replace($stored, $values);
         }, admin: true);
@@ -90,28 +93,27 @@ class WorkspaceController extends Controller
             ? (bool) $validated['state']
             : null;
 
-        $prepared = MobileMutation::run($request, fn (User $actor): array => DeviceControl::prepare(
-            $actor,
+        $plan = DeviceControl::plan(
             $validated['node'],
             $validated['actuator'],
             $state,
             $validated['mode'] ?? null,
-        ));
+        );
 
         $published = MqttPublisher::publishControl(
             $validated['node'],
             $validated['actuator'],
-            $prepared['state'],
-            $prepared['mode'],
-            $prepared['settings'],
-            $prepared['sync_config'],
+            $plan['state'],
+            $plan['mode'],
+            $plan['settings'],
+            $plan['sync_config'],
         );
 
         $control = [
             'node' => $validated['node'],
             'actuator' => $validated['actuator'],
-            'mode' => $prepared['mode'],
-            'state' => $prepared['state'],
+            'mode' => $plan['mode'],
+            'state' => $plan['state'],
         ];
 
         if (! $published) {
@@ -122,8 +124,16 @@ class WorkspaceController extends Controller
             ], 503)->header('Cache-Control', 'no-store');
         }
 
+        MobileMutation::run($request, fn (User $actor) => DeviceControl::commit(
+            $actor,
+            $validated['node'],
+            $validated['actuator'],
+            $plan['state'],
+            $plan['mode'],
+        ));
+
         return response()->json([
-            'message' => $prepared['mode'] === 'auto'
+            'message' => $plan['mode'] === 'auto'
                 ? 'Mode perangkat dikembalikan ke otomatis.'
                 : 'Perintah perangkat dikirim ke broker MQTT.',
             'published' => true,

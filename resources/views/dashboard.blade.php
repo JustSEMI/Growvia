@@ -151,21 +151,21 @@
 
             @php
                 $pumpReading = $latest['node2']['pump'] ?? null;
-                $pumpOn = $pumpReading !== null && (float) $pumpReading->value >= 0.5;
-                $pumpAuto = ($monitorSettings['pump_mode'] ?? 'auto') !== 'manual';
 
                 $fan1Reading = $latest['node1']['fan1'] ?? null;
                 $fan1On = $fan1Reading !== null && (float) $fan1Reading->value >= 0.5;
 
                 $fan2Reading = $latest['node1']['fan2'] ?? null;
                 $fan2On = $fan2Reading !== null && (float) $fan2Reading->value >= 0.5;
+
+                $pumpAuto = ($monitorSettings['pump_mode'] ?? 'auto') !== 'manual';
             @endphp
 
             <section class="panel" aria-labelledby="device-control-title">
                 <div class="panel-header">
                     <div>
                         <h2 id="device-control-title" class="panel-title">Kontrol perangkat</h2>
-                        <p class="panel-subtitle">Sakelar langsung mengirim perintah ke broker MQTT.</p>
+                        <p class="panel-subtitle">Tombol langsung mengirim perintah ke broker MQTT.</p>
                     </div>
                     <x-badge :tone="$pumpAuto ? 'green' : 'amber'">Mode pompa: {{ $pumpAuto ? 'Otomatis' : 'Manual' }}</x-badge>
                 </div>
@@ -179,26 +179,11 @@
                                     <p class="device-control-meta">Ambang {{ $monitorSettings['soil_on'] ?? 30 }}% - {{ $monitorSettings['soil_off'] ?? 60 }}%, tandon min {{ $monitorSettings['tank_min'] ?? 20 }}%.</p>
                                 </div>
                             </div>
-                            <div class="device-switch-list">
-                                <x-device-switch
-                                    label="Daya pompa"
-                                    aria-label="Sakelar daya pompa air"
-                                    :state-text="$pumpReading ? ($pumpOn ? 'Menyala' : 'Mati') : 'Belum ada'"
-                                    :checked="$pumpOn"
-                                    node="node2"
-                                    actuator="pump"
-                                    mode="manual"
-                                    :next-state="$pumpOn ? 0 : 1" />
-                                <x-device-switch
-                                    label="Mode otomatis"
-                                    aria-label="Sakelar mode otomatis pompa air"
-                                    :state-text="$pumpAuto ? 'Aktif' : 'Manual'"
-                                    :checked="$pumpAuto"
-                                    node="node2"
-                                    actuator="pump"
-                                    :mode="$pumpAuto ? 'manual' : 'auto'"
-                                    :next-state="$pumpAuto ? ($pumpOn ? 1 : 0) : null" />
-                            </div>
+                            <x-pump-control
+                                :reading="$pumpReading"
+                                :settings="$monitorSettings"
+                                :action="route('dashboard.control')"
+                                hint-id="dashboard-pump-hint" />
                         </article>
 
                         <article class="device-control-item">

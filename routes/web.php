@@ -77,6 +77,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/', [ReadingsWebController::class, 'petaniDashboard'])->name('dashboard');
         Route::get('/iklim', [ReadingsWebController::class, 'petaniNode1'])->name('node1');
         Route::get('/tanah', [ReadingsWebController::class, 'petaniNode2'])->name('node2');
+        Route::post('/tanah/kontrol', [DeviceControlController::class, 'storePetaniPump'])->middleware('throttle:30,1')->name('control');
         Route::get('/pengaturan', fn () => view('petani.pengaturan'))->name('settings');
         Route::get('/edukasi', fn () => view('petani.edukasi'))->name('edukasi');
     });

@@ -26,6 +26,7 @@
         @endif
     </x-slot:actions>
 </x-page-header>
+<x-alerts />
 
 <turbo-frame id="petani-node2-live" refresh="morph" data-turbo-refresh-interval="15000">
     @if(! $lastRecorded)
@@ -42,45 +43,60 @@
         </section>
 
         <div class="two-columns">
-            <section aria-label="Tandon dan pompa">
-                <div class="section-heading section-heading--ruled">
-                    <h2>Air &amp; pompa</h2>
+            <section class="panel" aria-labelledby="petani-pump-control-title">
+                <div class="panel-header">
+                    <div>
+                        <h2 id="petani-pump-control-title" class="panel-title">Kontrol pompa</h2>
+                        <p class="panel-subtitle">Irigasi / Device 2</p>
+                    </div>
                     <div class="actuator-strip">
-                        <div class="actuator-chip {{ $pumpState === 'Menyala' ? 'is-on' : '' }}">
+                        <div class="actuator-chip {{ $pumpState === 'Menyala' ? 'is-on' : '' }}" title="Pompa · {{ $note('pump') }}">
                             <span class="actuator-dot" aria-hidden="true"></span>
                             <span class="actuator-chip-name">Pompa</span>
                             <span class="actuator-chip-value">{{ $pumpState ?? 'Belum ada' }}</span>
-                            <span class="actuator-chip-time">{{ $note('pump') }}</span>
                         </div>
                     </div>
                 </div>
-                <div class="metrics-grid metrics-grid--open">
-                    <x-metric-tile label="Tandon" :value="$val('water_level')" unit="%" icon="tank" tone="blue" :note="$note('water_level')" />
+                <div class="panel-body">
+                    <x-pump-control
+                        :reading="$latest['pump'] ?? null"
+                        :settings="$monitorSettings"
+                        :action="route('petani.control')"
+                        hint-id="petani-pump-hint" />
                 </div>
             </section>
 
-            <section class="panel status-panel" aria-label="Ambang tersimpan">
-                <div class="panel-header">
-                    <div>
-                        <h2 class="panel-title">Ambang tersimpan</h2>
-                        <p class="panel-subtitle">Aturan penyiraman dan batas tandon.</p>
+            <div class="stack">
+                <section aria-label="Isi tandon air">
+                    <div class="section-heading section-heading--ruled"><h2>Tandon air</h2></div>
+                    <div class="metrics-grid metrics-grid--open">
+                        <x-metric-tile label="Tandon" :value="$val('water_level')" unit="%" icon="tank" tone="blue" :note="$note('water_level')" />
                     </div>
-                    <span class="icon-tile icon-tile--blue"><x-icon name="tank" /></span>
-                </div>
-                <div class="panel-body">
-                    <dl class="definition-list">
-                        <div><dt>Mode pompa</dt><dd>{{ $monitorSettings['pump_mode'] === 'manual' ? 'Manual' : 'Otomatis' }}</dd></div>
-                        <div><dt>Mulai menyiram</dt><dd>&lt; {{ $monitorSettings['soil_on'] }}%</dd></div>
-                        <div><dt>Berhenti menyiram</dt><dd>&gt; {{ $monitorSettings['soil_off'] }}%</dd></div>
-                        <div><dt>Tandon minimum</dt><dd>{{ $monitorSettings['tank_min'] }}%</dd></div>
-                        <div><dt>Durasi maks pompa</dt><dd>{{ $monitorSettings['pump_max_run'] }} menit</dd></div>
-                    </dl>
-                </div>
-                <div class="panel-footer">
-                    <span>Diatur oleh administrator</span>
-                    <a class="text-link" href="{{ route('petani.edukasi') }}">Panduan penyiraman <x-icon name="arrow" /></a>
-                </div>
-            </section>
+                </section>
+
+                <section class="panel status-panel" aria-label="Ambang tersimpan">
+                    <div class="panel-header">
+                        <div>
+                            <h2 class="panel-title">Ambang tersimpan</h2>
+                            <p class="panel-subtitle">Aturan penyiraman dan batas tandon.</p>
+                        </div>
+                        <span class="icon-tile icon-tile--blue"><x-icon name="tank" /></span>
+                    </div>
+                    <div class="panel-body">
+                        <dl class="definition-list">
+                            <div><dt>Mode pompa</dt><dd>{{ $monitorSettings['pump_mode'] === 'manual' ? 'Manual' : 'Otomatis' }}</dd></div>
+                            <div><dt>Mulai menyiram</dt><dd>&lt; {{ $monitorSettings['soil_on'] }}%</dd></div>
+                            <div><dt>Berhenti menyiram</dt><dd>&gt; {{ $monitorSettings['soil_off'] }}%</dd></div>
+                            <div><dt>Tandon minimum</dt><dd>{{ $monitorSettings['tank_min'] }}%</dd></div>
+                            <div><dt>Durasi maks pompa</dt><dd>{{ $monitorSettings['pump_max_run'] }} menit</dd></div>
+                        </dl>
+                    </div>
+                    <div class="panel-footer">
+                        <span>Diatur oleh administrator</span>
+                        <a class="text-link" href="{{ route('petani.edukasi') }}">Panduan penyiraman <x-icon name="arrow" /></a>
+                    </div>
+                </section>
+            </div>
         </div>
     </div>
 </turbo-frame>

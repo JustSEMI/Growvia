@@ -20,10 +20,15 @@ final class MqttConnectionSettings
         'mqtt_user' => 'connection_settings.auth.username',
     ];
 
+    public static function connectionName(): string
+    {
+        return (string) (config('mqtt-client.default_connection') ?? config('mqtt-client.default', 'default'));
+    }
+
     /** Timpa config koneksi default php-mqtt. */
     public static function apply(): void
     {
-        $prefix = 'mqtt-client.connections.'.config('mqtt-client.default', 'default');
+        $prefix = 'mqtt-client.connections.'.self::connectionName();
         $stored = Setting::query()->whereIn('key', array_keys(self::MAP))->pluck('value', 'key');
 
         foreach (self::MAP as $key => $configKey) {
@@ -33,6 +38,10 @@ final class MqttConnectionSettings
             }
 
             config([$prefix.'.'.$configKey => $configKey === 'port' ? (int) $value : $value]);
+        }
+
+        if ((int) config($prefix.'.port') === 8883 && env('MQTT_TLS_ENABLED') === null) {
+            config([$prefix.'.connection_settings.tls.enabled' => true]);
         }
     }
 

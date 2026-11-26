@@ -7,9 +7,10 @@
     'actuator',
     'mode' => 'manual',
     'nextState' => null,
+    'action' => null,
 ])
 
-<form method="POST" action="{{ route('dashboard.control') }}" class="device-switch-form" data-turbo-frame="_top">
+<form method="POST" action="{{ $action ?? route('dashboard.control') }}" class="device-switch-form" data-turbo-frame="_top">
     @csrf
     <input type="hidden" name="node" value="{{ $node }}">
     <input type="hidden" name="actuator" value="{{ $actuator }}">

@@ -1,25 +1,35 @@
-const region = document.querySelector('[data-toast-region]');
-const template = document.querySelector('[data-toast-template]');
-const live = document.querySelector('[data-toast-live]');
+const getRegion = () => document.querySelector('[data-toast-region]');
+const getTemplate = () => document.querySelector('[data-toast-template]');
+const getLive = () => document.querySelector('[data-toast-live]');
 const titles = { success: 'Berhasil', error: 'Terjadi kesalahan', info: 'Informasi', warning: 'Perhatian' };
 const active = new Set();
 const waiting = [];
-const pendingLabel = region?.querySelector('[data-toast-pending]');
 const announcements = new Map();
 let announcementTimer = null;
 
+const pruneDisconnected = () => {
+    for (const toast of [...active]) {
+        if (!toast.isConnected) active.delete(toast);
+    }
+};
+
 const announce = (toast, text) => {
+    const live = getLive();
+    if (!live?.isConnected) return;
     announcements.set(toast, text);
     live.textContent = '';
     if (announcementTimer !== null) return;
     announcementTimer = setTimeout(() => {
-        live.textContent = [...announcements.values()].join(' ');
+        const currentLive = getLive();
+        if (currentLive?.isConnected) currentLive.textContent = [...announcements.values()].join(' ');
         announcements.clear();
         announcementTimer = null;
     }, 100);
 };
 
 const placeRegion = () => {
+    pruneDisconnected();
+    const region = getRegion();
     if (!region?.isConnected || region.contains(document.activeElement)) return;
     region.removeAttribute('data-placement');
     const focused = document.activeElement;
@@ -33,13 +43,15 @@ document.addEventListener('focusin', placeRegion);
 window.addEventListener('resize', placeRegion);
 let placementFrame = null;
 document.addEventListener('scroll', (event) => {
-    if (region?.contains(event.target) || placementFrame !== null) return;
+    if (getRegion()?.contains(event.target) || placementFrame !== null) return;
     placementFrame = requestAnimationFrame(() => { placementFrame = null; placeRegion(); });
 }, true);
 
 const flush = () => {
+    pruneDisconnected();
     while (active.size < 3 && waiting.length) waiting.shift()();
     placeRegion();
+    const pendingLabel = getRegion()?.querySelector('[data-toast-pending]');
     if (pendingLabel) {
         pendingLabel.hidden = waiting.length === 0;
         pendingLabel.textContent = waiting.length ? `${waiting.length} notifikasi menunggu. Tutup notifikasi untuk melihat berikutnya.` : '';
@@ -72,6 +84,9 @@ const returnFocus = (origin) => {
 
 export function notify(message, { tone = 'info', title, duration = 7000 } = {}) {
     if (typeof message !== 'string' || !message.trim()) return null;
+    const region = getRegion();
+    const template = getTemplate();
+    const live = getLive();
     const prototype = template instanceof HTMLTemplateElement ? template.content.querySelector('.toast') : null;
     if (!region?.isConnected || !live?.isConnected || !prototype) return null;
     if (!['[data-toast-title]', '[data-toast-message]', 'button[type="button"][data-toast-close]'].every(selector => prototype.querySelector(selector))) return null;
@@ -105,7 +120,8 @@ export function notify(message, { tone = 'info', title, duration = 7000 } = {}) 
             clearTimeout(announcementTimer);
             announcementTimer = null;
         }
-        if (!active.size) live.textContent = '';
+        const currentLive = getLive();
+        if (!active.size && currentLive) currentLive.textContent = '';
         toast.remove();
         if (restoreFocus) returnFocus(origin);
         flush();
@@ -122,8 +138,10 @@ export function notify(message, { tone = 'info', title, duration = 7000 } = {}) 
     toast.addEventListener('focusout', () => queueMicrotask(resume));
     toast.querySelector('[data-toast-close]').addEventListener('click', dismiss);
     waiting.push(() => {
+        const targetRegion = getRegion();
+        if (!targetRegion?.isConnected) return;
         active.add(toast);
-        region.insertBefore(toast, pendingLabel ?? null);
+        targetRegion.insertBefore(toast, targetRegion.querySelector('[data-toast-pending]') ?? null);
         document.addEventListener('visibilitychange', onVisibilityChange);
         resume();
         announce(toast, `${title}. ${message}`);
@@ -133,10 +151,14 @@ export function notify(message, { tone = 'info', title, duration = 7000 } = {}) 
     return toast;
 }
 
-for (const flash of document.querySelectorAll('[data-flash-message]')) {
-    const text = flash.querySelector('[data-flash-text]')?.textContent;
-    if (!text || !notify(text, { tone: flash.dataset.flashTone })) continue;
-    flash.classList.add('flash-receipt');
-    flash.removeAttribute('role');
-    flash.setAttribute('aria-live', 'off');
+export function enhanceFlashes() {
+    for (const flash of document.querySelectorAll('[data-flash-message]:not(.flash-receipt)')) {
+        const text = flash.querySelector('[data-flash-text]')?.textContent;
+        if (!text || !notify(text, { tone: flash.dataset.flashTone })) continue;
+        flash.classList.add('flash-receipt');
+        flash.removeAttribute('role');
+        flash.setAttribute('aria-live', 'off');
+    }
 }
+
+enhanceFlashes();
