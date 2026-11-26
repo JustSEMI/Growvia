@@ -8,7 +8,7 @@
 <x-alerts />
 <div class="settings-layout">
     <div class="settings-aside">
-        <nav class="settings-nav" aria-label="Bagian pengaturan"><a href="#profile"><x-icon name="users" />Profil kamu<span class="settings-nav-num">01</span></a><a href="#security"><x-icon name="shield" />Kata sandi<span class="settings-nav-num">02</span></a><a href="#sessions"><x-icon name="clock" />Sesi perangkat<span class="settings-nav-num">03</span></a><a href="#mqtt"><x-icon name="connection" />Koneksi MQTT<span class="settings-nav-num">04</span></a><a href="#climate"><x-icon name="sun" />Ambang iklim<span class="settings-nav-num">05</span></a><a href="#soil"><x-icon name="drop" />Tanah & pompa<span class="settings-nav-num">06</span></a><a href="#notifications"><x-icon name="info" />Notifikasi<span class="settings-nav-num">07</span></a></nav>
+        <nav class="settings-nav" aria-label="Bagian pengaturan"><a href="#profile"><x-icon name="users" />Profil kamu<span class="settings-nav-num">01</span></a><a href="#security"><x-icon name="shield" />Kata sandi<span class="settings-nav-num">02</span></a><a href="#sessions"><x-icon name="clock" />Sesi perangkat<span class="settings-nav-num">03</span></a><a href="#mqtt"><x-icon name="connection" />Koneksi MQTT<span class="settings-nav-num">04</span></a><a href="#climate"><x-icon name="sun" />Ambang iklim<span class="settings-nav-num">05</span></a><a href="#soil"><x-icon name="drop" />Tanah & pompa<span class="settings-nav-num">06</span></a><a href="#notifications"><x-icon name="info" />Notifikasi<span class="settings-nav-num">07</span></a><a href="#sensor-data"><x-icon name="trash" />Data sensor<span class="settings-nav-num">08</span></a></nav>
         <div class="settings-tips">
             <p class="settings-tips-title"><x-icon name="leaf" />Jaga akunmu tetap aman</p>
             <p class="settings-tip"><x-icon name="shield" />Pake kata sandi unik yang nggak kepake di aplikasi lain.</p>
@@ -76,7 +76,34 @@
                 </div><div class="form-actions"><button class="button" type="submit">Simpan notifikasi</button></div>
             </form>
         </section>
+
+        @php($purgeConfirmMessage = $readingsCount > 0 ? 'Hapus permanen '.number_format($readingsCount).' data sensor dari database? Riwayat dan grafik akan dikosongkan. Tindakan ini tidak bisa dibatalkan.' : 'Belum ada data sensor tersimpan. Tetap jalankan pembersihan data sensor?')
+        <section class="panel form-section form-section--red" id="sensor-data" aria-labelledby="sensor-data-title" data-reveal>
+            <div class="panel-header">
+                <div>
+                    <p class="eyebrow">08 · Pemeliharaan data</p>
+                    <h2 class="panel-title mt-2" id="sensor-data-title">Data sensor</h2>
+                    <p class="panel-subtitle">Hapus seluruh riwayat pembacaan sensor dan grafik. Akun pengguna dan pengaturan sistem tetap aman.</p>
+                </div>
+                <x-badge :tone="$readingsCount > 0 ? 'amber' : 'neutral'">{{ number_format($readingsCount) }} baris</x-badge>
+            </div>
+            <div class="panel-body">
+                <p class="field-hint" id="sensor-data-hint">Tersimpan {{ number_format($readingsCount) }} data pembacaan dari semua node. Data baru tetap masuk kembali selama perangkat aktif mengirim ke broker MQTT.</p>
+                <p class="field-hint mt-2" data-confirm-required>Konfirmasi hapus memerlukan JavaScript dan dukungan dialog browser. Aktifkan JavaScript, perbarui browser, atau muat ulang jika tombol tetap nonaktif.</p>
+            </div>
+            <div class="form-actions">
+                <form method="POST" action="{{ route('settings.readings.destroy') }}"
+                    data-confirm-title="Konfirmasi hapus data sensor"
+                    data-confirm-message="{{ $purgeConfirmMessage }}"
+                    data-confirm-accept="Hapus semua data">
+                    @csrf
+                    @method('DELETE')
+                    <button class="button button--danger" type="submit" data-confirm-trigger disabled aria-describedby="sensor-data-hint"><x-icon name="trash" /><span>Hapus semua data sensor</span></button>
+                </form>
+            </div>
+        </section>
     </div>
 </div>
 </div>
+<x-confirm-dialog />
 @endsection

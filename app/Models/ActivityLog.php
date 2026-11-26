@@ -111,6 +111,7 @@ class ActivityLog extends Model
             'settings.updated' => 'Pengaturan sistem diperbarui',
             'backup.created' => 'Backup database dibuat',
             'backup.deleted' => 'Backup database dihapus',
+            'readings.cleared' => 'Data sensor dihapus',
         ];
     }
 

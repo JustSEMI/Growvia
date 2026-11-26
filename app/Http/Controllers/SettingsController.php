@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Models\ActivityLog;
+use App\Models\Reading;
 use App\Models\Setting;
 use App\Models\User;
 use App\Support\AccountMutation;
@@ -29,6 +30,7 @@ class SettingsController extends Controller
 
         return view('settings', [
             'settings' => array_merge(self::DEFAULTS, $stored),
+            'readingsCount' => Reading::query()->count(),
             'user' => auth()->user(),
         ]);
     }
@@ -121,5 +123,23 @@ class SettingsController extends Controller
         };
 
         return back()->with('status', $message);
+    }
+
+    public function destroyReadings(Request $request): RedirectResponse
+    {
+        $deleted = AccountMutation::run($request, function (User $actor): int {
+            abort_unless($actor->isAdmin(), 403);
+
+            $count = Reading::query()->delete();
+            if ($count > 0) {
+                ActivityLog::record('readings.cleared', $actor);
+            }
+
+            return $count;
+        });
+
+        return back()->with('status', $deleted > 0
+            ? 'Berhasil menghapus '.number_format($deleted).' data sensor.'
+            : 'Belum ada data sensor untuk dihapus.');
     }
 }

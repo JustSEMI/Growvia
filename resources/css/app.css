@@ -418,10 +418,12 @@
     .ledger-page .form-section--green { border-top: 2px solid var(--green); }
     .ledger-page .form-section--blue { border-top: 2px solid var(--blue); }
     .ledger-page .form-section--amber { border-top: 2px solid var(--amber); }
+    .ledger-page .form-section--red { border-top: 2px solid var(--red); }
     .ledger-page .form-section .panel-header { background: var(--soft); }
     .ledger-page .form-section--green .eyebrow, .ledger-page .form-section--green .icon-tile { color: var(--green); }
     .ledger-page .form-section--blue .eyebrow, .ledger-page .form-section--blue .icon-tile { color: var(--blue); }
     .ledger-page .form-section--amber .eyebrow, .ledger-page .form-section--amber .icon-tile { color: var(--amber); }
+    .ledger-page .form-section--red .eyebrow, .ledger-page .form-section--red .icon-tile { color: var(--red); }
     .ledger-page .form-section--neutral .icon-tile { color: var(--secondary); }
     .ledger-page .panel-header .icon-tile { background: var(--surface); border: 1px solid var(--line); }
     .ledger-page .panel-header .badge { background: var(--surface); border: 1px solid var(--line); }
@@ -616,8 +618,9 @@
     .error-description { max-width: 400px; margin: 10px 0 28px; color: var(--secondary); font-size: 14px; }
     .error-actions { display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap; }
     .confirm-dialog { width: min(440px, calc(100% - 32px)); margin: auto; padding: 28px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); color: var(--ink); }
+    .confirm-dialog:modal { overscroll-behavior: contain; }
     /* Older ::backdrop implementations do not inherit custom properties. */
-    .confirm-dialog::backdrop { background: var(--scrim, rgb(20 28 22 / 42%)); }
+    .confirm-dialog::backdrop { overflow: hidden; overscroll-behavior: contain; background: var(--scrim, rgb(20 28 22 / 42%)); }
     .confirm-dialog h2 { font-size: 20px; font-weight: 500; letter-spacing: -.03em; margin-top: 16px; }
     .confirm-dialog p { color: var(--secondary); font-size: 14px; margin: 10px 0 24px; overflow-wrap: anywhere; }
     .confirm-dialog-actions { display: flex; justify-content: flex-end; gap: 12px; }
@@ -924,7 +927,7 @@
 .device-control-meta { margin-top: 3px; font-size: 12px; color: var(--secondary); line-height: 1.5; }
 .device-switch-list { display: flex; flex-direction: column; justify-content: flex-end; gap: 8px; }
 .device-switch-form { margin: 0; }
-.pump-control-stack { display: flex; flex-direction: column; justify-content: space-between; gap: 14px; }
+.pump-control-stack { flex: 1; display: flex; flex-direction: column; justify-content: space-between; gap: 14px; }
 .pump-visual { display: grid; place-items: center; padding: 6px 0 4px; }
 .pump-ring { display: grid; place-items: center; width: 92px; height: 92px; border: 1px solid var(--pump-line); border-radius: 50%; background: var(--pump-surface); color: var(--pump-ink); outline: 7px solid var(--pump-outline); transition: background-color .18s var(--ease), border-color .18s var(--ease), color .18s var(--ease), outline-color .18s var(--ease); }
 .pump-ring .icon { width: 34px; height: 34px; }
@@ -933,7 +936,7 @@
 .pump-status-group { text-align: center; }
 .pump-status { font-size: 14px; font-weight: 600; color: var(--ink); line-height: 1.35; }
 .pump-status-note { margin-top: 3px; font-size: 12px; color: var(--secondary); line-height: 1.45; }
-.pump-control-actions { display: grid; gap: 8px; }
+.pump-control-actions { margin-top: auto; display: grid; gap: 8px; }
 .pump-control-form { margin: 0; }
 .button--pump { min-height: 50px; border-radius: 14px; font-size: 14.5px; font-weight: 600; }
 .button--pump.is-submitting, .pump-control-form[aria-busy="true"] .button--pump { opacity: .7; cursor: wait; }
@@ -956,6 +959,9 @@
     .chart-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .chart-stat:nth-child(3) { border-left: 0; border-top: 1px solid var(--line); }
     .chart-stat:nth-child(4) { border-top: 1px solid var(--line); }
+}
+@media (pointer: coarse) {
+    .button { min-height: 48px; }
 }
 @media (prefers-reduced-motion: reduce) {
     .button, .text-link .icon, .switch-row, .switch-track, .switch-thumb, .chart-tab, .pump-ring { transition: none; }

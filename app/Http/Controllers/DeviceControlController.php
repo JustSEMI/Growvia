@@ -20,20 +20,36 @@ class DeviceControlController extends Controller
 
     public function storePetaniPump(Request $request): RedirectResponse
     {
-        return $this->handleControl($request, adminOnly: false);
+        return $this->handleControl($request, adminOnly: false, allowedNodes: ['node2'], allowedActuators: ['pump']);
     }
 
-    private function handleControl(Request $request, bool $adminOnly): RedirectResponse
+    public function storePetaniClimate(Request $request): RedirectResponse
     {
+        return $this->handleControl($request, adminOnly: false, allowedNodes: ['node1'], allowedActuators: ['fan1', 'fan2']);
+    }
+
+    /**
+     * @param  list<string>|null  $allowedNodes
+     * @param  list<string>|null  $allowedActuators
+     */
+    private function handleControl(
+        Request $request,
+        bool $adminOnly,
+        ?array $allowedNodes = null,
+        ?array $allowedActuators = null,
+    ): RedirectResponse {
         $actor = $request->user();
         if ($adminOnly) {
             abort_unless($actor instanceof User && $actor->isAdmin(), 403);
         }
 
         $validated = $request->validate(
-            $adminOnly
-                ? DeviceControl::rules($request->input('node'), $request->input('mode'))
-                : DeviceControl::rules('node2', $request->input('mode'), ['node2'], ['pump']),
+            DeviceControl::rules(
+                $request->input('node'),
+                $request->input('mode'),
+                $allowedNodes,
+                $allowedActuators,
+            ),
         );
 
         $state = array_key_exists('state', $validated) && $validated['state'] !== null

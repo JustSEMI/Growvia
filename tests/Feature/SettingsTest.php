@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use App\Models\ActivityLog;
+use App\Models\Reading;
 use App\Models\Setting;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -113,5 +115,63 @@ class SettingsTest extends TestCase
         $this->actingAs($user)->get(route('settings.index'))->assertForbidden();
         $this->actingAs($user)->patch(route('settings.system'), ['section' => 'mqtt'])
             ->assertForbidden();
+        $this->actingAs($user)->delete(route('settings.readings.destroy'))
+            ->assertForbidden();
+    }
+
+    public function test_admin_settings_displays_sensor_data_purge_option_and_petani_settings_hides_it(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $petani = User::factory()->create();
+        Reading::query()->create(['node' => 'node1', 'metric' => 'temperature', 'value' => 27.5, 'unit' => '°C', 'recorded_at' => now()]);
+        Reading::query()->create(['node' => 'node2', 'metric' => 'soil_moisture', 'value' => 45.0, 'unit' => '%', 'recorded_at' => now()]);
+
+        $this->actingAs($admin)->get(route('settings.index'))
+            ->assertOk()
+            ->assertSee('Hapus semua data sensor')
+            ->assertSee('2 baris')
+            ->assertSee('/pengaturan/data-sensor')
+            ->assertSee('data-confirm-dialog', false);
+
+        $this->actingAs($petani)->get(route('petani.settings'))
+            ->assertOk()
+            ->assertDontSee('Hapus semua data sensor')
+            ->assertDontSee('/pengaturan/data-sensor');
+    }
+
+    public function test_admin_can_purge_all_sensor_readings_while_keeping_settings_and_users(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $petani = User::factory()->create();
+        Setting::query()->create(['key' => 'th_suhu_max', 'value' => '31']);
+        Reading::query()->create(['node' => 'node1', 'metric' => 'temperature', 'value' => 27.5, 'unit' => '°C', 'recorded_at' => now()]);
+        Reading::query()->create(['node' => 'node2', 'metric' => 'water_level', 'value' => 70.0, 'unit' => '%', 'recorded_at' => now()]);
+
+        $this->actingAs($petani)
+            ->delete(route('settings.readings.destroy'))
+            ->assertForbidden();
+        $this->assertDatabaseCount('readings', 2);
+
+        $this->actingAs($admin)
+            ->from(route('settings.index'))
+            ->delete(route('settings.readings.destroy'))
+            ->assertRedirect(route('settings.index'))
+            ->assertSessionHas('status', 'Berhasil menghapus 2 data sensor.');
+
+        $this->assertDatabaseCount('readings', 0);
+        $this->assertDatabaseHas('settings', ['key' => 'th_suhu_max', 'value' => '31']);
+        $this->assertDatabaseCount('users', 2);
+        $this->assertDatabaseHas('activity_logs', [
+            'action' => 'readings.cleared',
+            'actor_id' => $admin->id,
+        ]);
+
+        $this->actingAs($admin)
+            ->from(route('settings.index'))
+            ->delete(route('settings.readings.destroy'))
+            ->assertRedirect(route('settings.index'))
+            ->assertSessionHas('status', 'Belum ada data sensor untuk dihapus.');
+
+        $this->assertSame(1, ActivityLog::query()->where('action', 'readings.cleared')->count());
     }
 }

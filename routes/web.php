@@ -57,6 +57,7 @@ Route::middleware('auth')->group(function () {
         Route::prefix('pengaturan')->name('settings.')->controller(SettingsController::class)->group(function () {
             Route::get('/', 'index')->name('index');
             Route::patch('/sistem', 'updateSystem')->middleware('throttle:reauthentication')->name('system');
+            Route::delete('/data-sensor', 'destroyReadings')->middleware('throttle:reauthentication')->name('readings.destroy');
         });
 
         Route::prefix('pengguna')->name('users.')->controller(UsersController::class)->group(function () {
@@ -76,6 +77,7 @@ Route::middleware('auth')->group(function () {
     Route::middleware('role:user,admin')->prefix('petani')->name('petani.')->group(function () {
         Route::get('/', [ReadingsWebController::class, 'petaniDashboard'])->name('dashboard');
         Route::get('/iklim', [ReadingsWebController::class, 'petaniNode1'])->name('node1');
+        Route::post('/iklim/kontrol', [DeviceControlController::class, 'storePetaniClimate'])->middleware('throttle:30,1')->name('node1.control');
         Route::get('/tanah', [ReadingsWebController::class, 'petaniNode2'])->name('node2');
         Route::post('/tanah/kontrol', [DeviceControlController::class, 'storePetaniPump'])->middleware('throttle:30,1')->name('control');
         Route::get('/pengaturan', fn () => view('petani.pengaturan'))->name('settings');

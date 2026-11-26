@@ -188,14 +188,47 @@ class MqttControlTest extends TestCase
                 'node' => 'node1',
                 'actuator' => 'fan1',
                 'mode' => 'manual',
-                'state' => 0,
+                'state' => 1,
             ])
             ->assertRedirect('/dashboard')
             ->assertSessionHas('status');
 
         $this->assertSame('growvia/node1/control', $published[3]['topic']);
         $this->assertSame('fan1', $published[3]['payload']['actuator']);
-        $this->assertSame(0, $published[3]['payload']['state']);
+        $this->assertSame(1, $published[3]['payload']['state']);
+        $this->assertSame('1', Setting::query()->where('key', 'fan1_manual_state')->value('value'));
+
+        $this->actingAs($admin)
+            ->from('/dashboard')
+            ->post(route('dashboard.control'), [
+                'node' => 'node1',
+                'actuator' => 'fan1',
+                'mode' => 'manual',
+                'state' => 0,
+            ])
+            ->assertRedirect('/dashboard')
+            ->assertSessionHas('status');
+
+        $this->assertSame('growvia/node1/control', $published[4]['topic']);
+        $this->assertSame('fan1', $published[4]['payload']['actuator']);
+        $this->assertSame(0, $published[4]['payload']['state']);
+        $this->assertSame('0', Setting::query()->where('key', 'fan1_manual_state')->value('value'));
+
+        $this->actingAs($admin)
+            ->from('/dashboard')
+            ->post(route('dashboard.control'), [
+                'node' => 'node1',
+                'actuator' => 'fan2',
+                'mode' => 'manual',
+                'state' => 1,
+            ])
+            ->assertRedirect('/dashboard')
+            ->assertSessionHas('status');
+
+        $this->assertSame('growvia/node1/control', $published[5]['topic']);
+        $this->assertSame('fan2', $published[5]['payload']['actuator']);
+        $this->assertSame(1, $published[5]['payload']['state']);
+        $this->assertSame('1', Setting::query()->where('key', 'fan2_manual_state')->value('value'));
     }
 
     public function test_non_admin_cannot_post_admin_web_control_and_broker_failure_fails_closed(): void
@@ -224,8 +257,20 @@ class MqttControlTest extends TestCase
             ->assertRedirect('/dashboard')
             ->assertSessionHasErrors('control');
 
+        $this->actingAs($admin)
+            ->from('/dashboard')
+            ->post(route('dashboard.control'), [
+                'node' => 'node1',
+                'actuator' => 'fan1',
+                'mode' => 'manual',
+                'state' => 1,
+            ])
+            ->assertRedirect('/dashboard')
+            ->assertSessionHasErrors('control');
+
         $this->assertNull(Setting::query()->where('key', 'pump_mode')->value('value'));
         $this->assertNull(Setting::query()->where('key', 'pump_manual_state')->value('value'));
+        $this->assertNull(Setting::query()->where('key', 'fan1_manual_state')->value('value'));
     }
 
     public function test_petani_web_pump_control_sends_node2_pump_commands_only(): void
@@ -279,6 +324,82 @@ class MqttControlTest extends TestCase
             ->post(route('petani.control'), [
                 'node' => 'node1',
                 'actuator' => 'fan1',
+                'mode' => 'manual',
+                'state' => 1,
+            ])
+            ->assertSessionHasErrors(['node', 'actuator']);
+    }
+
+    public function test_petani_web_climate_control_sends_node1_fan_commands_only(): void
+    {
+        $published = [];
+        $this->mockMqttPublish($published);
+        $petani = User::factory()->create(['role' => 'user']);
+
+        $this->actingAs($petani)
+            ->get(route('petani.node1'))
+            ->assertOk()
+            ->assertSee('Kontrol kipas')
+            ->assertSee('Kipas 1')
+            ->assertSee('Kipas 2')
+            ->assertSee('Nyalakan manual')
+            ->assertSee('/petani/iklim/kontrol');
+
+        $this->actingAs($petani)
+            ->from(route('petani.node1'))
+            ->post(route('petani.node1.control'), [
+                'node' => 'node1',
+                'actuator' => 'fan1',
+                'mode' => 'manual',
+                'state' => 1,
+            ])
+            ->assertRedirect(route('petani.node1'))
+            ->assertSessionHas('status');
+
+        $this->assertSame('growvia/node1/control', $published[0]['topic']);
+        $this->assertSame('fan1', $published[0]['payload']['actuator']);
+        $this->assertSame(1, $published[0]['payload']['state']);
+        $this->assertSame('1', Setting::query()->where('key', 'fan1_manual_state')->value('value'));
+
+        $this->actingAs($petani)
+            ->get(route('petani.node1'))
+            ->assertOk()
+            ->assertSee('Matikan manual');
+
+        $this->actingAs($petani)
+            ->from(route('petani.node1'))
+            ->post(route('petani.node1.control'), [
+                'node' => 'node1',
+                'actuator' => 'fan2',
+                'mode' => 'manual',
+                'state' => 1,
+            ])
+            ->assertRedirect(route('petani.node1'))
+            ->assertSessionHas('status');
+
+        $this->assertSame('fan2', $published[1]['payload']['actuator']);
+        $this->assertSame(1, $published[1]['payload']['state']);
+        $this->assertSame('1', Setting::query()->where('key', 'fan2_manual_state')->value('value'));
+
+        $this->actingAs($petani)
+            ->from(route('petani.node1'))
+            ->post(route('petani.node1.control'), [
+                'node' => 'node1',
+                'actuator' => 'fan2',
+                'mode' => 'manual',
+                'state' => 0,
+            ])
+            ->assertRedirect(route('petani.node1'))
+            ->assertSessionHas('status');
+
+        $this->assertSame(0, $published[2]['payload']['state']);
+        $this->assertSame('0', Setting::query()->where('key', 'fan2_manual_state')->value('value'));
+
+        // Petani climate route rejects non-node1 / pump actuators.
+        $this->actingAs($petani)
+            ->post(route('petani.node1.control'), [
+                'node' => 'node2',
+                'actuator' => 'pump',
                 'mode' => 'manual',
                 'state' => 1,
             ])
@@ -356,8 +477,10 @@ class MqttControlTest extends TestCase
             ->assertSee('Nyalakan manual')
             ->assertSee('role="switch"', false)
             ->assertSee('Sakelar mode otomatis pompa air')
-            ->assertSee('Sakelar Kipas 1')
-            ->assertSee('Sakelar Kipas 2');
+            ->assertSee('Kipas 1 (Node 1)')
+            ->assertSee('Kipas 2 (Node 1)')
+            ->assertSee('dashboard-fan1-hint', false)
+            ->assertSee('dashboard-fan2-hint', false);
 
         $this->actingAs($admin)
             ->get('/dashboard/mqtt')

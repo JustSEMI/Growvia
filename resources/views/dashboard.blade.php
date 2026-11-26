@@ -194,17 +194,16 @@
                                     <p class="device-control-meta">Ambang suhu maksimal {{ $monitorSettings['th_suhu_max'] ?? 30 }} °C.</p>
                                 </div>
                             </div>
-                            <div class="device-switch-list">
-                                <x-device-switch
-                                    label="Daya kipas"
-                                    aria-label="Sakelar Kipas 1"
-                                    :state-text="$fan1Reading ? ($fan1On ? 'Menyala' : 'Mati') : 'Belum ada'"
-                                    :checked="$fan1On"
-                                    node="node1"
-                                    actuator="fan1"
-                                    mode="manual"
-                                    :next-state="$fan1On ? 0 : 1" />
-                            </div>
+                            <x-actuator-control
+                                node="node1"
+                                actuator="fan1"
+                                actuator-label="Kipas 1"
+                                device-label="Device 1"
+                                :reading="$fan1Reading"
+                                :settings="$monitorSettings"
+                                :action="route('dashboard.control')"
+                                hint-id="dashboard-fan1-hint"
+                                manual-note="Pendingin utama Node 1 · pin GPIO 5." />
                         </article>
 
                         <article class="device-control-item">
@@ -215,17 +214,16 @@
                                     <p class="device-control-meta">Pendingin tambahan Node 1 (override manual).</p>
                                 </div>
                             </div>
-                            <div class="device-switch-list">
-                                <x-device-switch
-                                    label="Daya kipas"
-                                    aria-label="Sakelar Kipas 2"
-                                    :state-text="$fan2Reading ? ($fan2On ? 'Menyala' : 'Mati') : 'Belum ada'"
-                                    :checked="$fan2On"
-                                    node="node1"
-                                    actuator="fan2"
-                                    mode="manual"
-                                    :next-state="$fan2On ? 0 : 1" />
-                            </div>
+                            <x-actuator-control
+                                node="node1"
+                                actuator="fan2"
+                                actuator-label="Kipas 2"
+                                device-label="Device 1"
+                                :reading="$fan2Reading"
+                                :settings="$monitorSettings"
+                                :action="route('dashboard.control')"
+                                hint-id="dashboard-fan2-hint"
+                                manual-note="Pendingin tambahan Node 1 · pin GPIO 17." />
                         </article>
                     </div>
                 </div>

@@ -60,7 +60,7 @@ final class DeviceControl
     }
 
     /**
-     * Simpan perubahan mode pompa dan status perintah manual terakhir setelah broker MQTT menerima perintah.
+     * Simpan perubahan mode dan status perintah manual terakhir setelah broker MQTT menerima perintah.
      */
     public static function commit(
         User $actor,
@@ -69,22 +69,35 @@ final class DeviceControl
         ?bool $state,
         string $mode,
     ): void {
-        if ($node !== 'node2' || $actuator !== 'pump') {
+        if ($node === 'node2' && $actuator === 'pump') {
+            $storedMode = (string) (Setting::query()->where('key', 'pump_mode')->lockForUpdate()->value('value')
+                ?? SettingRules::DEFAULTS['pump_mode']);
+
+            if ($storedMode !== $mode) {
+                Setting::updateOrCreate(['key' => 'pump_mode'], ['value' => $mode]);
+                ActivityLog::record('settings.updated', $actor, null, ['pump_mode']);
+            }
+        }
+
+        $manualKey = self::manualStateKey($node, $actuator);
+        if ($manualKey === null) {
             return;
         }
 
-        $storedMode = (string) (Setting::query()->where('key', 'pump_mode')->lockForUpdate()->value('value')
-            ?? SettingRules::DEFAULTS['pump_mode']);
-
-        if ($storedMode !== $mode) {
-            Setting::updateOrCreate(['key' => 'pump_mode'], ['value' => $mode]);
-            ActivityLog::record('settings.updated', $actor, null, ['pump_mode']);
-        }
-
         if ($mode === 'manual' && $state !== null) {
-            Setting::updateOrCreate(['key' => 'pump_manual_state'], ['value' => $state ? '1' : '0']);
+            Setting::updateOrCreate(['key' => $manualKey], ['value' => $state ? '1' : '0']);
         } elseif ($mode === 'auto') {
-            Setting::query()->where('key', 'pump_manual_state')->delete();
+            Setting::query()->where('key', $manualKey)->delete();
         }
+    }
+
+    private static function manualStateKey(string $node, string $actuator): ?string
+    {
+        return match ("{$node}:{$actuator}") {
+            'node2:pump' => 'pump_manual_state',
+            'node1:fan1' => 'fan1_manual_state',
+            'node1:fan2' => 'fan2_manual_state',
+            default => null,
+        };
     }
 }

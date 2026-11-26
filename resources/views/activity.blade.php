@@ -39,7 +39,7 @@
             @forelse($activities as $activity)
                 @php
                     $actionTone = match (true) {
-                        in_array($activity->action, ['auth.failed', 'user.deleted', 'user.deactivated'], true) => 'red',
+                        in_array($activity->action, ['auth.failed', 'user.deleted', 'user.deactivated', 'readings.cleared'], true) => 'red',
                         in_array($activity->action, ['auth.login', 'user.created', 'user.activated', 'backup.created'], true) => 'green',
                         in_array($activity->action, ['settings.updated', 'account.password_changed', 'account.password_reset', 'account.email_changed'], true) => 'amber',
                         default => 'neutral',
