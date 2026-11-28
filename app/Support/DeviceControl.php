@@ -23,7 +23,7 @@ final class DeviceControl
         ?array $allowedActuators = null,
     ): array {
         $nodes = $allowedNodes ?? ['node1', 'node2'];
-        $actuators = $allowedActuators ?? ($node === 'node1' ? ['fan1', 'fan2'] : ['pump']);
+        $actuators = $allowedActuators ?? ($node === 'node1' ? ['fan1'] : ['pump']);
 
         return [
             'node' => ['required', 'string', Rule::in($nodes)],
@@ -96,7 +96,6 @@ final class DeviceControl
         return match ("{$node}:{$actuator}") {
             'node2:pump' => 'pump_manual_state',
             'node1:fan1' => 'fan1_manual_state',
-            'node1:fan2' => 'fan2_manual_state',
             default => null,
         };
     }

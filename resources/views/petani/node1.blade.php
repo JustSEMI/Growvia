@@ -34,15 +34,13 @@
     @endif
     <div class="stack">
         <div class="actuator-strip actuator-strip--bar" aria-label="Status kipas">
-            @foreach(['fan1' => 'Kipas 1', 'fan2' => 'Kipas 2'] as $metric => $fanLabel)
-                @php($fanVal = $state($metric))
-                <div class="actuator-chip {{ $fanVal === 'Menyala' ? 'is-on' : '' }}">
-                    <span class="actuator-dot" aria-hidden="true"></span>
-                    <span class="actuator-chip-name">{{ $fanLabel }}</span>
-                    <span class="actuator-chip-value">{{ $fanVal ?? 'Belum ada' }}</span>
-                    <span class="actuator-chip-time">{{ $note($metric) }}</span>
-                </div>
-            @endforeach
+            @php($fanVal = $state('fan1'))
+            <div class="actuator-chip {{ $fanVal === 'Menyala' ? 'is-on' : '' }}">
+                <span class="actuator-dot" aria-hidden="true"></span>
+                <span class="actuator-chip-name">Kipas</span>
+                <span class="actuator-chip-value">{{ $fanVal ?? 'Belum ada' }}</span>
+                <span class="actuator-chip-time">{{ $note('fan1') }}</span>
+            </div>
         </div>
 
         <div class="metrics-grid metrics-grid--2 metrics-grid--open">
@@ -52,12 +50,40 @@
             <x-metric-tile label="Lembap 2" :value="$val('humidity2')" unit="%" icon="drop" tone="blue" :note="$note('humidity2')" />
         </div>
 
-        <div class="overview-split">
-            @if(count($series))
-                <x-trend-chart :series="$series" :threshold-max="$monitorSettings['th_suhu_max'] ?? null" />
-            @else
-                <x-empty-chart title="Tren suhu udara" subtitle="Belum ada cukup data suhu di 6 jam terakhir." node="Device 1" period="6 jam" />
-            @endif
+        @if(count($series))
+            <x-trend-chart :series="$series" :threshold-max="$monitorSettings['th_suhu_max'] ?? null" />
+        @else
+            <x-empty-chart title="Tren suhu udara" subtitle="Belum ada cukup data suhu di 6 jam terakhir." node="Device 1" period="6 jam" />
+        @endif
+
+        <div class="two-columns">
+            <section class="panel" aria-labelledby="petani-fan-control-title">
+                <div class="panel-header">
+                    <div>
+                        <h2 id="petani-fan-control-title" class="panel-title">Kontrol kipas</h2>
+                        <p class="panel-subtitle">Pendingin / Device 1</p>
+                    </div>
+                    <div class="actuator-strip">
+                        <div class="actuator-chip {{ $fanVal === 'Menyala' ? 'is-on' : '' }}" title="Kipas · {{ $note('fan1') }}">
+                            <span class="actuator-dot" aria-hidden="true"></span>
+                            <span class="actuator-chip-name">Kipas</span>
+                            <span class="actuator-chip-value">{{ $fanVal ?? 'Belum ada' }}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <x-actuator-control
+                        node="node1"
+                        actuator="fan1"
+                        actuator-label="Kipas"
+                        device-label="Device 1"
+                        :reading="$latest['fan1'] ?? null"
+                        :settings="$monitorSettings"
+                        :action="route('petani.node1.control')"
+                        hint-id="petani-fan1-hint"
+                        manual-note="Kipas Node 1 · pin GPIO 5 &amp; GPIO 17." />
+                </div>
+            </section>
 
             <section class="panel status-panel" aria-label="Target tersimpan">
                 <div class="panel-header">
@@ -81,47 +107,6 @@
                 </div>
             </section>
         </div>
-
-        <section aria-labelledby="petani-fan-control-title">
-            <div class="section-heading section-heading--ruled">
-                <h2 id="petani-fan-control-title">Kontrol kipas</h2>
-            </div>
-            <div class="two-columns">
-                @foreach([
-                    'fan1' => ['title' => 'Kipas 1', 'subtitle' => 'Pendingin utama / Device 1', 'manualNote' => 'Pendingin utama Node 1 · pin GPIO 5.', 'hintId' => 'petani-fan1-hint'],
-                    'fan2' => ['title' => 'Kipas 2', 'subtitle' => 'Pendingin tambahan / Device 1', 'manualNote' => 'Pendingin tambahan Node 1 · pin GPIO 17.', 'hintId' => 'petani-fan2-hint'],
-                ] as $fanMetric => $fanMeta)
-                    @php($fanStateText = $state($fanMetric))
-                    <section class="panel" aria-labelledby="petani-{{ $fanMetric }}-title">
-                        <div class="panel-header">
-                            <div>
-                                <h3 id="petani-{{ $fanMetric }}-title" class="panel-title">{{ $fanMeta['title'] }}</h3>
-                                <p class="panel-subtitle">{{ $fanMeta['subtitle'] }}</p>
-                            </div>
-                            <div class="actuator-strip">
-                                <div class="actuator-chip {{ $fanStateText === 'Menyala' ? 'is-on' : '' }}" title="{{ $fanMeta['title'] }} · {{ $note($fanMetric) }}">
-                                    <span class="actuator-dot" aria-hidden="true"></span>
-                                    <span class="actuator-chip-name">{{ $fanMeta['title'] }}</span>
-                                    <span class="actuator-chip-value">{{ $fanStateText ?? 'Belum ada' }}</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="panel-body">
-                            <x-actuator-control
-                                node="node1"
-                                :actuator="$fanMetric"
-                                :actuator-label="$fanMeta['title']"
-                                device-label="Device 1"
-                                :reading="$latest[$fanMetric] ?? null"
-                                :settings="$monitorSettings"
-                                :action="route('petani.node1.control')"
-                                :hint-id="$fanMeta['hintId']"
-                                :manual-note="$fanMeta['manualNote']" />
-                        </div>
-                    </section>
-                @endforeach
-            </div>
-        </section>
     </div>
 </turbo-frame>
 @endsection

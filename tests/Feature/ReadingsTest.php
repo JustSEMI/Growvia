@@ -139,7 +139,6 @@ class ReadingsTest extends TestCase
                 'temperature2' => 26.2,
                 'humidity2' => 71,
                 'fan1' => 1,
-                'fan2' => 0,
             ]));
         }
 
@@ -182,7 +181,7 @@ class ReadingsTest extends TestCase
 
         Carbon::setTestNow(now());
         ReadingIngester::ingestPayload('growvia/node1/data', (string) json_encode([
-            'temperature' => 27.5, 'humidity' => 68.0, 'temperature2' => 28.5, 'humidity2' => 70.0, 'fan1' => 1, 'fan2' => 0,
+            'temperature' => 27.5, 'humidity' => 68.0, 'temperature2' => 28.5, 'humidity2' => 70.0, 'fan1' => 1,
         ]));
         ReadingIngester::ingestPayload('growvia/node2/data', (string) json_encode([
             'soil_moisture' => 45.0, 'water_level' => 80.0, 'pump' => 1,

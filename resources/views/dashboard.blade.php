@@ -31,7 +31,7 @@
         <div class="stack">
             <div class="two-columns device-overview-grid">
                 @foreach([
-                    'node1' => ['title' => 'Iklim · Device 1', 'meta' => '2x SHT (udara) · 2 kipas'],
+                    'node1' => ['title' => 'Iklim · Device 1', 'meta' => '2x SHT (udara) · 1 kipas'],
                     'node2' => ['title' => 'Tanah &amp; air · Device 2', 'meta' => '3x sensor tanah · tandon'],
                 ] as $node => $nodeMeta)
                     <section class="panel device-panel" aria-label="{{ strip_tags($nodeMeta['title']) }}">
@@ -151,13 +151,7 @@
 
             @php
                 $pumpReading = $latest['node2']['pump'] ?? null;
-
                 $fan1Reading = $latest['node1']['fan1'] ?? null;
-                $fan1On = $fan1Reading !== null && (float) $fan1Reading->value >= 0.5;
-
-                $fan2Reading = $latest['node1']['fan2'] ?? null;
-                $fan2On = $fan2Reading !== null && (float) $fan2Reading->value >= 0.5;
-
                 $pumpAuto = ($monitorSettings['pump_mode'] ?? 'auto') !== 'manual';
             @endphp
 
@@ -190,40 +184,20 @@
                             <div class="device-control-head">
                                 <span class="icon-tile icon-tile--amber"><x-icon name="thermometer" /></span>
                                 <div>
-                                    <h3 class="device-control-name">Kipas 1 (Node 1)</h3>
+                                    <h3 class="device-control-name">Kipas (Node 1)</h3>
                                     <p class="device-control-meta">Ambang suhu maksimal {{ $monitorSettings['th_suhu_max'] ?? 30 }} °C.</p>
                                 </div>
                             </div>
                             <x-actuator-control
                                 node="node1"
                                 actuator="fan1"
-                                actuator-label="Kipas 1"
+                                actuator-label="Kipas"
                                 device-label="Device 1"
                                 :reading="$fan1Reading"
                                 :settings="$monitorSettings"
                                 :action="route('dashboard.control')"
                                 hint-id="dashboard-fan1-hint"
-                                manual-note="Pendingin utama Node 1 · pin GPIO 5." />
-                        </article>
-
-                        <article class="device-control-item">
-                            <div class="device-control-head">
-                                <span class="icon-tile icon-tile--neutral"><x-icon name="power" /></span>
-                                <div>
-                                    <h3 class="device-control-name">Kipas 2 (Node 1)</h3>
-                                    <p class="device-control-meta">Pendingin tambahan Node 1 (override manual).</p>
-                                </div>
-                            </div>
-                            <x-actuator-control
-                                node="node1"
-                                actuator="fan2"
-                                actuator-label="Kipas 2"
-                                device-label="Device 1"
-                                :reading="$fan2Reading"
-                                :settings="$monitorSettings"
-                                :action="route('dashboard.control')"
-                                hint-id="dashboard-fan2-hint"
-                                manual-note="Pendingin tambahan Node 1 · pin GPIO 17." />
+                                manual-note="Kipas Node 1 · pin GPIO 5 &amp; GPIO 17." />
                         </article>
                     </div>
                 </div>

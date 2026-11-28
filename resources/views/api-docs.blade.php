@@ -110,7 +110,7 @@
 // Kembalikan pompa ke mode otomatis (mengikuti soil_on, soil_off, tank_min)
 { "node": "node2", "actuator": "pump", "mode": "auto" }
 
-// Kontrol kipas (node1: fan1 atau fan2)
+// Kontrol kipas (node1: fan1)
 { "node": "node1", "actuator": "fan1", "mode": "manual", "state": 1 }</code></pre>
         </div>
     </section>

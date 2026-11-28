@@ -25,7 +25,7 @@ class DeviceControlController extends Controller
 
     public function storePetaniClimate(Request $request): RedirectResponse
     {
-        return $this->handleControl($request, adminOnly: false, allowedNodes: ['node1'], allowedActuators: ['fan1', 'fan2']);
+        return $this->handleControl($request, adminOnly: false, allowedNodes: ['node1'], allowedActuators: ['fan1']);
     }
 
     /**
@@ -93,8 +93,7 @@ class DeviceControlController extends Controller
         });
 
         $label = match ($validated['actuator']) {
-            'fan1' => 'Kipas 1',
-            'fan2' => 'Kipas 2',
+            'fan1' => 'Kipas',
             default => 'Pompa',
         };
 

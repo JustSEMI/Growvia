@@ -918,7 +918,7 @@
 .empty-chart-box strong { display: block; font-size: 14px; font-weight: 600; color: var(--ink); }
 .empty-chart-box p { margin-top: 5px; font-size: 13px; color: var(--secondary); line-height: 1.55; }
 /* Kontrol perangkat (dashboard admin) */
-.device-control-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: auto 1fr; gap: 16px; }
+.device-control-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: auto 1fr; gap: 16px; }
 .device-control-item { grid-row: span 2; display: grid; grid-template-rows: auto 1fr; grid-template-rows: subgrid; gap: 14px; padding: 18px; border: 1px solid var(--line); border-radius: 14px; background: var(--soft); }
 .device-control-head { display: flex; align-items: flex-start; gap: 12px; }
 .device-control-head .icon-tile { width: 34px; height: 34px; border-radius: 9px; }
@@ -981,8 +981,6 @@
     .charts-split { grid-template-columns: minmax(0, 1fr); gap: 18px; }
     .device-control-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: auto; }
     .device-control-item { grid-row: auto; grid-template-rows: auto 1fr; }
-    .device-control-item:first-child { grid-column: 1 / -1; }
-    .device-control-item:first-child .pump-control-actions { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: stretch; gap: 10px; }
 }
 @media (max-width: 1023px) {
     .overview-split, .ops-split { grid-template-columns: minmax(0, 1fr); gap: 16px; }
@@ -991,7 +989,6 @@
 @media (max-width: 767px) {
     .device-overview-grid { grid-template-columns: minmax(0, 1fr); gap: 16px; }
     .device-control-grid { grid-template-columns: minmax(0, 1fr); }
-    .device-control-item:first-child .pump-control-actions { grid-template-columns: minmax(0, 1fr); }
     .activity-empty { padding: 14px 18px; }
 }
 @media (max-width: 639px) {

@@ -13,11 +13,7 @@
 ])
 
 @php
-    $manualKey = match ($actuator) {
-        'fan1' => 'fan1_manual_state',
-        'fan2' => 'fan2_manual_state',
-        default => 'pump_manual_state',
-    };
+    $manualKey = $actuator === 'fan1' ? 'fan1_manual_state' : 'pump_manual_state';
 
     $isAuto = $showAutoSwitch && (($settings['pump_mode'] ?? 'auto') !== 'manual');
     $telemetryKnown = $reading !== null;

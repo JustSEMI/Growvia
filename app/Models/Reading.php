@@ -21,7 +21,6 @@ class Reading extends Model
         'water_level' => '%',
         'pump' => 'state',
         'fan1' => 'state',
-        'fan2' => 'state',
     ];
 
     public const NODES = ['node1', 'node2'];

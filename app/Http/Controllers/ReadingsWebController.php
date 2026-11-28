@@ -20,12 +20,12 @@ class ReadingsWebController extends Controller
 {
     /**
      * Kolom riwayat: hanya sensor yang benar-benar terpasang.
-     * Device 1: 2 SHT + 2 kipas. Device 2: 3 soil + ultrasonic + pompa.
+     * Device 1: 2 SHT + kipas. Device 2: 3 soil + ultrasonic + pompa.
      */
     private const COLUMNS = [
         'temperature', 'humidity', 'temperature2', 'humidity2',
         'soil_moisture', 'soil_moisture2', 'soil_moisture3',
-        'water_level', 'pump', 'fan1', 'fan2',
+        'water_level', 'pump', 'fan1',
     ];
 
     /**
@@ -52,8 +52,7 @@ class ReadingsWebController extends Controller
      */
     private const DASHBOARD_STATES = [
         'node1' => [
-            ['metric' => 'fan1', 'label' => 'Kipas 1'],
-            ['metric' => 'fan2', 'label' => 'Kipas 2'],
+            ['metric' => 'fan1', 'label' => 'Kipas'],
         ],
         'node2' => [
             ['metric' => 'pump', 'label' => 'Pompa'],
